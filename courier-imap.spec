@@ -6,12 +6,12 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	3.0.2
-Release:	1
+Version:	3.0.3
+Release:	2
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	38d3ae003f66637be3ea12e81be4a111
+# Source0-md5:	6a882a12b5d94ab0b2b22f9ef56a9b9f
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}-authdaemon.init
@@ -21,25 +21,26 @@ Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
 URL:		http://www.inter7.com/courierimap/
-BuildRequires:	autoconf
+BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
 %{?with_mysql:BuildRequires:	mysql-devel}
 %{?with_ldap:BuildRequires:	openldap-devel}
-BuildRequires:	openssl-devel >= 0.9.7d
+BuildRequires:	openssl-devel >= 0.9.6m
 %{?with_pgsql:BuildRequires:	postgresql-devel}
+BuildRequires:	procps
 BuildRequires:	sysconftool
 %{?with_mysql:BuildRequires:	zlib-devel}
-PreReq:		%{name}-common = %{version}
+PreReq:		%{name}-common = %{version}-%{release}
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
 Requires:	pam >= 0.77.3
 Provides:	imapdaemon
-BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	imapdaemon
 Conflicts:	cyrus-imapd
 Conflicts:	imap
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libexecdir	/usr/lib/courier-imap
 %define		_sysconfdir	/etc/courier-imap
@@ -56,9 +57,9 @@ Summary(pl):	Pliki wspólne dla serwerów imap i pop
 Group:		Networking/Daemons
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
-Requires:	%{name}-deliverquota
-Requires:	%{name}-maildirmake
-Requires:	%{name}-userdb
+Requires:	%{name}-deliverquota	= %{version}-%{release}
+Requires:	%{name}-maildirmake	= %{version}-%{release}
+Requires:	%{name}-userdb		= %{version}-%{release}
 
 %description common
 Common files for imap and pop daemons.
@@ -186,7 +187,7 @@ cd ..
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig} \
-	$RPM_BUILD_ROOT{%{_sysconfdir},/var/lib/authdaemon}
+	$RPM_BUILD_ROOT{%{_sysconfdir}/shared,/var/lib/authdaemon}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
@@ -323,12 +324,12 @@ fi
 %preun authldap
 METHOD=plain
 if [ -e /etc/sysconfig/authdaemon ]; then
-    . /etc/sysconfig/authdaemon
-    if [ "$1" = "$0" -a "$METHOD" = "ldap" ]; then
-	    if [ -f /var/lock/subsys/authdaemon ]; then
-		    /etc/rc.d/init.d/authdaemon stop >&2
-	    fi
-    fi
+	. /etc/sysconfig/authdaemon
+	if [ "$1" = "$0" -a "$METHOD" = "ldap" ]; then
+		if [ -f /var/lock/subsys/authdaemon ]; then
+			/etc/rc.d/init.d/authdaemon stop >&2
+		fi
+	fi
 fi
 
 %post authmysql
@@ -345,12 +346,12 @@ fi
 %preun authmysql
 METHOD=plain
 if [ -e /etc/sysconfig/authdaemon ]; then
-    . /etc/sysconfig/authdaemon
-    if [ "$1" = "$0" -a "$METHOD" = "mysql" ]; then
-	    if [ -f /var/lock/subsys/authdaemon ]; then
-		    /etc/rc.d/init.d/authdaemon stop >&2
-	    fi
-    fi
+	. /etc/sysconfig/authdaemon
+	if [ "$1" = "$0" -a "$METHOD" = "mysql" ]; then
+		if [ -f /var/lock/subsys/authdaemon ]; then
+			/etc/rc.d/init.d/authdaemon stop >&2
+		fi
+	fi
 fi
 
 %post authpgsql
@@ -367,12 +368,12 @@ fi
 %preun authpgsql
 METHOD=plain
 if [ -e /etc/sysconfig/authdaemon ]; then
-    . /etc/sysconfig/authdaemon
-    if [ "$1" = "$0" -a "$METHOD" = "pgsql" ]; then
-	    if [ -f /var/lock/subsys/authdaemon ]; then
-		    /etc/rc.d/init.d/authdaemon stop >&2
-	    fi
-    fi
+	. /etc/sysconfig/authdaemon
+	if [ "$1" = "$0" -a "$METHOD" = "pgsql" ]; then
+		if [ -f /var/lock/subsys/authdaemon ]; then
+			/etc/rc.d/init.d/authdaemon stop >&2
+		fi
+	fi
 fi
 
 %files
@@ -383,6 +384,7 @@ fi
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
 %{_sysconfdir}/imapd.cnf
+%attr(750,daemon,daemon) %dir %{_sysconfdir}/shared
 %attr(755,root,root) %{_bindir}/imapd
 %attr(755,root,root) %{_bindir}/maildiracl
 %attr(755,root,root) %{_bindir}/maildirkw
@@ -397,7 +399,7 @@ fi
 
 %files common
 %defattr(644,root,root,755)
-%doc README* imap/BUGS ChangeLog AUTHORS
+%doc AUTHORS ChangeLog imap/BUGS INSTALL README*
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/authdaemon
 %attr(754,root,root) /etc/rc.d/init.d/authdaemon
 %attr(700,root,root) /var/lib/authdaemon
@@ -456,7 +458,7 @@ fi
 %if %{with ldap}
 %files authldap
 %defattr(644,root,root,755)
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authldaprc
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authldaprc
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.ldap
 %{_mandir}/man8/authldap*
 %endif
@@ -464,7 +466,7 @@ fi
 %if %{with mysql}
 %files authmysql
 %defattr(644,root,root,755)
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authmysqlrc
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authmysqlrc
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.mysql
 %{_mandir}/man8/authmysql*
 %endif
@@ -472,7 +474,7 @@ fi
 %if %{with pgsql}
 %files authpgsql
 %defattr(644,root,root,755)
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authpgsqlrc
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authpgsqlrc
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.pgsql
 %{_mandir}/man8/authpgsql*
 %endif
