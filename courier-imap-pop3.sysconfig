@@ -1,0 +1,90 @@
+# Maximum number of POP3 servers started
+#
+MAXDAEMONS=40
+
+# Maximum number of connections to accept from the same IP address
+#
+MAXPERIP=4
+
+# Where mail is stored (relative to $HOME)
+#
+MAILDIR="Maildir"
+
+# To advertise the SASL capability, per RFC 2449, uncomment the POP3AUTH
+# variable:
+#
+#POP3AUTH="LOGIN"
+
+# To also advertise SASL PLAIN if SSL is enabled, uncomment the
+# POP3AUTH_TLS environment variable:
+#
+#POP3AUTH_TLS="LOGIN PLAIN"
+
+# IP address to listen on.  0 means all IP addresses.
+#
+ADDRESS=0.0.0.0
+
+# Other couriertcpd(1) options.  The following defaults should be fine.
+#
+#TCPDOPTS="-nodnslookup -noidentlookup"
+
+POP3DSSLSTART=yes
+
+# TLS_PROTOCOL sets the protocol version.  The possible versions are:
+#
+# SSL2 - SSLv2
+# SSL3 - SSLv3
+# TLS1 - TLS1
+#
+TLS_PROTOCOL=SSL3
+
+# TLS_CIPHER_LIST optionally sets the list of ciphers to be used by the
+# OpenSSL library.  In most situations you can leave TLS_CIPHER_LIST
+# undefined
+#
+#TLS_CIPHER_LIST="ALL:!ADH:RC4+RSA:+SSLv2:@STRENGTH"
+
+# TLS_DHCERTFILE - PEM file that stores our Diffie-Hellman cipher pair.
+# When OpenSSL is compiled to use Diffie-Hellman ciphers instead of RSA
+# you must generate a DH pair that will be used.  In most situations the
+# DH pair is to be treated as confidential, and the file specified by
+# TLS_DHCERTFILE must not be world-readable.
+#
+#TLS_DHCERTFILE=
+
+# TLS_CERTFILE - certificate to use.  TLS_CERTFILE is required for SSL/TLS
+# servers, and is optional for SSL/TLS clients.  TLS_CERTFILE is usually
+# treated as confidential, and must not be world-readable.
+#
+TLS_CERTFILE=/var/lib/openssl/certs/pop3d.pem
+
+# TLS_PEERCERTDIR, TLS_OURCACERT - when it is required that all peer
+# certificates are signed by a specific certificate authority, set
+# TLS_OURCACERT to the name of the file containing the certificate authority
+# root key, and set TLS_PEERCERTDIR to the name of the directory containing
+# the allowed certificates.
+#
+#TLS_PEERCERTDIR=
+#TLS_OURCACERT=
+
+# TLS_VERIFYPEER - how to verify peer certificates.  The possible values of
+# this setting are:
+#
+# NONE - do not verify anything
+#
+# PEER - verify the peer certificate, if one's presented
+#
+# REQUIREPEER - require a peer certificate, fail if one's not presented
+#
+# SSL/TLS servers will usually set TLS_VERIFYPEER to NONE.  SSL/TLS clients
+# will usually set TLS_VERIFYPEER to REQUIREPEER.
+#
+TLS_VERIFYPEER=NONE
+
+# TLS_ALLOWSELFSIGNEDCERT - this is an alternative to clients using
+# TLS_VERIFYPEER=NONE.  TLS_ALLOWSELFSIGNEDCERT ignores server certificates
+# that are not signed by a recognized certificate authority.  This allows
+# clients to simply verify that a server certificate is available.
+#
+#TLS_ALLOWSELFSIGNEDCERT=1
+
