@@ -1,17 +1,17 @@
 #
 # TODO:
-#	- triggers
+#	- waiting for all updates from courier-mta.org, and all triggers !
 #	- tests
 #
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	4.0.0
+Version:	4.0.2
 Release:	0.1
 License:	GPL
 Group:		Networking/Daemons
-Source0:	http://www.courier-mta.org/beta/imap/%{name}-%{version}.tar.bz2
-# Source0-md5:	4c5654259d4dd03750d7c6f2aa4be7ec
+Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
+# Source0-md5:	9061583ef8e7b3fd69ef77dbfc0656eb
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}.pamd
