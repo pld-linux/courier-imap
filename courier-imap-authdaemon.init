@@ -64,6 +64,7 @@ case "$1" in
 	fi
 	$0 stop
 	$0 start
+	RETVAL=$?
 	[[ $imaprun -eq 1 ]] && /etc/rc.d/init.d/courier-imap start
 	[[ $poprun -eq 1 ]] && /etc/rc.d/init.d/courier-imap-pop3 start
 	[[ $crun -eq 1 ]] && /etc/rc.d/init.d/courier-mta start
