@@ -1,7 +1,7 @@
 Summary:	Courier-IMAP server
 Name:		courier-imap
 Version:	1.3.2
-Release:	1
+Release:	2
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -17,6 +17,7 @@ Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
 URL:		http://www.inter7.com/courierimap/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+Prereq:		rc-scripts
 Requires:	%{name}-common = %{version}
 Provides:	imapdaemon
 Obsoletes:	imapdaemon
@@ -35,6 +36,7 @@ Summary:	Common files for imap and pop daemons.
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
 Group(pl):	Sieciowe/Serwery
+Prereq:		rc-scripts
 
 %description common
 Common files for imap and pop daemons.
@@ -48,6 +50,7 @@ Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
 Group(pl):	Sieciowe/Serwery
 Requires:	%{name}-common = %{version}
+Prereq:		rc-scripts
 Provides:	pop3daemon
 Obsoletes:	pop3daemon
 
