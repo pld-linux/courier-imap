@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.0.2
-Release:	0.1
+Release:	0.5
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -19,10 +19,12 @@ Source4:	%{name}-pop3.pamd
 Patch0:		%{name}-dirs.patch
 Patch1:		%{name}-certsdir.patch
 Patch2:		%{name}-maildir.patch
-URL:		http://www.inter7.com/courierimap/
+URL:		http://www.courier-mta.org/imap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
-BuildRequires:	gdbm-devel
+BuildRequires:	courier-authlib-devel
+BuildRequires:	db-devel
+BuildRequires:	fam-devel
 BuildRequires:	libstdc++-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	procps
@@ -134,6 +136,7 @@ ln -s ../ltmain.sh .
 cd ..
 
 %configure \
+	--with-db=db \
 	--enable-unicode \
 	--with-authchangepwdir=/var/tmp \
 	--with-certsdir=%{_certsdir}
