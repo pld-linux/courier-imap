@@ -1,4 +1,9 @@
+#
+# Conditional build:
+# _without_ldap - without LDAP support
+# _without_mysql - without MySQL support
 Summary:	Courier-IMAP server
+Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.8.2
 Release:	1
@@ -17,8 +22,8 @@ Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
 Requires:	%{name}-common = %{version}
-BuildRequires:	mysql-devel
-BuildRequires:	openldap-devel
+%{!?_without_mysql:BuildRequires:	mysql-devel}
+%{!?_without_ldap:BuildRequires:	openldap-devel}
 Prereq:		rc-scripts
 Provides:	imapdaemon
 Obsoletes:	imapdaemon
@@ -34,7 +39,8 @@ Courier-IMAP is an IMAP server for Maildir mailboxes.
 Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 
 %package common
-Summary:	Common files for imap and pop daemons.
+Summary:	Common files for imap and pop daemons
+Summary(pl):	Pliki wspólne dla serwerów imap i pop
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
 Group(pl):	Sieciowe/Serwery
@@ -48,6 +54,7 @@ Pliki wspólne dla serwerów imap i pop.
 
 %package pop3
 Summary:	Courier-IMAP POP3 Server
+Summary(pl):	Serwer Courier-IMAP POP3
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
 Group(pl):	Sieciowe/Serwery
@@ -67,7 +74,10 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 
 %build
 %configure2_13 \
-	--with-authdaemonvar=/var/lib/authdaemon
+	--with-authdaemonvar=/var/lib/authdaemon \
+	%{!?_without_mysql:--with-mysql-libs=/usr/lib} \
+	%{?_without_ldap:--without-authldap}
+
 %{__make}
 
 %install
@@ -111,8 +121,8 @@ echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemon.8
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemond.8
-echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8
-echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8
+%{!?_without_mysql:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8}
+%{!?_without_ldap:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8}
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
 
@@ -195,8 +205,8 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libexecdir}
 %dir %{_libexecdir}/authlib
 %{_sysconfdir}/authdaemonrc
-%{_sysconfdir}/authldaprc
-%{_sysconfdir}/authmysqlrc
+%{!?_without_ldap:%{_sysconfdir}/authldaprc}
+%{!?_without_mysql:%{_sysconfdir}/authmysqlrc}
 %{_sysconfdir}/quotawarnmsg.example
 %attr(755,root,root) %{_bindir}/couriertls
 %attr(755,root,root) %{_bindir}/maildirmake
