@@ -7,12 +7,12 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	4.0.2
-Release:	0.1
+Version:	3.0.8
+Release:	4
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	9061583ef8e7b3fd69ef77dbfc0656eb
+# Source0-md5:	1b431e6dac39ed728d839ceb35474040
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}.pamd
@@ -20,7 +20,7 @@ Source4:	%{name}-pop3.pamd
 Patch0:		%{name}-dirs.patch
 Patch1:		%{name}-certsdir.patch
 Patch2:		%{name}-maildir.patch
-URL:		http://www.courier-mta.org/imap/
+URL:		http://www.inter7.com/courierimap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
 BuildRequires:	fam-devel
@@ -215,7 +215,9 @@ install courier-pop3 $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
 install %{SOURCE3} $RPM_BUILD_ROOT/etc/pam.d/imap
 install %{SOURCE4} $RPM_BUILD_ROOT/etc/pam.d/pop3
 
-rm -rf	$RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb,authdaemon,authdaemond,authldap,authmysql}.8 \
+rm -rf	
+$RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb,authdaemon,authdaemond,authldap,authmysql}.8 
+\
 	$RPM_BUILD_ROOT%{_sbindir}/{*db,mk*cert}
 
 mv -f authlib/README.authmysql.html README.authmysql.html
@@ -293,7 +295,8 @@ if [ -f /var/lib/openssl/certs/imapd.pem ]; then
 fi
 if [ -f /etc/sysconfig/courier-imap ]; then
 	. /etc/sysconfig/courier-imap
-	for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
+	for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS 
+|cut -d= -f1`;
 	do
 		eval opt2=\$$opt
 		sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/imapd
@@ -363,7 +366,8 @@ if [ -f /var/lib/openssl/certs/pop3d.pem ]; then
 fi
 if [ -f /etc/sysconfig/courier-pop3 ]; then
 	. /etc/sysconfig/courier-pop3
-	for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
+	for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS 
+|cut -d= -f1`;
 	do
 		eval opt2=\$$opt
 		sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/pop3d
@@ -431,11 +435,11 @@ fi
 %files
 %defattr(644,root,root,755)
 %doc maildir/README.sharedfolders.html
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/imap
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/security/blacklist.imap
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd-ssl
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd.cnf
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/imap
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.imap
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd-ssl
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd.cnf
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
 %attr(755,daemon,daemon) %dir %{_sysconfdir}/shared
 %attr(755,daemon,daemon) %dir %{_sysconfdir}/shared.tmp
@@ -462,7 +466,7 @@ fi
 %attr(770,daemon,daemon) %dir %{_localstatedir}
 %dir %{_libexecdir}
 %dir %{_libexecdir}/authlib
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/authdaemonrc
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authdaemonrc
 %{_sysconfdir}/quotawarnmsg.example
 %attr(755,root,root) %{_bindir}/couriertls
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemon
@@ -502,11 +506,11 @@ fi
 
 %files pop3
 %defattr(644,root,root,755)
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/pop3
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/security/blacklist.pop3
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d-ssl
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d.cnf
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/pop3
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.pop3
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/pop3d
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/pop3d-ssl
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/pop3d.cnf
 %attr(754,root,root) /etc/rc.d/init.d/courier-pop3
 %attr(755,root,root) %{_bindir}/pop3d
 %attr(755,root,root) %{_sbindir}/mkpop3dcert
@@ -518,7 +522,7 @@ fi
 %if %{with ldap}
 %files authldap
 %defattr(644,root,root,755)
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/authldaprc
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authldaprc
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.ldap
 %{_mandir}/man8/authldap*
 %endif
@@ -526,7 +530,7 @@ fi
 %if %{with mysql}
 %files authmysql
 %defattr(644,root,root,755)
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/authmysqlrc
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authmysqlrc
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.mysql
 %{_mandir}/man8/authmysql*
 %endif
@@ -534,7 +538,7 @@ fi
 %if %{with pgsql}
 %files authpgsql
 %defattr(644,root,root,755)
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/authpgsqlrc
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authpgsqlrc
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.pgsql
 %{_mandir}/man8/authpgsql*
 %endif
