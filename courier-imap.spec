@@ -21,17 +21,18 @@ Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
 URL:		http://www.inter7.com/courierimap/
-BuildRequires:	autoconf
+BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
+BuildRequires:	procps
 %{?with_mysql:BuildRequires:	mysql-devel}
 %{?with_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	openssl-devel >= 0.9.7d
 %{?with_pgsql:BuildRequires:	postgresql-devel}
 BuildRequires:	sysconftool
 %{?with_mysql:BuildRequires:	zlib-devel}
-PreReq:		%{name}-common = %{version}
+PreReq:		%{name}-common = %{version}-%{release}
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
 Requires:	pam >= 0.77.3
@@ -56,9 +57,9 @@ Summary(pl):	Pliki wspólne dla serwerów imap i pop
 Group:		Networking/Daemons
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
-Requires:	%{name}-deliverquota
-Requires:	%{name}-maildirmake
-Requires:	%{name}-userdb
+Requires:	%{name}-deliverquota	= %{version}-%{release}
+Requires:	%{name}-maildirmake	= %{version}-%{release}
+Requires:	%{name}-userdb		= %{version}-%{release}
 
 %description common
 Common files for imap and pop daemons.
@@ -398,7 +399,7 @@ fi
 
 %files common
 %defattr(644,root,root,755)
-%doc README* imap/BUGS ChangeLog AUTHORS
+%doc AUTHORS ChangeLog imap/BUGS INSTALL README*
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/authdaemon
 %attr(754,root,root) /etc/rc.d/init.d/authdaemon
 %attr(700,root,root) /var/lib/authdaemon
