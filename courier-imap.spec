@@ -28,7 +28,7 @@ BuildRequires:	libstdc++-devel
 BuildRequires:	procps
 %{?with_mysql:BuildRequires:	mysql-devel}
 %{?with_ldap:BuildRequires:	openldap-devel}
-BuildRequires:	openssl-devel >= 0.9.7d
+BuildRequires:	openssl-devel >= 0.9.6m
 %{?with_pgsql:BuildRequires:	postgresql-devel}
 BuildRequires:	sysconftool
 %{?with_mysql:BuildRequires:	zlib-devel}
