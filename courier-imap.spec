@@ -25,11 +25,11 @@ BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
-BuildRequires:	procps
 %{?with_mysql:BuildRequires:	mysql-devel}
 %{?with_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	openssl-devel >= 0.9.7d
 %{?with_pgsql:BuildRequires:	postgresql-devel}
+BuildRequires:	procps
 BuildRequires:	sysconftool
 %{?with_mysql:BuildRequires:	zlib-devel}
 PreReq:		%{name}-common = %{version}-%{release}
@@ -37,10 +37,10 @@ PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
 Requires:	pam >= 0.77.3
 Provides:	imapdaemon
-BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	imapdaemon
 Conflicts:	cyrus-imapd
 Conflicts:	imap
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libexecdir	/usr/lib/courier-imap
 %define		_sysconfdir	/etc/courier-imap
@@ -324,12 +324,12 @@ fi
 %preun authldap
 METHOD=plain
 if [ -e /etc/sysconfig/authdaemon ]; then
-    . /etc/sysconfig/authdaemon
-    if [ "$1" = "$0" -a "$METHOD" = "ldap" ]; then
-	    if [ -f /var/lock/subsys/authdaemon ]; then
-		    /etc/rc.d/init.d/authdaemon stop >&2
-	    fi
-    fi
+	. /etc/sysconfig/authdaemon
+	if [ "$1" = "$0" -a "$METHOD" = "ldap" ]; then
+		if [ -f /var/lock/subsys/authdaemon ]; then
+			/etc/rc.d/init.d/authdaemon stop >&2
+		fi
+	fi
 fi
 
 %post authmysql
@@ -346,12 +346,12 @@ fi
 %preun authmysql
 METHOD=plain
 if [ -e /etc/sysconfig/authdaemon ]; then
-    . /etc/sysconfig/authdaemon
-    if [ "$1" = "$0" -a "$METHOD" = "mysql" ]; then
-	    if [ -f /var/lock/subsys/authdaemon ]; then
-		    /etc/rc.d/init.d/authdaemon stop >&2
-	    fi
-    fi
+	. /etc/sysconfig/authdaemon
+	if [ "$1" = "$0" -a "$METHOD" = "mysql" ]; then
+		if [ -f /var/lock/subsys/authdaemon ]; then
+			/etc/rc.d/init.d/authdaemon stop >&2
+		fi
+	fi
 fi
 
 %post authpgsql
@@ -368,12 +368,12 @@ fi
 %preun authpgsql
 METHOD=plain
 if [ -e /etc/sysconfig/authdaemon ]; then
-    . /etc/sysconfig/authdaemon
-    if [ "$1" = "$0" -a "$METHOD" = "pgsql" ]; then
-	    if [ -f /var/lock/subsys/authdaemon ]; then
-		    /etc/rc.d/init.d/authdaemon stop >&2
-	    fi
-    fi
+	. /etc/sysconfig/authdaemon
+	if [ "$1" = "$0" -a "$METHOD" = "pgsql" ]; then
+		if [ -f /var/lock/subsys/authdaemon ]; then
+			/etc/rc.d/init.d/authdaemon stop >&2
+		fi
+	fi
 fi
 
 %files
