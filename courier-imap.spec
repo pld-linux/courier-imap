@@ -2,11 +2,12 @@
 # Conditional build:	
 # _without_ldap - without LDAP support
 # _without_mysql - without MySQL support
+# _without_postgresql - without PostgreSQL support
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.12
-Release:	5
+Release:	6
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -22,6 +23,7 @@ Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
 Patch0:		%{name}-authmysql.patch
 URL:		http://www.inter7.com/courierimap/
+%{!?_without_postgresql:BuildRequires:	postgresql-devel}
 %{!?_without_mysql:BuildRequires:	mysql-devel}
 %{!?_without_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	gdbm-devel
@@ -132,6 +134,20 @@ This package provides MySQL authentication for Courier IMAP.
 %description authmysql -l pl
 Ten pakiet pozwala na korzystanie z autentykacji MySQL w Courier IMAP.
 
+%package authpgsql
+Summary:	PostgreSQL authentication daemon for Courier IMAP
+Summary(pl):	Demon autentykacji PostgreSQL do Courier IMAP
+Group:		Networking/Daemons
+Group(de):	Netzwerkwesen/Server
+Group(pl):	Sieciowe/Serwery
+Prereq:		%{name}-common = %{version}
+
+%description authpgsql
+This package provides PostgreSQL authentication for Courier IMAP.
+
+%description authpgsql -l pl
+Ten pakiet pozwala na korzystanie z autentykacji PostgreSQL w Courier IMAP.
+
 %prep
 %setup -q
 %patch0 -p1
@@ -142,6 +158,7 @@ Ten pakiet pozwala na korzystanie z autentykacji MySQL w Courier IMAP.
 	--with-authchangepwdir=/var/tmp \
 	--with-authdaemonvar=/var/lib/authdaemon \
 	%{!?_without_mysql:--with-mysql-libs=%{_libdir} --with-mysql-includes=%{_includedir}/mysql} \
+	%{?_without_postgresql:--without-authpgsql} \
 	%{?_without_ldap:--without-authldap}
 
 %{__make}
@@ -173,6 +190,7 @@ mv -f maildir/README.maildirquota.txt README.maildirquota
 install authlib/authdaemonrc		$RPM_BUILD_ROOT%{_sysconfdir}
 install authlib/authldaprc		$RPM_BUILD_ROOT%{_sysconfdir}
 install authlib/authmysqlrc		$RPM_BUILD_ROOT%{_sysconfdir}
+install authlib/authpgsqlrc		$RPM_BUILD_ROOT%{_sysconfdir}
 
 mv -f $RPM_BUILD_ROOT%{_datadir}/*db \
 	$RPM_BUILD_ROOT%{_sbindir}
@@ -189,6 +207,7 @@ echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemon.8
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemond.8
+%{!?_without_pgsql:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpgsql.8}
 %{!?_without_mysql:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8}
 %{!?_without_ldap:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8}
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
@@ -373,4 +392,12 @@ fi
 %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authmysqlrc
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.mysql
 %{_mandir}/man8/authmysql*
+%endif
+
+%if %{?_without_pgsql:0}%{!?_without_pgsql:1}
+%files authpgsql
+%defattr(644,root,root,755)
+%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authpgsqlrc
+%attr(755,root,root) %{_libexecdir}/authlib/authdaemond.pgsql
+%{_mandir}/man8/authpgsql*
 %endif
