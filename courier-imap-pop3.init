@@ -4,9 +4,9 @@
 # chkconfig:	345 80 20
 # description:	POP3 Daemon
 
-sysconfdir=/etc/courier-imap
-libexecdir=/usr/lib/courier-imap
-sbindir=/usr/sbin
+sysconfdir=@sysconfdir@
+libexecdir=@libexecdir@
+sbindir=@sbindir@
 
 # Source function library
 . /etc/rc.d/init.d/functions
