@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.4.2
-Release:	4
+Release:	5
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz
@@ -105,6 +105,7 @@ Provides:	pop3daemon
 Obsoletes:	pop3daemon
 Conflicts:	imap-pop3
 Conflicts:	tpop3d
+Conflicts:	solid-pop3d
 
 %description pop3
 Courier-IMAP POP3 is an POP3 server for Maildir mailboxes.
