@@ -20,7 +20,6 @@ Source5:	%{name}-pop3.pamd
 Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
-# Patch0:		ftp://ftp.pld.org.pl/people/siefca/patches/courier/%{name}-myownquery.patch
 URL:		http://www.inter7.com/courierimap/
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
