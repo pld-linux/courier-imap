@@ -1,0 +1,3 @@
+- /usr/lib/courier-imap/couriertcpd from courier-imap-common subpackage
+  requires /bin/ps - added R: procps to courier-imap-common.
+- rel. 4
