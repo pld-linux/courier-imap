@@ -1,18 +1,18 @@
-Summary: Courier-IMAP 0.18 IMAP server
-Name: courier-imap
-Version: 0.18
-Release: 1
-Copyright: GPL
-Group: Applications/Mail
-Source: courier-imap-0.18.tar.gz
-Packager: Sam Varshavchik <mrsam@geocities.com>
-BuildRoot: /tmp/courier-imap-install
+Summary:	Courier-IMAP 0.18 IMAP server
+Name:		courier-imap
+Version:	0.18
+Release:	1
+Copyright:	GPL
+Group:		Applications/Mail
+Source:		http://www.inter7.com/courierimap/%{name}-%{version}.tar.gz
+URL:		http://www.inter7.com/courierimap/
+BuildRoot:	/tmp/%{name}-%{version}-root
 
 %description
 Courier-IMAP is an IMAP server for Maildir mailboxes.
 
 %prep
-%setup
+%setup -q
 
 #
 # Always include authvchkpw, even if the build machine does not have it.
@@ -25,14 +25,14 @@ make check
 %install
 
 rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/etc/pam.d
+install -d $RPM_BUILD_ROOT/etc/pam.d
 make install-strip DESTDIR=$RPM_BUILD_ROOT
 
 #
 # Red Hat init.d file
 #
 
-mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d
+install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
 
 cat >$RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap <<EOF
 #!/bin/sh
@@ -91,7 +91,7 @@ mkdir -p $RPM_BUILD_ROOT/etc/profile.d
 cat >$RPM_BUILD_ROOT/etc/profile.d/courier-imap.sh <<EOF
 if echo "\$MANPATH" | tr ':' '\012' | fgrep -qx /usr/lib/courier-imap/man
 then
-	:
+:
 else
 	MANPATH="/usr/lib/courier-imap/man:\$MANPATH"
 	export MANPATH
@@ -159,7 +159,7 @@ fi
 /usr/lib/courier-imap/lib/imapd.rc stop
 
 %files -f filelist
-%defattr(-, bin, bin)
+%defattr(644,root,root,755)
 %config /etc/pam.d/imap
 %config /etc/profile.d/courier-imap.csh
 %config /etc/profile.d/courier-imap.sh
