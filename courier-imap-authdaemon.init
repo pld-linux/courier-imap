@@ -57,16 +57,16 @@ case "$1" in
 	    /etc/rc.d/init.d/courier-imap stop
 	    imaprun=1
 	fi
-	if [ -f /var/lock/subsys/courier-imap-pop3 -a \
-	     -x /etc/rc.d/init.d/courier-imap-pop3 ]; then
-	    /etc/rc.d/init.d/courier-imap-pop3 stop
+	if [ -f /var/lock/subsys/courier-pop3 -a \
+	     -x /etc/rc.d/init.d/courier-pop3 ]; then
+	    /etc/rc.d/init.d/courier-pop3 stop
 	    poprun=1
 	fi
 	$0 stop
 	$0 start
 	RETVAL=$?
 	[[ $imaprun -eq 1 ]] && /etc/rc.d/init.d/courier-imap start
-	[[ $poprun -eq 1 ]] && /etc/rc.d/init.d/courier-imap-pop3 start
+	[[ $poprun -eq 1 ]] && /etc/rc.d/init.d/courier-pop3 start
 	[[ $crun -eq 1 ]] && /etc/rc.d/init.d/courier-mta start
 	unset crun
 	unset poprun

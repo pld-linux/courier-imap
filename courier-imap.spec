@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.5.3
-Release:	4
+Release:	5
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz
@@ -178,14 +178,14 @@ install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig} \
 %{__make} install DESTDIR=$RPM_BUILD_ROOT
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
-install %{SOURCE2} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap-pop3
+install %{SOURCE2} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
 install %{SOURCE3} $RPM_BUILD_ROOT/etc/rc.d/init.d/authdaemon
 
 install %{SOURCE4} $RPM_BUILD_ROOT/etc/pam.d/imap
 install %{SOURCE5} $RPM_BUILD_ROOT/etc/pam.d/pop3
 
 install %{SOURCE6} $RPM_BUILD_ROOT/etc/sysconfig/courier-imap
-install %{SOURCE7} $RPM_BUILD_ROOT/etc/sysconfig/courier-imap-pop3
+install %{SOURCE7} $RPM_BUILD_ROOT/etc/sysconfig/courier-pop3
 install %{SOURCE8} $RPM_BUILD_ROOT/etc/sysconfig/authdaemon
 
 rm -rf	$RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb,authdaemon,authdaemond,authldap,authmysql}.8 \
@@ -266,20 +266,29 @@ if [ "$1" = "0" ]; then
 fi
 
 %post pop3
-/sbin/chkconfig --add courier-imap-pop3
-
+/sbin/chkconfig --add courier-pop3
+/sbin/chkconfig --del courier-imap-pop3 2>&1 >/dev/null
 if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
-	/etc/rc.d/init.d/courier-imap-pop3 restart >&2
+	/etc/rc.d/init.d/courier-imap-pop3 stop >&2
+	/etc/rc.d/init.d/courier-pop3 start >&2
+elif [ -f /var/lock/subsys/courier-pop3 ]; then
+	/etc/rc.d/init.d/courier-pop3 restart >&2
 else
-	echo "Run \"/etc/rc.d/init.d/courier-imap-pop3 start\" to start courier-imap pop3 daemon."
+	echo "Run \"/etc/rc.d/init.d/courier-pop3 start\" to start courier-pop3 daemon."
 fi
+rm -f /etc/rc.d/init.d/courier-imap-pop3
 
 %preun pop3
 if [ "$1" = "0" ]; then
+	if [ -f /var/lock/subsys/courier-pop3 ]; then
+		/etc/rc.d/init.d/courier-pop3 stop >&2
+	fi
+	/sbin/chkconfig --del courier-pop3
 	if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
 		/etc/rc.d/init.d/courier-imap-pop3 stop >&2
 	fi
-	/sbin/chkconfig --del courier-imap-pop3
+	/sbin/chkconfig --del courier-imap-pop3 2>&1 >/dev/null
+	rm -f /etc/rc.d/init.d/courier-imap-pop3
 fi
 
 %post authldap
@@ -382,8 +391,8 @@ fi
 %defattr(644,root,root,755)
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/pop3
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.pop3
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap-pop3
-%attr(754,root,root) /etc/rc.d/init.d/courier-imap-pop3
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-pop3
+%attr(754,root,root) /etc/rc.d/init.d/courier-pop3
 %attr(755,root,root) %{_bindir}/pop3d
 %attr(755,root,root) %{_sbindir}/mkpop3dcert
 %attr(755,root,root) %{_sbindir}/pop3login

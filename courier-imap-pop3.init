@@ -1,8 +1,8 @@
 #!/bin/sh
-# IMAP Daemon
+# POP3 Daemon
 #
 # chkconfig:	345 80 20
-# description:	IMAP Daemon
+# description:	POP3 Daemon
 
 # Source function library
 . /etc/rc.d/init.d/functions
@@ -18,11 +18,11 @@ TCPDOPTS=
 POP3DSSLSTART="no"
 
 # Get service config
-[ -f /etc/sysconfig/courier-imap-pop3 ] && . /etc/sysconfig/courier-imap-pop3
+[ -f /etc/sysconfig/courier-pop3 ] && . /etc/sysconfig/courier-pop3
 
 # Check that networking is up.
 if is_no "${NETWORKING}" ; then
-	msg_network_down "Courier IMAP - POP3"
+	msg_network_down "Courier POP3"
 	exit 1
 fi
 
@@ -30,11 +30,22 @@ fi
 case "$1" in
   start)
 	# Check if the service is already running?
-	if [ ! -f /var/lock/subsys/courier-imap-pop3 ]; then
-		msg_starting "Courier IMAP - POP3"
-		/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-imap-pop3 ; \
+	if [ ! -f /var/lock/subsys/courier-pop3 ]; then
+		# start authdaemon, if not running..
+		if [ ! -f /var/lock/subsys/authdaemon -a \
+		     -x /etc/rc.d/init.d/authdaemon ]; then
+			    /etc/rc.d/init.d/authdaemon start
+			    RETVAL=$?
+			    if [ $RETVAL -ne 0 ]; then
+				    msg_starting "Courier POP3"
+				    fail
+				    exit 1
+			    fi
+		fi
+		msg_starting "Courier POP3"
+		/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-pop3 ; \
 			POP3_STARTTLS=$POP3DSTARTTLS ; export POP3_STARTTLS ; \
-			`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap-pop3 | \
+			`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-pop3 | \
 			sed 's/=.*//;s/^/export /;s/$/;/'` \
 			/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
 			-stderrlogger=/usr/lib/courier-imap/courierlogger \
@@ -50,10 +61,10 @@ case "$1" in
 
 		
 		if is_yes "$POP3DSSLSTART"; then
-			msg_starting "Courier IMAP - POP3 (SSL)"
-			/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-imap-pop3 ; \
+			msg_starting "Courier POP3 (SSL)"
+			/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-pop3 ; \
 				POP3_TLS=1; export POP3_TLS; \
-				`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap-pop3 | \
+				`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-pop3 | \
 				sed 's/=.*//;s/^/export /;s/$/;/'`
 				/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
 				-stderrlogger=/usr/lib/courier-imap/courierlogger \
@@ -69,24 +80,24 @@ case "$1" in
 				fail
 			fi
 		fi
-		touch /var/lock/subsys/courier-imap-pop3
+		touch /var/lock/subsys/courier-pop3
 	else
-		msg_already_running "Courier IMAP - POP3"
+		msg_already_running "Courier POP3"
 		exit 1
 	fi
 	;;
   stop)
-	if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
-		msg_stopping "Courier IMAP - POP3"
+	if [ -f /var/lock/subsys/courier-pop3 ]; then
+		msg_stopping "Courier POP3"
 		daemon /usr/lib/courier-imap/couriertcpd -pid=/var/run/pop3d.pid -stop
 		if is_yes "$POP3DSSLSTART"; then
-			msg_stopping "Courier IMAP - POP3 (SSL)"
+			msg_stopping "Courier POP3 (SSL)"
 			daemon /usr/lib/courier-imap/couriertcpd -pid=/var/run/pop3d-ssl.pid -stop
 		fi
 		RETVAL=$?
-		rm -f /var/lock/subsys/courier-imap-pop3
+		rm -f /var/lock/subsys/courier-pop3
 	else
-		msg_not_running "Courier IMAP - POP3"
+		msg_not_running "Courier POP3"
 		exit 1
 	fi
 	;;
