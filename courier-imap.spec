@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.12
-Release:	8
+Release:	9
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -21,7 +21,7 @@ Source5:	%{name}-pop3.pamd
 Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
-Patch0:		%{name}-authmysql.patch
+Patch0:		ftp://ftp.pld.org.pl/people/siefca/patches/courier/%{name}-myownquery.patch
 URL:		http://www.inter7.com/courierimap/
 %{!?_without_postgresql:BuildRequires:	postgresql-devel}
 %{!?_without_mysql:BuildRequires:	mysql-devel}
@@ -186,6 +186,9 @@ install %{SOURCE8} $RPM_BUILD_ROOT/etc/sysconfig/authdaemon
 rm -rf  $RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb,authdaemon,authdaemond,authldap,authmysql}.8 \
 	$RPM_BUILD_ROOT%{_sbindir}/{*db,mk*cert}
 
+mv -f authlib/README.authmysql.html README.authmysql.html
+mv -f authlib/README.ldap README.ldap
+mv -f authlib/README.myownquery README.myownquery
 mv -f imap/README README.imap
 mv -f maildir/README.maildirquota.txt README.maildirquota
 
@@ -279,7 +282,7 @@ METHOD=plain
 . /etc/sysconfig/authdaemon
 if [ "$METHOD" = "ldap" ]; then
 	if [ -f /var/lock/subsys/authdaemon ]; then
-		/etc/rc.d/init.d/authdaemon stop >&2
+		/etc/rc.d/init.d/authdaemon restart >&2
 	else
 		echo "Run \"/etc/rc.d/init.d/authdaemon start\" to start courier-imap authdaemon."
 	fi
@@ -299,7 +302,7 @@ METHOD=plain
 . /etc/sysconfig/authdaemon
 if [ "$METHOD" = "mysql" ]; then
 	if [ -f /var/lock/subsys/authdaemon ]; then
-		/etc/rc.d/init.d/authdaemon stop >&2
+		/etc/rc.d/init.d/authdaemon restart >&2
 	else
 		echo "Run \"/etc/rc.d/init.d/authdaemon start\" to start courier-imap authdaemon."
 	fi
