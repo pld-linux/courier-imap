@@ -67,9 +67,9 @@ case "$1" in
 	$0 stop
 	$0 start
 	RETVAL=$?
-	[ $imaprun -eq 1 ] && /etc/rc.d/init.d/courier-imap start
-	[ $poprun -eq 1 ] && /etc/rc.d/init.d/courier-pop3 start
-	[ $crun -eq 1 ] && /etc/rc.d/init.d/courier-mta start
+	[ "$imaprun" -eq 1 ] && /etc/rc.d/init.d/courier-imap start
+	[ "$poprun" -eq 1 ] && /etc/rc.d/init.d/courier-pop3 start
+	[ "$crun" -eq 1 ] && /etc/rc.d/init.d/courier-mta start
 	unset crun
 	unset poprun
 	unset imaprun
@@ -81,6 +81,7 @@ case "$1" in
   *)
 	msg_usage "$0 {start|stop|restart|force-reload|status}"
 	exit 3
+	;;
 esac
 
 exit $RETVAL
