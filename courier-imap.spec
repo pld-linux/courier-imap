@@ -6,7 +6,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.9
-Release:	1
+Release:	2
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -70,6 +70,34 @@ Courier-IMAP POP3 is an POP3 server for Maildir mailboxes.
 
 %description -l pl pop3
 Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
+
+%package authldap
+Summary:	LDAP authentication daemon for Courier IMAP
+Summary(pl):	Demon autentykacji LDAP do Courier IMAP
+Group:		Networking/Daemons
+Group(de):	Netzwerkwesen/Server
+Group(pl):	Sieciowe/Serwery
+Prereq:		%{name}-common = %{version}
+
+%description authldap
+This package provides LDAP authentication for Courier IMAP.
+
+%description authldap -l pl
+Ten pakiet pozwala na korzystanie z autentykacji LDAP w Courier IMAP.
+
+%package authmysql
+Summary:	MySQL authentication daemon for Courier IMAP
+Summary(pl):	Demon autentykacji MySQL do Courier IMAP
+Group:		Networking/Daemons
+Group(de):	Netzwerkwesen/Server
+Group(pl):	Sieciowe/Serwery
+Prereq:		%{name}-common = %{version}
+
+%description authmysql
+This package provides MySQL authentication for Courier IMAP.
+
+%description authmysql -l pl
+Ten pakiet pozwala na korzystanie z autentykacji MySQL w Courier IMAP.
 
 %prep
 %setup -q
@@ -184,6 +212,46 @@ if [ "$1" = "0" ]; then
 	/sbin/chkconfig --del courier-imap
 fi
 
+%post authldap
+METHOD=plain
+. ./etc/sysconfig/authdaemon
+if [ "$METHOD" = "ldap" ]; then
+	if [ -f /var/lock/subsys/authdaemon ]; then
+		/etc/rc.d/init.d/authdaemon stop >&2
+	else
+		echo "Run \"/etc/rc.d/init.d/authdaemon start\" to start courier-imap authdaemon."
+	fi
+fi
+
+%preun authldap
+METHOD=plain
+. ./etc/sysconfig/authdaemon
+if [ "$1" = "$0" -a "$METHOD" = "ldap" ]; then
+	if [ -f /var/lock/subsys/authdaemon ]; then
+		/etc/rc.d/init.d/authdaemon stop >&2
+	fi
+fi
+
+%post authmysql
+METHOD=plain
+. ./etc/sysconfig/authdaemon
+if [ "$METHOD" = "mysql" ]; then
+	if [ -f /var/lock/subsys/authdaemon ]; then
+		/etc/rc.d/init.d/authdaemon stop >&2
+	else
+		echo "Run \"/etc/rc.d/init.d/authdaemon start\" to start courier-imap authdaemon."
+	fi
+fi
+
+%preun authmysql
+METHOD=plain
+. ./etc/sysconfig/authdaemon
+if [ "$1" = "$0" -a "$METHOD" = "mysql" ]; then
+	if [ -f /var/lock/subsys/authdaemon ]; then
+		/etc/rc.d/init.d/authdaemon stop >&2
+	fi
+fi
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -197,6 +265,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/imapd
 %attr(755,root,root) %{_sbindir}/imaplogin
 %attr(755,root,root) %{_sbindir}/mkimapdcert
+%{_mandir}/man8/imapd*
 
 %files common
 %defattr(644,root,root,755)
@@ -207,9 +276,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(750,root,root) %dir %{_sysconfdir}
 %dir %{_libexecdir}
 %dir %{_libexecdir}/authlib
-%{_sysconfdir}/authdaemonrc
-%{!?_without_ldap:%{_sysconfdir}/authldaprc}
-%{!?_without_mysql:%{_sysconfdir}/authmysqlrc}
+%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authdaemonrc
 %{_sysconfdir}/quotawarnmsg.example
 %attr(755,root,root) %{_bindir}/couriertls
 %attr(755,root,root) %{_bindir}/maildirmake
@@ -219,12 +286,15 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_sbindir}/userdbpw
 %attr(755,root,root) %{_sbindir}/vchkpw2userdb
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemon
-%attr(755,root,root) %{_libexecdir}/authlib/authdaemond.*
+%attr(755,root,root) %{_libexecdir}/authlib/authdaemond.plain
 %attr(755,root,root) %{_libexecdir}/couriertcpd
 %attr(755,root,root) %{_libexecdir}/deliverquota
 %attr(755,root,root) %{_libexecdir}/logger
 %attr(755,root,root) %{_libexecdir}/makedatprog
-%{_mandir}/man*/*
+%{_mandir}/man1/*
+%{_mandir}/man8/auth[cdpsuv]*
+%{_mandir}/man8/authlib*
+%{_mandir}/man8/[cdmpuv]*
 
 %files pop3
 %defattr(644,root,root,755)
@@ -236,3 +306,19 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_sbindir}/mkpop3dcert
 %attr(755,root,root) %{_sbindir}/pop3login
 %{_sysconfdir}/pop3d.cnf
+
+%if %{?_without_ldap:0}%{!?_without_ldap:1}
+%files authldap
+%defattr(644,root,root,755)
+%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authldaprc
+%attr(755,root,root) %{_libexecdir}/authlib/authdaemond.ldap
+%{_mandir}/man8/authldap*
+%endif
+
+%if %{?_without_mysql:0}%{!?_without_mysql:1}
+%files authmysql
+%defattr(644,root,root,755)
+%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authmysqlrc
+%attr(755,root,root) %{_libexecdir}/authlib/authdaemond.mysql
+%{_mandir}/man8/authmysql*
+%endif
