@@ -7,12 +7,12 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	3.0.6
+Version:	3.0.7
 Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	f2d3c0d566ea6789192dc3cd5fd8f8fb
+# Source0-md5:	3177f4451d02b6380c5b45aa80d795a7
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}.pamd
@@ -30,6 +30,7 @@ BuildRequires:	libstdc++-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 %{?with_pgsql:BuildRequires:	postgresql-devel}
 BuildRequires:	procps
+BuildRequires:	sed >= 4.0
 BuildRequires:	sysconftool
 %{?with_mysql:BuildRequires:	zlib-devel}
 PreReq:		%{name}-common = %{version}-%{release}
