@@ -2,8 +2,10 @@ Summary:	Courier-IMAP 0.18 IMAP server
 Name:		courier-imap
 Version:	0.22
 Release:	1
-Copyright:	GPL
+License:	GPL
 Group:		Applications/Mail
+Group(pl):	Aplikacje/Poczta
+Group(pt):	Aplicações/Correio Eletrônico
 Source0:	http://www.inter7.com/courierimap/%{name}-%{version}.tar.gz
 Source1:	%{name}.initd
 Source2:	%{name}.pamd
@@ -13,7 +15,7 @@ BuildRoot:	/tmp/%{name}-%{version}-root
 Provides:	imapdaemon
 Obsoletes:	imapdaemon
 
-%define		_libexecdir /usr/lib/courier-imap
+%define		_libexecdir	/usr/lib/courier-imap
 
 %description
 Courier-IMAP is an IMAP server for Maildir mailboxes.
@@ -41,14 +43,14 @@ mv maildir/README.maildirquota.txt README.maildirquota
 
 rm -rf $RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb}.8
 
-echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
-echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authpam.8
-echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authpwd.8
-echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authshadow.8
-echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
-echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
-echo ".so makeuserdb.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
-echo ".so makeuserdb.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
+echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
+echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authpam.8
+echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authpwd.8
+echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authshadow.8
+echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
+echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
+echo ".so makeuserdb.8" >$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
+echo ".so makeuserdb.8" >$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
 
 gzip -9nf $RPM_BUILD_ROOT%{_mandir}/*/* README* imap/BUGS AUTHORS COPYING
 
