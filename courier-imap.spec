@@ -11,7 +11,7 @@ Source1:	%{name}.initd
 Source2:	%{name}.pamd
 Source3:	%{name}.sysconfig
 URL:		http://www.inter7.com/courierimap/
-BuildRoot:	/tmp/%{name}-%{version}-root
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Provides:	imapdaemon
 Obsoletes:	imapdaemon
 
