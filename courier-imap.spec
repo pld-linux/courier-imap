@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	2.2.1
-Release:	2
+Release:	3
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -20,7 +20,9 @@ Source5:	%{name}-pop3.pamd
 Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
+Patch0:		%{name}-no_res_query.patch
 URL:		http://www.inter7.com/courierimap/
+BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
@@ -28,6 +30,7 @@ BuildRequires:	libstdc++-devel
 %{?with_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	openssl-devel >= 0.9.7c
 %{?with_pgsql:BuildRequires:	postgresql-devel}
+BuildRequires:	sysconftool
 %{?with_mysql:BuildRequires:	zlib-devel}
 PreReq:		%{name}-common = %{version}
 PreReq:		rc-scripts
@@ -160,10 +163,16 @@ IMAP.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 cp -f /usr/share/automake/config.sub .
 cp -f /usr/share/automake/config.sub maildir
+cd authlib
+%{__aclocal}
+%{__automake}
+%{__autoconf}
+cd ..
 %configure \
 	--enable-unicode \
 	--with-authchangepwdir=/var/tmp \
