@@ -1,5 +1,5 @@
 #
-# Conditional build:
+# Conditional build:	
 # _without_ldap - without LDAP support
 # _without_mysql - without MySQL support
 Summary:	Courier-IMAP server
@@ -11,8 +11,7 @@ License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
 Group(pl):	Sieciowe/Serwery
-URL:		http://www.inter7.com/courierimap/
-Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz 
+Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}-authdaemon.init
@@ -21,13 +20,14 @@ Source5:	%{name}-pop3.pamd
 Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
-Requires:	%{name}-common = %{version}
+URL:		http://www.inter7.com/courierimap/
 %{!?_without_mysql:BuildRequires:	mysql-devel}
 %{!?_without_ldap:BuildRequires:	openldap-devel}
 Prereq:		rc-scripts
 Provides:	imapdaemon
-Obsoletes:	imapdaemon
+Requires:	%{name}-common = %{version}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+Obsoletes:	imapdaemon
 
 %define		_libexecdir	/usr/lib/courier-imap
 %define		_sysconfdir	/etc/courier-imap
