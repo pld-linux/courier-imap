@@ -2,7 +2,7 @@
 # Conditional build:
 # _without_ldap - without LDAP support
 # _without_mysql - without MySQL support
-# _without_postgresql - without PostgreSQL support
+# _without_pgsql - without PostgreSQL support
 #
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
@@ -22,7 +22,7 @@ Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
 # Patch0:		ftp://ftp.pld.org.pl/people/siefca/patches/courier/%{name}-myownquery.patch
 URL:		http://www.inter7.com/courierimap/
-%{!?_without_postgresql:BuildRequires:	postgresql-devel}
+%{!?_without_pgsql:BuildRequires:	postgresql-devel}
 %{!?_without_mysql:BuildRequires:	mysql-devel}
 %{!?_without_mysql:BuildRequires:	zlib-devel}
 %{!?_without_ldap:BuildRequires:	openldap-devel}
@@ -167,8 +167,8 @@ IMAP.
 	--with-authdaemonvar=/var/lib/authdaemon \
 	%{!?_without_mysql:--with-mysql-libs=%{_libdir} --with-mysql-includes=%{_includedir}/mysql} \
 	%{?_without_mysql:--without-authmysql} \
-	%{!?_without_postgresql:--with-pgsql-libs=%{_libdir} --with-pgsql-includes=%{_includedir}/postgresql} \
-	%{?_without_postgresql:--without-authpgsql} \
+	%{!?_without_pgsql:--with-pgsql-libs=%{_libdir} --with-pgsql-includes=%{_includedir}/postgresql} \
+	%{?_without_pgsql:--without-authpgsql} \
 	%{?_without_ldap:--without-authldap}
 
 %{__make}
@@ -222,7 +222,7 @@ echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
 echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
 echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemon.8
 echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemond.8
-%{!?_without_postgresql:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpgsql.8}
+%{!?_without_pgsql:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpgsql.8}
 %{!?_without_mysql:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8}
 %{!?_without_ldap:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8}
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
@@ -418,7 +418,7 @@ fi
 %{_mandir}/man8/authmysql*
 %endif
 
-%if %{?_without_postgresql:0}%{!?_without_postgresql:1}
+%if %{?_without_pgsql:0}%{!?_without_pgsql:1}
 %files authpgsql
 %defattr(644,root,root,755)
 %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authpgsqlrc
