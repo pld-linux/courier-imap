@@ -1,8 +1,8 @@
 #
 # Conditional build:
-# _without_ldap - without LDAP support
-# _without_mysql - without MySQL support
-# _without_pgsql - without PostgreSQL support
+# _without_ldap		- without LDAP support
+# _without_mysql	- without MySQL support
+# _without_pgsql	- without PostgreSQL support
 #
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
@@ -54,8 +54,8 @@ Summary(pl):	Pliki wspólne dla serwerów imap i pop
 Group:		Networking/Daemons
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
-Requires:	%{name}-maildirmake
 Requires:	%{name}-deliverquota
+Requires:	%{name}-maildirmake
 Requires:	%{name}-userdb
 
 %description common
@@ -110,8 +110,8 @@ Provides:	pop3daemon
 Obsoletes:	pop3daemon
 Conflicts:	cyrus-imapd
 Conflicts:	imap-pop3
-Conflicts:	tpop3d
 Conflicts:	solid-pop3d
+Conflicts:	tpop3d
 
 %description pop3
 Courier-IMAP POP3 is an POP3 server for Maildir mailboxes.
