@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.12
-Release:	6
+Release:	7
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -158,6 +158,8 @@ Ten pakiet pozwala na korzystanie z autentykacji PostgreSQL w Courier IMAP.
 	--with-authchangepwdir=/var/tmp \
 	--with-authdaemonvar=/var/lib/authdaemon \
 	%{!?_without_mysql:--with-mysql-libs=%{_libdir} --with-mysql-includes=%{_includedir}/mysql} \
+	%{?_without_mysql:--without-authmysql} \
+	%{!?_without_postgresql:--with-mysql-libs=%{_libdir} --with-pgsql-includes=%{_includedir}/postgresql} \
 	%{?_without_postgresql:--without-authpgsql} \
 	%{?_without_ldap:--without-authldap}
 
