@@ -22,7 +22,7 @@ MAILDIR="Maildir"
 
 # IP address to listen on.  0 means all IP addresses.
 #
-ADDRESS=0.0.0.0
+ADDRESS=0
 
 # Other couriertcpd(1) options.  The following defaults should be fine.
 #

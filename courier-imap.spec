@@ -6,7 +6,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.10
-Release:	1
+Release:	2
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -160,6 +160,9 @@ gzip -9nf README* imap/BUGS AUTHORS COPYING
 
 touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
 
+%clean
+rm -rf $RPM_BUILD_ROOT
+
 %post
 /sbin/chkconfig --add courier-imap
 
@@ -214,7 +217,7 @@ fi
 
 %post authldap
 METHOD=plain
-. ./etc/sysconfig/authdaemon
+. /etc/sysconfig/authdaemon
 if [ "$METHOD" = "ldap" ]; then
 	if [ -f /var/lock/subsys/authdaemon ]; then
 		/etc/rc.d/init.d/authdaemon stop >&2
@@ -225,7 +228,7 @@ fi
 
 %preun authldap
 METHOD=plain
-. ./etc/sysconfig/authdaemon
+. /etc/sysconfig/authdaemon
 if [ "$1" = "$0" -a "$METHOD" = "ldap" ]; then
 	if [ -f /var/lock/subsys/authdaemon ]; then
 		/etc/rc.d/init.d/authdaemon stop >&2
@@ -234,7 +237,7 @@ fi
 
 %post authmysql
 METHOD=plain
-. ./etc/sysconfig/authdaemon
+. /etc/sysconfig/authdaemon
 if [ "$METHOD" = "mysql" ]; then
 	if [ -f /var/lock/subsys/authdaemon ]; then
 		/etc/rc.d/init.d/authdaemon stop >&2
@@ -245,15 +248,12 @@ fi
 
 %preun authmysql
 METHOD=plain
-. ./etc/sysconfig/authdaemon
+. /etc/sysconfig/authdaemon
 if [ "$1" = "$0" -a "$METHOD" = "mysql" ]; then
 	if [ -f /var/lock/subsys/authdaemon ]; then
 		/etc/rc.d/init.d/authdaemon stop >&2
 	fi
 fi
-
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)

@@ -1,6 +1,7 @@
 # Address to listen on, can be set to a single IP address.
+# 0 means all IP addresses.
 #
-ADDRESS=0.0.0.0
+ADDRESS=0
 
 # Maximum number of IMAP servers started
 #
