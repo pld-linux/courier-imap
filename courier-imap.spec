@@ -1,3 +1,5 @@
+# TODO:
+# - make it build :)
 #
 # Conditional build:
 %bcond_without ldap	# without LDAP support
@@ -26,6 +28,7 @@ BuildRequires:	automake
 BuildRequires:	fam-devel
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
+BuildRequires:	courier-authlib-devel
 %{?with_mysql:BuildRequires:	mysql-devel}
 %{?with_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	openssl-devel >= 0.9.7d
@@ -179,16 +182,6 @@ cp -f /usr/share/automake/config.sub maildir
 %{__aclocal}
 %{__automake}
 %{__autoconf}
-
-cd authlib
-%{__aclocal}
-%{__automake}
-%{__autoconf}
-cd ../imap
-%{__aclocal}
-%{__automake}
-%{__autoconf}
-cd ..
 
 %configure \
 	--enable-unicode \
