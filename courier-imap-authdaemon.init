@@ -24,6 +24,7 @@ else
 	exit 0
 fi
 
+RETVAL=0
 # See how we were called.
 case "$1" in
   start)
@@ -35,21 +36,18 @@ case "$1" in
 		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/authdaemon
 	else
 		msg_already_running "Courier IMAP - Authdaemon"
-		exit 1
 	fi
 	;;
   stop)
 	if [ -f /var/lock/subsys/authdaemon ]; then
 		msg_stopping "Courier IMAP - Authdaemon"
 		daemon /usr/lib/courier-imap/authlib/authdaemond.$METHOD stop
-		RETVAL=$?
 		rm -f /var/lock/subsys/authdaemon
 	else
 		msg_not_running "Courier IMAP - Authdaemon"
-		exit 1
 	fi
 	;;
-  restart|reload)
+  restart|force-reload)
 	# restart related services, if running..
 	if [ -f /var/lock/subsys/courier-mta -a \
 	   -x /etc/rc.d/init.d/courier-mta ]; then
@@ -69,20 +67,20 @@ case "$1" in
 	$0 stop
 	$0 start
 	RETVAL=$?
-	[[ $imaprun -eq 1 ]] && /etc/rc.d/init.d/courier-imap start
-	[[ $poprun -eq 1 ]] && /etc/rc.d/init.d/courier-pop3 start
-	[[ $crun -eq 1 ]] && /etc/rc.d/init.d/courier-mta start
+	[ $imaprun -eq 1 ] && /etc/rc.d/init.d/courier-imap start
+	[ $poprun -eq 1 ] && /etc/rc.d/init.d/courier-pop3 start
+	[ $crun -eq 1 ] && /etc/rc.d/init.d/courier-mta start
 	unset crun
 	unset poprun
 	unset imaprun
 	;;
   status)
 	status authdaemond.$METHOD
+	exit $?
 	;;
   *)
-	msg_usage "$0 {start|stop|restart|reload|status}"
-	exit 1
+	msg_usage "$0 {start|stop|restart|force-reload|status}"
+	exit 3
 esac
 
 exit $RETVAL
-

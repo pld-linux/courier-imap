@@ -30,6 +30,7 @@ else
 	exit 0
 fi
 
+RETVAL=0
 # See how we were called.
 case "$1" in
   start)
@@ -47,6 +48,7 @@ case "$1" in
 			fi
 		fi
 		msg_starting "Courier IMAP"
+		busy
 		ulimit -d $IMAP_ULIMITD
 		/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-imap ; \
 			`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap | \
@@ -87,7 +89,6 @@ case "$1" in
 		touch /var/lock/subsys/courier-imap
 	else
 		msg_already_running "Courier IMAP"
-		exit 1
 	fi
 	;;
   stop)
@@ -98,24 +99,23 @@ case "$1" in
 			msg_stopping "Courier IMAP (SSL)"
 			daemon /usr/lib/courier-imap/couriertcpd -pid=/var/run/imapd-ssl.pid -stop
 		fi
-		RETVAL=$?
 		rm -f /var/lock/subsys/courier-imap
 	else
 		msg_not_running "Courier IMAP"
-		exit 1
 	fi
 	;;
-  restart|reload)
+  restart|force-reload)
 	$0 stop
 	$0 start
+	exit $?
 	;;
   status)
 	status couriertcpd
+	exit $?
 	;;
   *)
-	msg_usage "$0 {start|stop|restart|reload|status}"
-	exit 1
+	msg_usage "$0 {start|stop|restart|force-reload|status}"
+	exit 3
 esac
 
 exit $RETVAL
-
