@@ -1,0 +1,639 @@
+diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/authlib/authmysqllib.c
+--- courier-imap-1.3.12.orig/authlib/authmysqllib.c	Mon Aug  6 05:12:39 2001
++++ courier-imap-1.3.12/authlib/authmysqllib.c	Sun Dec  9 23:58:55 2001
+@@ -20,6 +20,12 @@
+ 
+ static const char rcsid[]="$Id$";
+ 
++struct var_data {		/* siefca@pld.org.pl */
++	const char *name;
++	const char *value;
++	const size_t size;
++	} ;
++
+ static const char *read_env(const char *env)
+ {
+ static char *mysqlauth=0;
+@@ -51,7 +57,13 @@
+ 
+ 		for (i=0; i<mysqlauth_size; i++)
+ 			if (mysqlauth[i] == '\n')
+-				mysqlauth[i]=0;
++			{	/* siefca@pld.org.pl */
++				if (i && mysqlauth[i-1] == '\\')
++					mysqlauth[i-1]=
++					mysqlauth[i]=' ';
++				else
++					mysqlauth[i]=0;
++			}
+ 		fclose(f);
+ 	}
+ 
+@@ -199,17 +211,218 @@
+ 		strcat(strcpy(p, "@"), defdomain);
+ }
+ 
++/* siefca@pld.org.pl */
++static char *parse_string (const char *source, size_t init_bufsize, 
++			   struct var_data *vd)
++{
++    struct var_data	*vdp;
++    static size_t	querybuf_size 	= 0; /* will learn after first run */
++    size_t		lenbuf		=0,
++			querybuf_taken	=0,
++			willtake	=0;
++    char		*p, *q, *r, *querybuf;
++
++	if (source == NULL || *source == '\0' || 
++	    vd == NULL     || vd[0].name == NULL)
++		return NULL;
++
++	if (!querybuf_size) /* first time invoked */
++	{
++		querybuf_size = 10 		+ 
++				init_bufsize	+ 
++		                strlen(source); /* initial value */
++		/* assuming that each value of the expected variables
++		 * will appear once... if it is too small
++		 * (e.g. will appear more than once) don't worry,
++		 * we will expand amount of memory later
++		 */
++		for (vdp=vd; vdp->name; vdp++)
++			querybuf_size += strlen (vdp->value);
++	}
++	querybuf = malloc(querybuf_size);
++	if (!querybuf)
++	{
++		perror ("malloc");
++		return NULL;
++	} 
++	*querybuf='\0';
++	querybuf_taken=0;
++	q=(char*)source;
++	for (;;)
++	{
++		p=strstr(q,"$(");
++		if (!p || *p == '\0') break;
++		p+=2;
++		if (*p == '\0' || *p == ')') break;
++		r=strchr(p, ')');
++		if (!r || (r-p+1) > (32*sizeof(char))) break;
++		for (vdp=vd; vdp->name; vdp++)
++		{
++			if (r-p+1 == vdp->size &&
++			    !strncmp(p, vdp->name, r-p))
++			{
++				lenbuf=vdp->size;
++				break;
++			}
++		}
++		if (vdp->name == NULL)
++		{
++			fprintf(stderr, "authmysql: unknown variable in "
++					"substitution: $(%.*s)\n", r-p, p);
++			return NULL;
++		}
++		willtake = (strlen(vdp->value))+(p-q);
++		if (willtake+querybuf_taken >= querybuf_size-16)
++		{
++			querybuf_size += willtake + 16;
++			/* learned new querybuf's size */
++			querybuf=realloc(querybuf, querybuf_size);
++			if (!querybuf)
++			{
++				perror ("realloc");
++				return NULL;
++			}
++			/* warning: querybuf's address may have change! */
++			/* but for now it's safe...			 */
++		}
++		strncat(querybuf, q, p-q-2);
++		strcat(querybuf, vdp->value);
++		querybuf_taken += willtake;
++		q=p+lenbuf;
++	}
++	willtake = (strlen(q));
++	if (willtake+querybuf_taken >= querybuf_size-16)
++		{
++			querybuf_size += willtake + 16;
++			querybuf=realloc(querybuf, querybuf_size);
++			if (!querybuf)
++			{
++				perror ("realloc");
++				return NULL;
++			}
++		}
++	strcat(querybuf, q);
++
++	return querybuf;	
++}
++
++/* siefca@pld.org.pl */
++static const char *get_localpart (const char *username)
++{
++	char *p;
++	static char localpart_buf[130];
++	
++	if (!username || *username == '\0') return NULL;
++	p = strchr(username,'@');
++	if (p)
++	{
++		if (p-username > 128) return NULL;
++		strncpy (localpart_buf, username, p-username);
++	}
++	else
++	{
++		if ((strlen(username)) > 128) return NULL;
++		strcpy (localpart_buf, username);
++	}
++
++	for (p = localpart_buf; *p; p++)
++		if (*p == '\\' || (int)(unsigned char)*p < ' ')
++			*p=' ';
++	
++	return localpart_buf;
++}
++
++/* siefca@pld.org.pl */
++static const char *get_domain (const char *username, const char *defdomain)
++{
++	static char domain_buf[260];
++	char *p, *q;
++	
++	if (!username || *username == '\0') return NULL;
++	p = strchr(username,'@');
++	
++	if (p && *(p+1))
++	    {
++		p++;
++		if ((strlen(p)) > 256) return NULL;
++		for (q=domain_buf; *p; p++, q++)
++		    if (*p == '\\' || (int)(unsigned char)*p < ' ')
++			*q=' ';
++		    else
++			*q=*p;
++		*q='\0';
++		return domain_buf;
++	    }
++	if (defdomain && *defdomain) return defdomain;
++	
++	return NULL;	
++}
++
++/* siefca@pld.org.pl */
++static char *parse_select_clause (const char *clause, const char *username,
++				  const char *defdomain)
++{
++static struct var_data vd[]={
++	    {"local_part",	NULL,	sizeof("local_part")},
++	    {"domain",		NULL,	sizeof("domain")},
++	    {NULL,		NULL,	0}};
++
++	if (clause == NULL || *clause == '\0' ||
++	    !username || *username == '\0') return NULL;
++	
++	vd[0].value=get_localpart (username);
++	vd[1].value=get_domain (username, defdomain);
++	if (!vd[0].value || !vd[1].value) return NULL;
++	
++	return (parse_string (clause, 16, vd));
++}
++
++/* siefca@pld.org.pl */
++static char *parse_chpass_clause (const char *clause, const char *username,
++				  const char *defdomain, const char *newpass,
++				  const char *newpass_crypt)
++{
++static struct var_data vd[]={
++	    {"local_part",	NULL,	sizeof("local_part")},
++	    {"domain",		NULL,	sizeof("domain")},
++	    {"newpass",		NULL, 	sizeof("newpass")},
++	    {"newpass_crypt",	NULL,	sizeof("newpass_crypt")},
++	    {NULL,		NULL,	0}};
++
++	if (clause == NULL || *clause == '\0'		||
++	    !username || *username == '\0'		||
++	    !newpass || *newpass == '\0'		||
++	    !newpass_crypt || *newpass_crypt == '\0') return NULL;
++
++	vd[0].value=get_localpart (username);
++	vd[1].value=get_domain (username, defdomain);
++	vd[2].value=newpass;
++	vd[3].value=newpass_crypt;
++	if (!vd[0].value || !vd[1].value) return NULL;
++
++	return (parse_string (clause, 16, vd));
++}
++
++
+ struct authmysqluserinfo *auth_mysql_getuserinfo(const char *username)
+ {
+-const char *user_table;
+-const char *defdomain;
++const char *user_table	=NULL;
++const char *defdomain	=NULL;
+ char	*querybuf, *p;
+ MYSQL_ROW	row;
+ MYSQL_RES	*result;
+ 
+-const char *crypt_field, *clear_field, *maildir_field, *home_field,
+-	*name_field,
+-	*login_field, *uid_field, *gid_field, *quota_field, *where_clause;
++const char  *crypt_field	=NULL, 
++	    *clear_field	=NULL,
++	    *maildir_field	=NULL,
++	    *home_field		=NULL,
++	    *name_field		=NULL,
++	    *login_field	=NULL,
++	    *uid_field		=NULL,
++	    *gid_field		=NULL,
++	    *quota_field	=NULL,
++	    *where_clause	=NULL,
++	    *select_clause	=NULL; /* siefca@pld.org.pl */
+ 
+ static const char query[]=
+ 	"SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = \"";
+@@ -232,79 +445,95 @@
+ 		free(ui.fullname);
+ 	memset(&ui, 0, sizeof(ui));
+ 
+-	user_table=read_env("MYSQL_USER_TABLE");
+-	defdomain=read_env("DEFAULT_DOMAIN");
+-
+-	if (!user_table)
++	select_clause=read_env("MYSQL_SELECT_CLAUSE");
++	defdomain=read_env("DEFAULT_DOMAIN");	
++	
++	if (!select_clause) /* siefca@pld.org.pl */
+ 	{
+-		fprintf(stderr, "authmysql: MYSQL_USER_TABLE not set in "
+-			AUTHMYSQLRC ".\n");
+-		return (0);
+-	}
++		user_table=read_env("MYSQL_USER_TABLE");
+ 
+-	crypt_field=read_env("MYSQL_CRYPT_PWFIELD");
+-	clear_field=read_env("MYSQL_CLEAR_PWFIELD");
+-	name_field=read_env("MYSQL_NAME_FIELD");
++		if (!user_table)
++		{
++			fprintf(stderr, "authmysql: MYSQL_USER_TABLE not set in "
++				AUTHMYSQLRC ".\n");
++			return (0);
++		}
+ 
+-	if (!crypt_field && !clear_field)
+-	{
+-		fprintf(stderr,
+-			"authmysql: MYSQL_CRYPT_PWFIELD and "
+-			"MYSQL_CLEAR_PWFIELD not set in " AUTHMYSQLRC ".\n");
+-		return (0);
+-	}
+-	if (!crypt_field) crypt_field="\"\"";
+-	if (!clear_field) clear_field="\"\"";
+-	if (!name_field) name_field="\"\"";
++		crypt_field=read_env("MYSQL_CRYPT_PWFIELD");
++		clear_field=read_env("MYSQL_CLEAR_PWFIELD");
++		name_field=read_env("MYSQL_NAME_FIELD");
+ 
+-	uid_field = read_env("MYSQL_UID_FIELD");
+-	if (!uid_field) uid_field = "uid";
++		if (!crypt_field && !clear_field)
++		{
++			fprintf(stderr,
++				"authmysql: MYSQL_CRYPT_PWFIELD and "
++				"MYSQL_CLEAR_PWFIELD not set in " AUTHMYSQLRC ".\n");
++			return (0);
++		}
++		if (!crypt_field) crypt_field="\"\"";
++		if (!clear_field) clear_field="\"\"";
++		if (!name_field) name_field="\"\"";
++
++		uid_field = read_env("MYSQL_UID_FIELD");
++		if (!uid_field) uid_field = "uid";
+ 
+-	gid_field = read_env("MYSQL_GID_FIELD");
+-	if (!gid_field) gid_field = "gid";
++		gid_field = read_env("MYSQL_GID_FIELD");
++		if (!gid_field) gid_field = "gid";
+ 
+-	login_field = read_env("MYSQL_LOGIN_FIELD");
+-	if (!login_field) login_field = "id";
++		login_field = read_env("MYSQL_LOGIN_FIELD");
++		if (!login_field) login_field = "id";
+ 
+-	home_field = read_env("MYSQL_HOME_FIELD");
+-	if (!home_field) home_field = "home";
++		home_field = read_env("MYSQL_HOME_FIELD");
++		if (!home_field) home_field = "home";
+ 
+-	maildir_field=read_env("MYSQL_MAILDIR_FIELD");
+-	if (!maildir_field) maildir_field="\"\"";
++		maildir_field=read_env("MYSQL_MAILDIR_FIELD");
++		if (!maildir_field) maildir_field="\"\"";
+ 
+-	quota_field=read_env("MYSQL_QUOTA_FIELD");
+-	if (!quota_field) quota_field="\"\""; 
++		quota_field=read_env("MYSQL_QUOTA_FIELD");
++		if (!quota_field) quota_field="\"\""; 
+ 
+-	where_clause=read_env("MYSQL_WHERE_CLAUSE");
+-	if (!where_clause) where_clause = "";
++		where_clause=read_env("MYSQL_WHERE_CLAUSE");
++		if (!where_clause) where_clause = "";
++	}
+ 	
+ 	if (!defdomain)	defdomain="";
+ 
+-	querybuf=malloc(sizeof(query) + 100 + strlen(user_table) + strlen(defdomain)
+-		+ strlen(crypt_field) + strlen(clear_field) + strlen(maildir_field)
+-		+ strlen(uid_field) + strlen(gid_field) + 2 * strlen(login_field)
+-		+ strlen(home_field) + strlen(quota_field) + strlen(where_clause)
++	if (!select_clause) /* siefca@pld.org.pl */
++	{
++		querybuf=malloc(sizeof(query) + 100 + strlen(user_table) + strlen(defdomain)
++			+ strlen(crypt_field) + strlen(clear_field) + strlen(maildir_field)
++			+ strlen(uid_field) + strlen(gid_field) + 2 * strlen(login_field)
++			+ strlen(home_field) + strlen(quota_field) + strlen(where_clause)
+ 			+ strlen(name_field));
+-	if (!querybuf)
++
++		if (!querybuf)
++		{
++			perror("malloc");
++			return (0);
++		}
++
++		sprintf(querybuf, query, login_field, crypt_field, clear_field, 
++			uid_field, gid_field, home_field, maildir_field, quota_field,
++			name_field, user_table, login_field);
++
++		p=querybuf+strlen(querybuf);
++
++		append_username(p, username, defdomain);
++		strcat(p, "\"");
++	
++		if (strcmp(where_clause, "")) {
++			strcat(p, " AND (");
++			strcat(p, where_clause);
++			strcat(p, ")");
++		}
++	}
++	else
+ 	{
+-		perror("malloc");
+-		return (0);
++		/* siefca@pld.org.pl */
++		querybuf=parse_select_clause (select_clause, username, defdomain);
++		if (!querybuf) return 0;
+ 	}
+ 
+-	sprintf(querybuf, query, login_field, crypt_field, clear_field, 
+-		uid_field, gid_field, home_field, maildir_field, quota_field,
+-		name_field, user_table, login_field);
+-	p=querybuf+strlen(querybuf);
+-
+-	append_username(p, username, defdomain);
+-	strcat(p, "\"");
+-	
+-	if (strcmp(where_clause, "")) {
+-		strcat(p, " AND (");
+-		strcat(p, where_clause);
+-		strcat(p, ")");
+-	}
+-	
+ 	if (mysql_query (mysql, querybuf))
+ 	{
+ 		/* <o.blasnik@nextra.de> */
+@@ -379,12 +608,13 @@
+ 	const char *comma;
+ 	int rc=0;
+ 
+-	const char *clear_field;
+-	const char *crypt_field;
+-	const char *defdomain;
+-	const char *where_clause;
+-	const char *user_table;
+-	const char *login_field;
++	const char  *clear_field	=NULL,
++		    *crypt_field	=NULL,
++		    *defdomain		=NULL,
++		    *where_clause	=NULL,
++		    *user_table		=NULL,
++		    *login_field	=NULL,
++		    *chpass_clause	=NULL; /* siefca@pld.org.pl */
+ 
+ 	if (!mysql)
+ 		return (-1);
+@@ -412,21 +642,34 @@
+ 		++l;
+ 	}
+ 
+-	login_field = read_env("MYSQL_LOGIN_FIELD");
+-	if (!login_field) login_field = "id";
+-	crypt_field=read_env("MYSQL_CRYPT_PWFIELD");
+-	clear_field=read_env("MYSQL_CLEAR_PWFIELD");
++	/* siefca@pld.org.pl */
++	chpass_clause=read_env("MYSQL_CHPASS_CLAUSE");
+ 	defdomain=read_env("DEFAULT_DOMAIN");
+-	where_clause=read_env("MYSQL_WHERE_CLAUSE");
+ 	user_table=read_env("MYSQL_USER_TABLE");
+-
+-	sql_buf=malloc(strlen(crypt_field ? crypt_field:"")
+-		       + strlen(clear_field ? clear_field:"")
+-		       + strlen(defdomain ? defdomain:"")
+-		       + strlen(login_field) + l + strlen(newpass_crypt)
+-		       + strlen(user_table)
+-		       + strlen(where_clause ? where_clause:"")
+-		       + 200);
++	if (!chpass_clause)
++	{
++		login_field = read_env("MYSQL_LOGIN_FIELD");
++		if (!login_field) login_field = "id";
++		crypt_field=read_env("MYSQL_CRYPT_PWFIELD");
++		clear_field=read_env("MYSQL_CLEAR_PWFIELD");
++		where_clause=read_env("MYSQL_WHERE_CLAUSE");
++		sql_buf=malloc(strlen(crypt_field ? crypt_field:"")
++				+ strlen(clear_field ? clear_field:"")
++				+ strlen(defdomain ? defdomain:"")
++				+ strlen(login_field) + l + strlen(newpass_crypt)
++				+ strlen(user_table)
++				+ strlen(where_clause ? where_clause:"")
++				+ 200);
++	}
++	else
++	{
++		sql_buf=parse_chpass_clause(chpass_clause,
++					    user,
++					    defdomain,
++					    pass,
++					    newpass_crypt);
++	}
++	
+ 
+ 	if (!sql_buf)
+ 	{
+@@ -434,53 +677,57 @@
+ 		return (-1);
+ 	}
+ 
+-	sprintf(sql_buf, "UPDATE %s SET", user_table);
+-
+-	comma="";
+-
+-	if (clear_field && *clear_field)
++	if (!chpass_clause) /*siefca@pld.org.pl */
+ 	{
+-		char *q;
++		sprintf(sql_buf, "UPDATE %s SET", user_table);
+ 
+-		strcat(strcat(strcat(sql_buf, " "), clear_field),
+-		       "=\"");
++		comma="";
+ 
+-		q=sql_buf+strlen(sql_buf);
+-		while (*pass)
++		if (clear_field && *clear_field)
+ 		{
+-			if (*pass == '"' || *pass == '\\')
+-				*q++= '\\';
+-			*q++ = *pass++;
++			char *q;
++
++			strcat(strcat(strcat(sql_buf, " "), clear_field),
++		    		"=\"");
++
++			q=sql_buf+strlen(sql_buf);
++			while (*pass)
++			{
++				if (*pass == '"' || *pass == '\\')
++					*q++= '\\';
++				*q++ = *pass++;
++			}
++			strcpy(q, "\"");
++			comma=", ";
+ 		}
+-		strcpy(q, "\"");
+-		comma=", ";
+-	}
+ 
+-	if (crypt_field && *crypt_field)
+-	{
+-		strcat(strcat(strcat(strcat(strcat(strcat(sql_buf, comma),
+-						   " "),
+-					    crypt_field),
+-				     "=\""),
+-			      newpass_crypt_ptr),
+-		       "\"");
+-	}
+-	free(newpass_crypt);
++		if (crypt_field && *crypt_field)
++		{
++			strcat(strcat(strcat(strcat(strcat(strcat(sql_buf, comma),
++							   " "),
++						    crypt_field),
++					     "=\""),
++			    	newpass_crypt_ptr),
++		    	     "\"");
++		}
++		free(newpass_crypt);
+ 
+-	strcat(strcat(strcat(sql_buf, " WHERE "),
+-		      login_field),
+-	       "=\"");
++		strcat(strcat(strcat(sql_buf, " WHERE "),
++			      login_field),
++	    	    "=\"");
+ 
+-	append_username(sql_buf+strlen(sql_buf), user, defdomain);
++		append_username(sql_buf+strlen(sql_buf), user, defdomain);
+ 
+-	strcat(sql_buf, "\"");
++		strcat(sql_buf, "\"");
+ 
+-	if (where_clause && *where_clause)
+-	{
+-		strcat(sql_buf, " AND (");
+-		strcat(sql_buf, where_clause);
+-		strcat(sql_buf, ")");
+-	}
++		if (where_clause && *where_clause)
++		{
++			strcat(sql_buf, " AND (");
++			strcat(sql_buf, where_clause);
++			strcat(sql_buf, ")");
++		}
++		
++	} /* end of: if (!chpass_clause) */
+ 
+ 	if (mysql_query (mysql, sql_buf))
+ 	{
+diff -ur courier-imap-1.3.12.orig/authlib/authmysqlrc courier-imap-1.3.12/authlib/authmysqlrc
+--- courier-imap-1.3.12.orig/authlib/authmysqlrc	Sun Oct  7 18:32:56 2001
++++ courier-imap-1.3.12/authlib/authmysqlrc	Mon Dec 10 03:21:59 2001
+@@ -141,4 +141,64 @@
+ #
+ # MYSQL_WHERE_CLAUSE	server='mailhost.example.com'
+ 
+-
++##NAME: MYSQL_SELECT_CLAUSE:0
++#
++# (EXPERIMENTAL)
++# This is optional, MYSQL_SELECT_CLAUSE can be set when you have a database,
++# which is structuraly different from proposed. The fixed string will
++# be used to do a SELECT operation on database, which should return fields
++# specified bellow:
++#
++# username, cryptpw, uid, gid, clearpw, home, maildir, quota, fullname
++#
++# Enabling this option causes ignorance of any other field-related
++# options, excluding default domain.
++#
++# There are two variables, which you can use. Substitution will be made
++# for them, so you can put entered username (local part) and domain name
++# in the right place of your query. There variables are:
++# 	$(local_part) and $(domain)
++#
++# If a $(domain) is empty (not given by the remote user) the default domain
++# name is used in its place.
++#
++# This example is a little bit modified adaptation of vmail-sql
++# database scheme:
++#MYSQL_SELECT_CLAUSE	SELECT popbox.local_part,			\
++#			CONCAT('{MD5}', popbox.password_hash),		\
++#			domain.uid,					\
++#			domain.gid,					\
++#			popbox.clearpw,					\
++#			CONCAT(domain.path, '/', popbox.mbox_name),	\
++#			'',						\
++#			domain.quota,					\
++#			'',						\
++#			FROM popbox, domain				\
++#			WHERE popbox.local_part = '$(local_part)'	\
++#			AND popbox.domain_name = '$(domain)'		\
++#			AND popbox.domain_name = domain.domain_name
++#
++##NAME: MYSQL_CHPASS_CLAUSE:0
++#
++# (EXPERIMENTAL)
++# This is optional, MYSQL_CHPASS_CLAUSE can be set when you have a database,
++# which is structuraly different from proposed. The fixed string will
++# be used to do an UPDATE operation on database. In other words, it is
++# used, when changing password.
++#
++# There are four variables, which you can use. Substitution will be made
++# for them, so you can put entered username (local part) and domain name
++# in the right place of your query. There variables are:
++# 	$(local_part) , $(domain) , $(newpass) , $(newpass_crypt)
++#
++# If a $(domain) is empty (not given by the remote user) the default domain
++# name is used in its place.
++# $(newpass) contains plain password
++# $(newpass_crypt) contains its crypted form
++#
++# MYSQL_CHPASS_CLAUSE	UPDATE	popbox					\
++#			SET	clearpw='$(newpass)',			\
++#				password_hash='$(newpass_crypt)'	\
++#			WHERE	local_part='$(local_part)'		\
++#			AND	domain_name='$(domain)'
++#
