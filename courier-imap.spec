@@ -186,7 +186,7 @@ cd ..
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig} \
-	$RPM_BUILD_ROOT{%{_sysconfdir},/var/lib/authdaemon}
+	$RPM_BUILD_ROOT{%{_sysconfdir}/shared,/var/lib/authdaemon}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
@@ -383,6 +383,7 @@ fi
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
 %{_sysconfdir}/imapd.cnf
+%attr(750,daemon,daemon) %dir %{_sysconfdir}/shared
 %attr(755,root,root) %{_bindir}/imapd
 %attr(755,root,root) %{_bindir}/maildiracl
 %attr(755,root,root) %{_bindir}/maildirkw
