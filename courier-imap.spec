@@ -6,7 +6,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.12
-Release:	4
+Release:	5
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -20,6 +20,7 @@ Source5:	%{name}-pop3.pamd
 Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
+Patch0:		%{name}-authmysql.patch
 URL:		http://www.inter7.com/courierimap/
 %{!?_without_mysql:BuildRequires:	mysql-devel}
 %{!?_without_ldap:BuildRequires:	openldap-devel}
@@ -133,6 +134,7 @@ Ten pakiet pozwala na korzystanie z autentykacji MySQL w Courier IMAP.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 %configure2_13 \
