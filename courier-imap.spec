@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.4.2
-Release:	2
+Release:	3
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz
@@ -344,7 +344,8 @@ fi
 %attr(755,root,root) %{_libexecdir}/couriertcpd
 %attr(755,root,root) %{_libexecdir}/logger
 %attr(755,root,root) %{_libexecdir}/makedatprog
-%{_mandir}/man8/auth[cdpsuv]*
+%{_mandir}/man8/auth[cdsuv]*
+%{_mandir}/man8/authp[aw]*
 %{_mandir}/man7/authlib*
 %{_mandir}/man1/couriert*
 %{_mandir}/man8/mk*
