@@ -46,8 +46,30 @@ case "$1" in
 	fi
 	;;
   restart|reload)
+	# restart related services, if running..
+	if [ -f /var/lock/subsys/courier-mta -a \
+	     -x /etc/rc.d/init.d/courier-mta ]; then
+	    /etc/rc.d/init.d/courier-mta stop
+	    crun=1
+	fi
+	if [ -f /var/lock/subsys/courier-imap -a \
+	     -x /etc/rc.d/init.d/courier-imap ]; then
+	    /etc/rc.d/init.d/courier-imap stop
+	    imaprun=1
+	fi
+	if [ -f /var/lock/subsys/courier-imap-pop3 -a \
+	     -x /etc/rc.d/init.d/courier-imap-pop3 ]; then
+	    /etc/rc.d/init.d/courier-imap-pop3 stop
+	    poprun=1
+	fi
 	$0 stop
 	$0 start
+	[[ $imaprun -eq 1 ]] && /etc/rc.d/init.d/courier-imap start
+	[[ $poprun -eq 1 ]] && /etc/rc.d/init.d/courier-imap-pop3 start
+	[[ $crun -eq 1 ]] && /etc/rc.d/init.d/courier-mta start
+	unset crun
+	unset poprun
+	unset imaprun
 	;;
   status)
 	status authdaemond.$METHOD

@@ -6,8 +6,8 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	1.4.2
-Release:	6
+Version:	1.5.3.20020921
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz
@@ -19,7 +19,7 @@ Source5:	%{name}-pop3.pamd
 Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
-Patch0:		ftp://ftp.pld.org.pl/people/siefca/patches/courier/%{name}-myownquery-fix.patch
+Patch0:		ftp://ftp.pld.org.pl/people/siefca/patches/courier/%{name}-%{version}-myownquery.patch
 URL:		http://www.inter7.com/courierimap/
 %{!?_without_postgresql:BuildRequires:	postgresql-devel}
 %{!?_without_mysql:BuildRequires:	mysql-devel}
@@ -195,6 +195,7 @@ mv -f authlib/README.authmysql.html README.authmysql.html
 mv -f authlib/README.ldap README.ldap
 mv -f authlib/README.authmysql.myownquery README.authmysql.myownquery
 mv -f imap/README README.imap
+mv -f imap/ChangeLog ChangeLog
 mv -f maildir/README.maildirquota.txt README.maildirquota
 
 install authlib/authdaemonrc		$RPM_BUILD_ROOT%{_sysconfdir}
@@ -207,7 +208,7 @@ mv -f $RPM_BUILD_ROOT%{_datadir}/*db \
 mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert \
 	$RPM_BUILD_ROOT%{_sbindir}
 
-mv -f tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.1
+mv -f tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
 mv -f imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
 
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
@@ -335,7 +336,7 @@ fi
 
 %files common
 %defattr(644,root,root,755)
-%doc README* imap/BUGS AUTHORS
+%doc README* imap/BUGS ChangeLog AUTHORS
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/authdaemon
 %attr(754,root,root) /etc/rc.d/init.d/authdaemon
 %attr(700,root,root) /var/lib/authdaemon
@@ -348,7 +349,7 @@ fi
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemon
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.plain
 %attr(755,root,root) %{_libexecdir}/couriertcpd
-%attr(755,root,root) %{_libexecdir}/logger
+%attr(755,root,root) %{_libexecdir}/courierlogger
 %attr(755,root,root) %{_libexecdir}/makedatprog
 %{_mandir}/man8/auth[cdsuv]*
 %{_mandir}/man8/authp[aw]*
@@ -369,7 +370,7 @@ fi
 
 %files deliverquota
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libexecdir}/deliverquota
+%attr(755,root,root) %{_bindir}/deliverquota
 %{_mandir}/man8/deliverquota*
 
 %files maildirmake

@@ -37,7 +37,7 @@ case "$1" in
 			`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap-pop3 | \
 			sed 's/=.*//;s/^/export /;s/$/;/'` \
 			/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
-			-stderrlogger=/usr/lib/courier-imap/logger \
+			-stderrlogger=/usr/lib/courier-imap/courierlogger \
 			-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
 			-pid=/var/run/pop3d.pid $TCPDOPTS 110 /usr/sbin/pop3login \
 			/usr/lib/courier-imap/authlib/authdaemon /usr/bin/pop3d $MAILDIR"
@@ -56,7 +56,7 @@ case "$1" in
 				`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap-pop3 | \
 				sed 's/=.*//;s/^/export /;s/$/;/'`
 				/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
-				-stderrlogger=/usr/lib/courier-imap/logger \
+				-stderrlogger=/usr/lib/courier-imap/courierlogger \
 				-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
 				-pid=/var/run/pop3d-ssl.pid $TCPDOPTS \
 				995 /usr/bin/couriertls -server -tcpd \
