@@ -28,7 +28,7 @@ BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
 %{?with_mysql:BuildRequires:	mysql-devel}
 %{?with_ldap:BuildRequires:	openldap-devel}
-BuildRequires:	openssl-devel >= 0.9.7c
+BuildRequires:	openssl-devel >= 0.9.7d
 %{?with_pgsql:BuildRequires:	postgresql-devel}
 BuildRequires:	sysconftool
 %{?with_mysql:BuildRequires:	zlib-devel}
