@@ -7,7 +7,7 @@ Group:		Applications/Mail
 Group(pl):	Aplikacje/Poczta
 Group(pt):	Aplicações/Correio Eletrônico
 Source0:	http://www.inter7.com/courierimap/%{name}-%{version}.tar.gz
-Source1:	%{name}.initd
+Source1:	%{name}.init
 Source2:	%{name}.pamd
 Source3:	%{name}.sysconfig
 URL:		http://www.inter7.com/courierimap/
