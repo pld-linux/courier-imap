@@ -70,7 +70,8 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig}
+install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig} \
+	$RPM_BUILD_ROOT%{_sysconfdir}
 
 %{__make} install DESTDIR=$RPM_BUILD_ROOT
 
