@@ -14,18 +14,17 @@
 [ -f /etc/sysconfig/courier-imap ] && . /etc/sysconfig/courier-imap
 
 # Check that networking is up.
-if [ "${NETWORKING}" = "no" ]; then
-	nls "WARNING: Networking is down. IMAP service can't be runed."
+if is_no "${NETWORKING}" ; then
+	msg_Network_Down IMAP
 	exit 1
 fi
-
 
 # See how we were called.
 case "$1" in
   start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-imap ]; then
-		show Starting IMAP Daemon
+		msg_starting IMAP
 		busy
 		
 		LIBAUTHMODULES=""
@@ -40,17 +39,18 @@ case "$1" in
 		    /usr/bin/imaplogin $LIBAUTHMODULES /usr/bin/imapd $MAILDIR &
 
 		if ps ax | grep -v grep | grep -q couriertcpd; then
+	            touch /var/lock/subsys/courier-imap
 	    	    deltext;ok
 		else
 	    	    deltext;fail
 		fi
 	else
-		nls "IMAP already is running\n"
+		msg_Already_Running IMAP
+		exit 1
 	fi
-	touch /var/lock/subsys/courier-imap
 	;;
   stop)
-	show Stopping IMAP Daemon
+	msg_stopping IMAP
 	killproc couriertcpd
 	rm -f /var/run/imapd.pid
 	rm -f /var/lock/subsys/courier-imap
@@ -63,7 +63,7 @@ case "$1" in
 	status couriertcpd
 	;;
   *)
-	nls "Usage: $0 {start|stop|restart|reload|status}"
+	msg_Usage "$0 {start|stop|restart|reload|status}"
 	exit 1
 esac
 
