@@ -4,6 +4,8 @@ Version:	1.3.2
 Release:	1
 License:	GPL
 Group:		Networking/Daemons
+Group(de):	Netzwerkwesen/Server
+Group(pl):	Sieciowe/Serwery
 Source0:	http://www.inter7.com/courierimap/%{name}-%{version}.tar.gz
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
@@ -31,6 +33,8 @@ Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 %package common
 Summary:	Common files for imap and pop daemons.
 Group:		Networking/Daemons
+Group(de):	Netzwerkwesen/Server
+Group(pl):	Sieciowe/Serwery
 
 %description common
 Common files for imap and pop daemons.
@@ -41,7 +45,9 @@ Pliki wspólne dla serwerów imap i pop.
 %package pop3
 Summary:	Courier-IMAP POP3 Server
 Group:		Networking/Daemons
-Requires:       %{name}-common = %{version}
+Group(de):	Netzwerkwesen/Server
+Group(pl):	Sieciowe/Serwery
+Requires:	%{name}-common = %{version}
 Provides:	pop3daemon
 Obsoletes:	pop3daemon
 
@@ -53,6 +59,7 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 
 %prep
 %setup -q
+
 %build
 %configure \
 	--with-authdaemonvar=/var/lib/authdaemon
@@ -78,18 +85,18 @@ install %{SOURCE8} $RPM_BUILD_ROOT/etc/sysconfig/authdaemon
 rm -rf  $RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb,authdaemon,authdaemond,authldap,authmysql}.8 \
 	$RPM_BUILD_ROOT%{_sbindir}/{*db,mk*cert}
 
-mv imap/README README.imap
-mv maildir/README.maildirquota.txt README.maildirquota
+mv -f imap/README README.imap
+mv -f maildir/README.maildirquota.txt README.maildirquota
 
-mv $RPM_BUILD_ROOT%{_sysconfdir}/authdaemonrc.dist \
+mv -f $RPM_BUILD_ROOT%{_sysconfdir}/authdaemonrc.dist \
 	$RPM_BUILD_ROOT%{_sysconfdir}/authdaemonrc
-mv $RPM_BUILD_ROOT%{_sysconfdir}/authldaprc.dist \
+mv -f $RPM_BUILD_ROOT%{_sysconfdir}/authldaprc.dist \
 	$RPM_BUILD_ROOT%{_sysconfdir}/authldaprc
-mv $RPM_BUILD_ROOT%{_sysconfdir}/authmysqlrc.dist \
+mv -f $RPM_BUILD_ROOT%{_sysconfdir}/authmysqlrc.dist \
 	$RPM_BUILD_ROOT%{_sysconfdir}/authmysqlrc
-mv $RPM_BUILD_ROOT%{_datadir}/*db \
+mv -f $RPM_BUILD_ROOT%{_datadir}/*db \
 	$RPM_BUILD_ROOT%{_sbindir}
-mv $RPM_BUILD_ROOT%{_datadir}/mk*cert \
+mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert \
 	$RPM_BUILD_ROOT%{_sbindir}
 
 echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
@@ -165,6 +172,7 @@ fi
 rm -rf $RPM_BUILD_ROOT
 
 %files
+%defattr(644,root,root,755)
 %attr(640,root,root) %config %verify(not size mtime md5) /etc/pam.d/imap
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.imap
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap
@@ -176,7 +184,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files common
 %defattr(644,root,root,755)
-%doc {AUTHORS,COPYING,imap/BUGS,README,README.imap,README.maildirquota}.gz
+%doc *.gz imap/*.gz
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/authdaemon
 %attr(754,root,root) /etc/rc.d/init.d/authdaemon
 %attr(750,root,root) %dir %{_sysconfdir}
@@ -202,6 +210,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man*/*
 
 %files pop3
+%defattr(644,root,root,755)
 %attr(640,root,root) %config %verify(not size mtime md5) /etc/pam.d/pop3
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.pop3
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap-pop3
