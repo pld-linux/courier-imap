@@ -8,7 +8,7 @@ MAXPERIP=4
 
 # Where mail is stored (relative to $HOME)
 #
-MAILDIR="Maildir"
+MAILDIR="Mail/Maildir"
 
 # To advertise the SASL capability, per RFC 2449, uncomment the POP3AUTH
 # variable:
