@@ -1,7 +1,19 @@
-# Address to listen on, can be set to a single IP address.
+# Addresses to listen on, can be set to a single IP address.
 # 0 means all IP addresses.
 #
+# ADDRESS/ADDRESS_SSL can be used to default a specific IP
+# address for every listed port number.
+
 ADDRESS=0
+ADDRESS_SSL=0
+
+# Multiple port numbers can be separated by commas.  When multiple port
+# numbers are used it is possibly to select a specific IP address for
+# given port as "ip.port".  For example, "127.0.0.1.900,192.68.0.1.900"
+# accepts connections on port 900 on IP addresses 127.0.0.1 and 192.68.0.1
+
+PORTS=143
+PORTS_SSL=993
 
 # Maximum number of IMAP servers started
 #
@@ -19,11 +31,18 @@ MAILDIR="Maildir"
 #
 #TCPDOPTS="-nodnslookup -noidentlookup"
 
-# If this version of Courier-IMAP includes support for CRAM-MD5
-# authentication (the authcram authentication modules gets compiled and
-# installed), you change IMAP_CAPABILITY below to read as follows:
+# IMAP_CAPABILITY specifies what most of the response should be to the
+# CAPABILITY command.
 #
-# IMAP_CAPABILITY="IMAP4rev1 CHILDREN NAMESPACE THREAD=ORDEREDSUBJECT THREAD=REFERENCES SORT AUTH=CRAM-MD5"
+# If you have properly configured Courier to use CRAM-MD5 or CRAM-SHA1
+# authentication (see INSTALL), set IMAP_CAPABILITY as follows:
+#
+# IMAP_CAPABILITY="IMAP4rev1 CHILDREN NAMESPACE THREAD=ORDEREDSUBJECT THREAD=REFERENCES SORT AUTH=CRAM-MD5 AUTH=CRAM-SHA1"
+#
+# Otherwise, leave it set to the default value.  The IDLE keyword can also
+# be added, in experimental mode.
+#
+# NOTE: CRAM-SHA1 is considered experimental at this time.
 #
 IMAP_CAPABILITY="IMAP4rev1 CHILDREN NAMESPACE THREAD=ORDEREDSUBJECT THREAD=REFERENCES SORT"
 
@@ -33,6 +52,11 @@ IMAP_CAPABILITY="IMAP4rev1 CHILDREN NAMESPACE THREAD=ORDEREDSUBJECT THREAD=REFER
 # IMAP_CAPABILITY
 #
 IMAP_CAPABILITY_TLS="$IMAP_CAPABILITY AUTH=PLAIN"
+
+# If you want to try out the IDLE extension, this setting controls how often
+# the server polls for changes to the folder, in IDLE mode (in seconds).
+#
+IMAP_IDLE_TIMEOUT=60
 
 # Set IMAP_DISABLETHREADSORT to disable the THREAD and SORT commands -
 # server side sorting and threading.
@@ -91,12 +115,23 @@ IMAP_ULIMITD=65536
 #
 IMAP_USELOCKS=0
 
-# Purge messages from the Trash folder after this number of days.  This is
-# mainly for the Netscape Communicator client, which automatically moves
-# deleted messages into Trash.  Remove this variable complete to disable
-# Trash purging.
+# The following setting is optional, and causes messages from the given
+# folder to be automatically deleted after the given number of days.
+# IMAP_EMPTYTRASH is a comma-separated list of folder:days.  The default
+# setting, below, purges 7 day old messages from the Trash folder.
+# Another useful setting would be:
 #
-IMAP_EMPTYTRASH=7
+# IMAP_EMPTYTRASH=Trash:7,Sent:30
+#
+# This would also delete messages from the Sent folder (presumably copies
+# of sent mail) after 30 days.  This is a global setting that is applied to
+# every mail account, and is probably useful in a controlled, corporate
+# environment.
+#
+# You might want to disable this setting in certain situations - it results
+# in a stat() of every file in each folder, at login and logout.
+#
+IMAP_EMPTYTRASH=Trash:7
 
 # Set IMAP_MOVE_EXPUNGE_TO_TRASH to move expunged messages to Trash.  This
 # effectively allows an undo of message deletion by fishing the deleted
@@ -114,13 +149,21 @@ IMAPDSSLSTART=NO
 
 # Whether or not to implement IMAP STARTTLS extension instead:
 #
-IMAPDSTARTTLS=YES
+IMAP_STARTTLS=YES
 
 # Set IMAP_TLS_REQUIRED to 1 if you REQUIRE STARTTLS for everyone.
 # (this option advertises the LOGINDISABLED IMAP capability, until STARTTLS
 # is issued).
 #
-#IMAP_TLS_REQUIRED=1
+IMAP_TLS_REQUIRED=0
+
+# The following variables configure IMAP over SSL.  If OpenSSL is available
+# during configuration, the couriertls helper gets compiled, and upon
+# installation a dummy TLS_CERTFILE gets generated.  courieresmtpd will
+# automatically advertise the ESMTP STARTTLS extension if both TLS_CERTFILE
+# and COURIERTLS exist.
+#
+COURIERTLS=/usr/bin/couriertls
 
 # TLS_PROTOCOL sets the protocol version.  The possible versions are:
 #
@@ -129,6 +172,11 @@ IMAPDSTARTTLS=YES
 # TLS1 - TLS1
 #
 TLS_PROTOCOL=SSL3
+
+# TLS_STARTTLS_PROTOCOL is used instead of TLS_PROTOCOL for the IMAP STARTTLS
+# extension, as opposed to IMAP over SSL on port 993.
+#
+TLS_STARTTLS_PROTOCOL=TLS1
 
 # TLS_CIPHER_LIST optionally sets the list of ciphers to be used by the
 # OpenSSL library.  In most situations you can leave TLS_CIPHER_LIST
