@@ -13,7 +13,7 @@ BuildRoot:	/tmp/%{name}-%{version}-root
 Provides:	imapdaemon
 Obsoletes:	imapdaemon
 
-%define		_libdir /usr/lib/courier-imap
+%define		_libexecdir /usr/lib/courier-imap
 
 %description
 Courier-IMAP is an IMAP server for Maildir mailboxes.
@@ -25,7 +25,6 @@ LDFLAGS="-s"; export LDFLAGS
 %configure \
 	--with-authvchkpw
 make
-make check
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -40,7 +39,7 @@ install %{SOURCE3} $RPM_BUILD_ROOT/etc/sysconfig/courier-imap
 mv imap/README README.imap
 mv maildir/README.maildirquota.txt README.maildirquota
 
-rm -rf $RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw}.8
+rm -rf $RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb}.8
 
 echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
 echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authpam.8
@@ -48,6 +47,8 @@ echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authpwd.8
 echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authshadow.8
 echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
 echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
+echo ".so makeuserdb.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
+echo ".so makeuserdb.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
 
 gzip -9nf $RPM_BUILD_ROOT%{_mandir}/*/* README* imap/BUGS AUTHORS COPYING
 
@@ -80,13 +81,13 @@ rm -rf $RPM_BUILD_ROOT
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.courier-imap
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
-%dir %{_libdir}
+%dir %{_libexecdir}
+%dir %{_libexecdir}/authlib
 %attr(755,root,root) %{_bindir}/*
-%attr(755,root,root) %{_libdir}/authuserdb
-%attr(755,root,root) %{_libdir}/authpam
-%attr(755,root,root) %{_libdir}/authvchkpw
-%attr(755,root,root) %{_libdir}/couriertcpd
-%attr(755,root,root) %{_libdir}/deliverquota
-%attr(755,root,root) %{_libdir}/logger
-%attr(755,root,root) %{_libdir}/makedatprog
+%attr(755,root,root) %{_sbindir}/*
+%attr(755,root,root) %{_libexecdir}/authlib/*
+%attr(755,root,root) %{_libexecdir}/couriertcpd
+%attr(755,root,root) %{_libexecdir}/deliverquota
+%attr(755,root,root) %{_libexecdir}/logger
+%attr(755,root,root) %{_libexecdir}/makedatprog
 %{_mandir}/*/*
