@@ -49,9 +49,9 @@ case "$1" in
 			fail
 		fi
 
-		msg_starting "Courier IMAP (SSL)"
 		
 		if is_yes "$IMAPDSSLSTART"; then
+			msg_starting "Courier IMAP (SSL)"
 			/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-imap ; \
 				IMAP_TLS=1; export POP3_TLS; \
 				`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap | \
@@ -63,12 +63,12 @@ case "$1" in
 				993 /usr/bin/couriertls -server -tcpd \
 				/usr/sbin/imaplogin /usr/lib/courier-imap/authlib/authdaemon \
 				/usr/bin/imapd $MAILDIR"
-		fi
-		RETVAL=$?
-		if [ $RETVAL -eq 0 ]; then
-			ok
-		else
-			fail
+			RETVAL=$?
+			if [ $RETVAL -eq 0 ]; then
+				ok
+			else
+				fail
+			fi
 		fi
 		touch /var/lock/subsys/courier-imap
 	else
