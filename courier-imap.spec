@@ -6,7 +6,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.12
-Release:	3
+Release:	4
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -293,7 +293,7 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%attr(640,root,root) %config %verify(not size mtime md5) /etc/pam.d/imap
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/imap
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.imap
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
@@ -348,7 +348,7 @@ fi
 
 %files pop3
 %defattr(644,root,root,755)
-%attr(640,root,root) %config %verify(not size mtime md5) /etc/pam.d/pop3
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/pop3
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.pop3
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap-pop3
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap-pop3
