@@ -54,7 +54,7 @@ case "$1" in
 			`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap | \
 			sed 's/=.*//;s/^/export /;s/$/;/'` \
 			/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
-			-stderrlogger=/usr/lib/courier-imap/courierlogger \
+			-stderrlogger=/usr/sbin/courierlogger \
 			-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
 			-pid=/var/run/imapd.pid $TCPDOPTS $PORTS /usr/sbin/imaplogin \
 			/usr/lib/courier-imap/authlib/authdaemon /usr/bin/imapd $MAILDIR"
@@ -73,7 +73,7 @@ case "$1" in
 				`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap | \
 				sed 's/=.*//;s/^/export /;s/$/;/'`
 				/usr/lib/courier-imap/couriertcpd -address=$ADDRESS_SSL \
-				-stderrlogger=/usr/lib/courier-imap/courierlogger \
+				-stderrlogger=/usr/sbin/courierlogger \
 				-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
 				-pid=/var/run/imapd-ssl.pid $TCPDOPTS \
 				$PORTS_SSL $COURIERTLS -server -tcpd \
