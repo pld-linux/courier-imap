@@ -1,0 +1,19 @@
+diff -dur courier-imap-2.2.1.orig/authlib/configure.in courier-imap-2.2.1/authlib/configure.in
+--- courier-imap-2.2.1.orig/authlib/configure.in	2003-10-25 14:19:28.000000000 +0200
++++ courier-imap-2.2.1/authlib/configure.in	2004-02-05 10:32:15.574615336 +0100
+@@ -384,14 +384,6 @@
+ 	saveLIBS="$LIBS"
+ 	LIBS="$NETLIBS $LIBS"
+ 	LDAPLIBS=""
+-        AC_MSG_CHECKING(whether -lresolv is needed for res_query)
+-        AC_TRY_LINK_FUNC(res_query,
+-        	AC_MSG_RESULT(no),
+-        	LIBS="-lresolv $LIBS"
+-        	AC_TRY_LINK_FUNC(res_query,
+-        		LDAPLIBS="-lresolv $LDAPLIBS" HAVE_LDAP=1
+-        		AC_MSG_RESULT(yes),
+-        		AC_MSG_ERROR(Cannot find function res_query)))
+ 	AC_CHECK_LIB(lber, ber_scanf,
+ 		[ LDAPLIBS="-llber $LDAPLIBS" LIBS="-llber $LIBS" ])
+ 	AC_CHECK_LIB(ldap, ldap_open,
+Only in courier-imap-2.2.1/authlib: configure.in~
