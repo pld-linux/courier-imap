@@ -11,6 +11,7 @@ Release:	6
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz
+# Source0-md5:	132c2405e3857b3fa2a6369d77e19fd9
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}-authdaemon.init
