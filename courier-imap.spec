@@ -121,22 +121,56 @@ gzip -9nf README* imap/BUGS AUTHORS COPYING
 touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
 
 %post
-DESC="%{name} daemon"; %chkconfig_add
+/sbin/chkconfig --add courier-imap
+
+if [ -f /var/lock/subsys/courier-imap ]; then
+	/etc/rc.d/init.d/courier-imap restart >&2
+else
+	echo "Run \"/etc/rc.d/init.d/courier-imap start\" to start courier-imap daemon."
+fi
 
 %preun
-%chkconfig_del
+if [ "$1" = "0" ]; then
+	if [ -f /var/lock/subsys/courier-imap ]; then
+		/etc/rc.d/init.d/courier-imap stop >&2
+	fi
+	/sbin/chkconfig --del courier-imap
+fi
 
 %post common
-NAME=authdaemon; DESC="%{name} authdaemon"; %chkconfig_add
+/sbin/chkconfig --add authdaemon
+
+if [ -f /var/lock/subsys/authdaemon ]; then
+	/etc/rc.d/init.d/authdaemon restart >&2
+else
+	echo "Run \"/etc/rc.d/init.d/authdaemon start\" to start courier-imap authdaemon."
+fi
 
 %preun common
-NAME=authdaemon; %chkconfig_del
+if [ "$1" = "0" ]; then
+	if [ -f /var/lock/subsys/authdaemon ]; then
+		/etc/rc.d/init.d/authdaemon stop >&2
+	fi
+
+	/sbin/chkconfig --del authdaemon
+fi
 
 %post pop3
-NAME=%{name}-pop3; DESC="%{name} pop3 daemon; %chkconfig_add
+/sbin/chkconfig --add courier-imap-pop3
+
+if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
+	/etc/rc.d/init.d/courier-imap-pop3 restart >&2
+else
+	echo "Run \"/etc/rc.d/init.d/courier-imap-pop3 start\" to start courier-imap pop3 daemon."
+fi
 
 %preun pop3
-NAME=%{name}-pop3; %chkconfig_del
+if [ "$1" = "0" ]; then
+	if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
+		/etc/rc.d/init.d/courier-imap-pop3 stop >&2
+	fi
+	/sbin/chkconfig --del courier-imap
+fi
 
 %clean
 rm -rf $RPM_BUILD_ROOT
