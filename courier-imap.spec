@@ -365,6 +365,7 @@ fi
 %{_mandir}/man8/authp[aw]*
 %{_mandir}/man7/authlib*
 %{_mandir}/man1/couriert*
+%{_mandir}/man8/couriert*
 %{_mandir}/man8/mk*
 
 %files userdb
