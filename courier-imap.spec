@@ -1,18 +1,17 @@
 #
 # Conditional build:
-# _without_ldap		- without LDAP support
-# _without_mysql	- without MySQL support
-# _without_pgsql	- without PostgreSQL support
-#
+%bcond_with ldap	# without LDAP support
+%bcond_with mysql	# without MySQL support
+%bcond_with pgsql	# without PostgreSQL support
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	2.1.1
-Release:	2
+Version:	2.1.2
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	71d9e88053351dbf7df04943189ec1cd
+# Source0-md5:	d77ef5d3c90fd0a70b333a44e0ead0a2
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}-authdaemon.init
@@ -25,11 +24,11 @@ Source8:	%{name}-authdaemon.sysconfig
 URL:		http://www.inter7.com/courierimap/
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
-%{!?_without_mysql:BuildRequires:	mysql-devel}
-%{!?_without_ldap:BuildRequires:	openldap-devel}
+%{?with_mysql:BuildRequires:	mysql-devel}
+%{?with_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	openssl-devel >= 0.9.7c
-%{!?_without_pgsql:BuildRequires:	postgresql-devel}
-%{!?_without_mysql:BuildRequires:	zlib-devel}
+%{?with_pgsql:BuildRequires:	postgresql-devel}
+%{?with_mysql:BuildRequires:	zlib-devel}
 PreReq:		%{name}-common = %{version}
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
@@ -168,11 +167,11 @@ IMAP.
 	--enable-unicode \
 	--with-authchangepwdir=/var/tmp \
 	--with-authdaemonvar=/var/lib/authdaemon \
-	%{!?_without_mysql:--with-mysql-libs=%{_libdir} --with-mysql-includes=%{_includedir}/mysql} \
-	%{?_without_mysql:--without-authmysql} \
-	%{!?_without_pgsql:--with-pgsql-libs=%{_libdir} --with-pgsql-includes=%{_includedir}/postgresql} \
-	%{?_without_pgsql:--without-authpgsql} \
-	%{?_without_ldap:--without-authldap}
+	%{?with_mysql:--with-mysql-libs=%{_libdir} --with-mysql-includes=%{_includedir}/mysql} \
+	%{!?with_mysql:--without-authmysql} \
+	%{?with_pgsql:--with-pgsql-libs=%{_libdir} --with-pgsql-includes=%{_includedir}/postgresql} \
+	%{!?with_pgsql:--without-authpgsql} \
+	%{!?with_ldap:--without-authldap}
 
 %{__make}
 
@@ -226,9 +225,9 @@ echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
 echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
 echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemon.8
 echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemond.8
-%{!?_without_pgsql:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpgsql.8}
-%{!?_without_mysql:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8}
-%{!?_without_ldap:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8}
+%{?with_pgsql:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpgsql.8}
+%{?with_mysql:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8}
+%{?with_ldap:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8}
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
 
@@ -408,7 +407,7 @@ fi
 %{_sysconfdir}/pop3d.cnf
 %{_mandir}/man8/courierpop*
 
-%if %{?_without_ldap:0}%{!?_without_ldap:1}
+%if %{with ldap}
 %files authldap
 %defattr(644,root,root,755)
 %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authldaprc
@@ -416,7 +415,7 @@ fi
 %{_mandir}/man8/authldap*
 %endif
 
-%if %{?_without_mysql:0}%{!?_without_mysql:1}
+%if %{with mysql}
 %files authmysql
 %defattr(644,root,root,755)
 %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authmysqlrc
@@ -424,7 +423,7 @@ fi
 %{_mandir}/man8/authmysql*
 %endif
 
-%if %{?_without_pgsql:0}%{!?_without_pgsql:1}
+%if %{with pgsql}
 %files authpgsql
 %defattr(644,root,root,755)
 %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authpgsqlrc
