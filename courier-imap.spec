@@ -20,6 +20,9 @@ Obsoletes:	imapdaemon
 %description
 Courier-IMAP is an IMAP server for Maildir mailboxes.
 
+%description -l pl
+Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
+
 %prep
 %setup -q
 %build
