@@ -332,7 +332,7 @@ fi
 
 %files common
 %defattr(644,root,root,755)
-%doc README* imap/BUGS AUTHORS COPYING
+%doc README* imap/BUGS AUTHORS
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/authdaemon
 %attr(754,root,root) /etc/rc.d/init.d/authdaemon
 %attr(700,root,root) /var/lib/authdaemon
