@@ -150,14 +150,16 @@ TLS_PROTOCOL=SSL3
 #
 TLS_CERTFILE=/var/lib/openssl/certs/imapd.pem
 
-# TLS_PEERCERTDIR, TLS_OURCACERT - when it is required that all peer
-# certificates are signed by a specific certificate authority, set
-# TLS_OURCACERT to the name of the file containing the certificate authority
-# root key, and set TLS_PEERCERTDIR to the name of the directory containing
-# the allowed certificates.
+# TLS_TRUSTCERTS=pathname - load trusted certificates from pathname.
+# pathname can be a file or a directory. If a file, the file should
+# contain a list of trusted certificates, in PEM format. If a
+# directory, the directory should contain the trusted certificates,
+# in PEM format, one per file and hashed using OpenSSL's c_rehash
+# script. TLS_TRUSTCERTS is used by SSL/TLS clients (by specifying
+# the -domain option) and by SSL/TLS servers (TLS_VERIFYPEER is set
+# to PEER or REQUIREPEER).
 #
-#TLS_PEERCERTDIR=
-#TLS_OURCACERT=
+# TLS_TRUSTCERTS=
 
 # TLS_VERIFYPEER - how to verify peer certificates.  The possible values of
 # this setting are:
