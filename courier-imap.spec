@@ -6,11 +6,11 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	1.5.3
-Release:	6
+Version:	1.7.0
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
-Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz
+Source0:	http://prdownloads.sourceforge.net/courier/%{name}-%{version}.tar.bz2
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}-authdaemon.init
@@ -19,7 +19,7 @@ Source5:	%{name}-pop3.pamd
 Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
-Patch0:		ftp://ftp.pld.org.pl/people/siefca/patches/courier/%{name}-%{version}-myownquery.patch
+# Patch0:		ftp://ftp.pld.org.pl/people/siefca/patches/courier/%{name}-myownquery.patch
 URL:		http://www.inter7.com/courierimap/
 %{!?_without_postgresql:BuildRequires:	postgresql-devel}
 %{!?_without_mysql:BuildRequires:	mysql-devel}
@@ -155,7 +155,7 @@ IMAP.
 
 %prep
 %setup -q
-%patch0 -p1
+#%patch0 -p1
 
 %build
 %configure2_13 \
