@@ -10,7 +10,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	3.0.5
-Release:	0.9
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -300,7 +300,7 @@ if [ -f /var/lib/openssl/certs/imapd.pem ]; then
 fi
 if [ -f /etc/sysconfig/courier-imap ]; then
     . /etc/sysconfig/courier-imap
-    for opt in `grep ^[^#] courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR|grep -v COURIERTLS |cut -d= -f1`;
+    for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR|grep -v COURIERTLS |cut -d= -f1`;
     do
 	eval opt2=\$$opt
 	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/imapd > %{_sysconfdir}/imapd.new
@@ -310,7 +310,7 @@ if [ -f /etc/sysconfig/courier-imap ]; then
     done
 fi
 sed s/^SSLADDRESS=.*/"SSLADDRESS=$ADDRESS_SSL"/ < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
-mv -f %{_sysconfdir}/imapd-ssl.new %{_sysconfdir}/imapd-ssl
+sed s/^SSLPORT=.*/"SSLPORT=$PORTS_SSL"/ < %{_sysconfdir}/imapd-ssl.new > %{_sysconfdir}/imapd-ssl
 echo
 echo IMAPD config file has been rewriten to %{_sysconfdir}/imapd,imapd-ssl
 echo
@@ -326,6 +326,7 @@ if [ -f /etc/sysconfig/authdaemon ]; then
     sed s/^version.*/version=authdaemon.$METHOD/ <%{_sysconfdir}/authdaemonrc >%{_sysconfdir}/authdaemonrc.new
     mv -f %{_sysconfdir}/authdaemonrc.new %{_sysconfdir}/authdaemonrc
 fi
+echo
 echo Changes to version 3.0.5 :
 echo - config files has been splited and moved to %{_sysconfdir}
 echo - certificates directory has changed to %{_certsdir}
@@ -360,7 +361,7 @@ if [ -f /var/lib/openssl/certs/pop3d.pem ]; then
 fi
 if [ -f /etc/sysconfig/courier-pop3 ]; then
     . /etc/sysconfig/courier-pop3
-    for opt in `grep ^[^#] courier-pop3 |grep -v TLS_CERTFILE |grep -v MAILDIR|grep -v COURIERTLS |cut -d= -f1`;
+    for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v MAILDIR|grep -v COURIERTLS |cut -d= -f1`;
     do
 	eval opt2=\$$opt
 	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/pop3d > %{_sysconfdir}/pop3d.new
