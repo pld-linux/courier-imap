@@ -271,16 +271,16 @@ fi
 
 %post pop3
 /sbin/chkconfig --add courier-pop3
-/sbin/chkconfig --del courier-pop3 2>&1 >/dev/null
-if [ -f /var/lock/subsys/courier-pop3 ]; then
-	/etc/rc.d/init.d/courier-pop3 stop >&2
+/sbin/chkconfig --del courier-imap-pop3 2>&1 >/dev/null
+if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
+	/etc/rc.d/init.d/courier-imap-pop3 stop >&2
 	/etc/rc.d/init.d/courier-pop3 start >&2
 elif [ -f /var/lock/subsys/courier-pop3 ]; then
 	/etc/rc.d/init.d/courier-pop3 restart >&2
 else
 	echo "Run \"/etc/rc.d/init.d/courier-pop3 start\" to start courier-pop3 daemon."
 fi
-rm -f /etc/rc.d/init.d/courier-pop3
+rm -f /etc/rc.d/init.d/courier-imap-pop3
 
 %preun pop3
 if [ "$1" = "0" ]; then
@@ -288,11 +288,11 @@ if [ "$1" = "0" ]; then
 		/etc/rc.d/init.d/courier-pop3 stop >&2
 	fi
 	/sbin/chkconfig --del courier-pop3
-	if [ -f /var/lock/subsys/courier-pop3 ]; then
-		/etc/rc.d/init.d/courier-pop3 stop >&2
+	if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
+		/etc/rc.d/init.d/courier-imap-pop3 stop >&2
 	fi
-	/sbin/chkconfig --del courier-pop3 2>&1 >/dev/null
-	rm -f /etc/rc.d/init.d/courier-pop3
+	/sbin/chkconfig --del courier-imap-pop3 2>&1 >/dev/null
+	rm -f /etc/rc.d/init.d/courier-imap-pop3
 fi
 
 %post authldap
