@@ -2,7 +2,6 @@
 # TODO:
 #	- triggers
 #	- post, preun
-#	- add maildir.patch (like in courier-mta)
 #
 # Conditional build:
 %bcond_without ldap	# without LDAP support
@@ -12,7 +11,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	3.0.5
-Release:	0.1
+Release:	0.5
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -23,6 +22,7 @@ Source3:	%{name}.pamd
 Source4:	%{name}-pop3.pamd
 Patch0:		%{name}-dirs.patch
 Patch1:		%{name}-certsdir.patch
+Patch2:		%{name}-maildir.patch
 URL:		http://www.inter7.com/courierimap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
@@ -47,7 +47,7 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libexecdir	/usr/%{_lib}/courier-imap
 %define		_sysconfdir	/etc/courier-imap
-%define         _certsdir       %{_sysconfdir}/certs
+%define		_certsdir       %{_sysconfdir}/certs
 
 %description
 Courier-IMAP is an IMAP server for Maildir mailboxes.
@@ -170,6 +170,7 @@ IMAP.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 install %{SOURCE1} courier-imap.in
 install %{SOURCE2} courier-pop3.in
@@ -261,6 +262,13 @@ touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
 # make config files
 ./sysconftool $RPM_BUILD_ROOT%{_sysconfdir}/*.dist
 
+# set yes to start imapd and pop3d
+sed 's/^POP3DSTART.*/POP3DSTART=YES/' < $RPM_BUILD_ROOT%{_sysconfdir}/pop3d > $RPM_BUILD_ROOT%{_sysconfdir}/pop3d.new
+mv -f $RPM_BUILD_ROOT%{_sysconfdir}/pop3d.new $RPM_BUILD_ROOT%{_sysconfdir}/pop3d
+
+sed 's/^IMAPDSTART.*/IMAPDSTART=YES/' < $RPM_BUILD_ROOT%{_sysconfdir}/imapd > $RPM_BUILD_ROOT%{_sysconfdir}/imapd.new
+mv -f $RPM_BUILD_ROOT%{_sysconfdir}/imapd.new $RPM_BUILD_ROOT%{_sysconfdir}/imapd
+
 # remove unpackaged files
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/*.dist
 
@@ -284,9 +292,13 @@ if [ "$1" = "0" ]; then
 	/sbin/chkconfig --del courier-imap
 fi
 
-%triggerpostin -- %{name} < 3.0.5
-echo pop3d.pem has been moved automatically to %{_certsdir}
-mv -f /var/lib/openssl/imapd.pem %{_certsdir}
+%triggerin -- %{name} < 3.0.5
+if [ -f /var/lib/openssl/certs/imapd.pem ]; then
+    echo
+    echo imapd.pem has been moved automatically to %{_certsdir}
+    echo
+    mv -f /var/lib/openssl/certs/imapd.pem %{_certsdir}
+fi
 
 %triggerin -n %{name}-common -- %{name}-common < 3.0.5
 /sbin/chkconfig --del authdaemon
@@ -318,9 +330,13 @@ if [ "$1" = "0" ]; then
 	rm -f /etc/rc.d/init.d/courier-imap-pop3
 fi
 
-%triggerpostin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
-echo pop3d.pem has been moved automatically to %{_certsdir}
-mv -f /var/lib/openssl/pop3d.pem %{_certsdir}
+%triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
+if [ -f /var/lib/openssl/certs/pop3d.pem ]; then
+    echo
+    echo pop3d.pem has been moved automatically to %{_certsdir}
+    echo
+    mv -f /var/lib/openssl/certs/pop3d.pem %{_certsdir}
+fi
 
 %post authldap
 if ps -A |grep -q authdaemond.lda; then
@@ -371,7 +387,7 @@ fi
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.imap
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd-ssl
-%{_sysconfdir}/imapd.cnf
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd.cnf
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
 %attr(750,daemon,daemon) %dir %{_sysconfdir}/shared
 %attr(755,root,root) %{_bindir}/imapd
@@ -408,6 +424,7 @@ fi
 %{_mandir}/man8/auth[cdsuv]*
 %{_mandir}/man8/authp[aw]*
 %{_mandir}/man7/authlib*
+%{_mandir}/man1/courierlogger*
 %{_mandir}/man1/couriert*
 %{_mandir}/man8/couriert*
 %{_mandir}/man8/mk*
@@ -439,13 +456,13 @@ fi
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.pop3
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/pop3d
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/pop3d-ssl
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/pop3d.cnf
 %attr(754,root,root) /etc/rc.d/init.d/courier-pop3
 %attr(755,root,root) %{_bindir}/pop3d
 %attr(755,root,root) %{_sbindir}/mkpop3dcert
 %attr(755,root,root) %{_sbindir}/pop3login
 %attr(755,root,root) %{_libexecdir}/pop3d.rc
 %attr(755,root,root) %{_libexecdir}/pop3d-ssl.rc
-%{_sysconfdir}/pop3d.cnf
 %{_mandir}/man8/courierpop*
 
 %if %{with ldap}
