@@ -15,9 +15,13 @@ METHOD="plain"
 [ -f /etc/sysconfig/authdaemon ] && . /etc/sysconfig/authdaemon
 
 # Check that networking is up.
-if is_no "${NETWORKING}" ; then
-	msg_network_down "Courier IMAP - Authdaemon"
-	exit 1
+if is_yes "${NETWORKING}"; then
+	if [ ! -f /var/lock/subsys/network ]; then
+		msg_network_down "Courier IMAP - Authdaemon"
+		exit 1
+	fi
+else
+	exit 0
 fi
 
 # See how we were called.
@@ -27,8 +31,8 @@ case "$1" in
 	if [ ! -f /var/lock/subsys/authdaemon ]; then
 		msg_starting "Courier IMAP - Authdaemon"
 		daemon /usr/lib/courier-imap/authlib/authdaemond.$METHOD start
-                RETVAL=$?
-                [ $RETVAL -eq 0 ] && touch /var/lock/subsys/authdaemon
+		RETVAL=$?
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/authdaemon
 	else
 		msg_already_running "Courier IMAP - Authdaemon"
 		exit 1
@@ -48,19 +52,19 @@ case "$1" in
   restart|reload)
 	# restart related services, if running..
 	if [ -f /var/lock/subsys/courier-mta -a \
-	     -x /etc/rc.d/init.d/courier-mta ]; then
-	    /etc/rc.d/init.d/courier-mta stop
-	    crun=1
+	   -x /etc/rc.d/init.d/courier-mta ]; then
+		/etc/rc.d/init.d/courier-mta stop
+		crun=1
 	fi
 	if [ -f /var/lock/subsys/courier-imap -a \
-	     -x /etc/rc.d/init.d/courier-imap ]; then
-	    /etc/rc.d/init.d/courier-imap stop
-	    imaprun=1
+	   -x /etc/rc.d/init.d/courier-imap ]; then
+		/etc/rc.d/init.d/courier-imap stop
+		imaprun=1
 	fi
 	if [ -f /var/lock/subsys/courier-pop3 -a \
-	     -x /etc/rc.d/init.d/courier-pop3 ]; then
-	    /etc/rc.d/init.d/courier-pop3 stop
-	    poprun=1
+	   -x /etc/rc.d/init.d/courier-pop3 ]; then
+		/etc/rc.d/init.d/courier-pop3 stop
+		poprun=1
 	fi
 	$0 stop
 	$0 start

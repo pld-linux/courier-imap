@@ -21,9 +21,13 @@ POP3DSSLSTART="no"
 [ -f /etc/sysconfig/courier-pop3 ] && . /etc/sysconfig/courier-pop3
 
 # Check that networking is up.
-if is_no "${NETWORKING}" ; then
-	msg_network_down "Courier POP3"
-	exit 1
+if is_yes "${NETWORKING}"; then
+	if [ ! -f /var/lock/subsys/network ]; then
+		msg_network_down "Courier POP3"
+		exit 1
+	fi
+else
+	exit 0
 fi
 
 # See how we were called.
@@ -33,14 +37,14 @@ case "$1" in
 	if [ ! -f /var/lock/subsys/courier-pop3 ]; then
 		# start authdaemon, if not running..
 		if [ ! -f /var/lock/subsys/authdaemon -a \
-		     -x /etc/rc.d/init.d/authdaemon ]; then
-			    /etc/rc.d/init.d/authdaemon start
-			    RETVAL=$?
-			    if [ $RETVAL -ne 0 ]; then
-				    msg_starting "Courier POP3"
-				    fail
-				    exit 1
-			    fi
+		   -x /etc/rc.d/init.d/authdaemon ]; then
+			/etc/rc.d/init.d/authdaemon start
+			RETVAL=$?
+			if [ $RETVAL -ne 0 ]; then
+				msg_starting "Courier POP3"
+				fail
+				exit 1
+			fi
 		fi
 		msg_starting "Courier POP3"
 		/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-pop3 ; \
