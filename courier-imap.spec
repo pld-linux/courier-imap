@@ -4,7 +4,6 @@
 #	- post, preun
 #	- add maildir.patch (like in courier-mta)
 #	- add certsdir.patch
-#	- init scripts
 #
 # Conditional build:
 %bcond_without ldap	# without LDAP support
@@ -21,10 +20,8 @@ Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
 # Source0-md5:	8b0c79997905dc46cfe4cc13be74ceaf
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
-Source3:	%{name}-authdaemon.init
-Source4:	%{name}.pamd
-Source5:	%{name}-pop3.pamd
-Source6:	%{name}-authdaemon.sysconfig
+Source3:	%{name}.pamd
+Source4:	%{name}-pop3.pamd
 URL:		http://www.inter7.com/courierimap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
@@ -200,8 +197,8 @@ install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig} \
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
-install %{SOURCE4} $RPM_BUILD_ROOT/etc/pam.d/imap
-install %{SOURCE5} $RPM_BUILD_ROOT/etc/pam.d/pop3
+install %{SOURCE3} $RPM_BUILD_ROOT/etc/pam.d/imap
+install %{SOURCE4} $RPM_BUILD_ROOT/etc/pam.d/pop3
 
 rm -rf	$RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb,authdaemon,authdaemond,authldap,authmysql}.8 \
 	$RPM_BUILD_ROOT%{_sbindir}/{*db,mk*cert}
@@ -270,22 +267,9 @@ fi
 
 %triggerin -- %{name} < 3.0.5
 
-%post common
-if [ -f /var/lock/subsys/authdaemon ]; then
-	/etc/rc.d/init.d/authdaemon restart >&2
-else
-	echo "Run \"/etc/rc.d/init.d/authdaemon start\" to start courier-imap authdaemon."
-fi
-
-%preun common
-if [ "$1" = "0" ]; then
-	if [ -f /var/lock/subsys/authdaemon ]; then
-		/etc/rc.d/init.d/authdaemon stop >&2
-	fi
-fi
-
 %triggerin -n %{name}-common -- %{name}-common < 3.0.5
 /sbin/chkconfig --del authdaemon
+rm -f /var/lock/subsys/authdaemon
 
 %post pop3
 /sbin/chkconfig --add courier-pop3
@@ -316,69 +300,45 @@ fi
 %triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
 
 %post authldap
-METHOD=plain
-. /etc/sysconfig/authdaemon
-if [ "$METHOD" = "ldap" ]; then
-	if [ -f /var/lock/subsys/authdaemon ]; then
-		/etc/rc.d/init.d/authdaemon restart >&2
-	else
-		echo "Run \"/etc/rc.d/init.d/authdaemon start\" to start courier-imap authdaemon."
-	fi
+if ps -A |grep -q authdaemond.lda; then
+        %{_libexecdir}/authlib/authdaemond stop
+        %{_libexecdir}/authlib/authdaemond start
 fi
 
-%preun authldap
-METHOD=plain
-if [ -e /etc/sysconfig/authdaemon ]; then
-	. /etc/sysconfig/authdaemon
-	if [ "$1" = "$0" -a "$METHOD" = "ldap" ]; then
-		if [ -f /var/lock/subsys/authdaemon ]; then
-			/etc/rc.d/init.d/authdaemon stop >&2
-		fi
-	fi
+%postun authldap
+if [ -x %{_libexecdir}/authlib/authdaemond ]; then
+        if ps -A |grep -q authdaemond.lda; then
+                %{_libexecdir}/authlib/authdaemond stop;
+                %{_libexecdir}/authlib/authdaemond start;
+        fi
 fi
 
 %post authmysql
-METHOD=plain
-. /etc/sysconfig/authdaemon
-if [ "$METHOD" = "mysql" ]; then
-	if [ -f /var/lock/subsys/authdaemon ]; then
-		/etc/rc.d/init.d/authdaemon restart >&2
-	else
-		echo "Run \"/etc/rc.d/init.d/authdaemon start\" to start courier-imap authdaemon."
-	fi
+if ps -A |grep -q authdaemond.mys; then
+        %{_libexecdir}/authlib/authdaemond stop
+        %{_libexecdir}/authlib/authdaemond start
 fi
 
-%preun authmysql
-METHOD=plain
-if [ -e /etc/sysconfig/authdaemon ]; then
-	. /etc/sysconfig/authdaemon
-	if [ "$1" = "$0" -a "$METHOD" = "mysql" ]; then
-		if [ -f /var/lock/subsys/authdaemon ]; then
-			/etc/rc.d/init.d/authdaemon stop >&2
-		fi
-	fi
+%postun authmysql
+if [ -x %{_libexecdir}/authlib/authdaemond ]; then
+        if ps -A |grep -q authdaemond.mys; then
+                %{_libexecdir}/authlib/authdaemond stop;
+                %{_libexecdir}/authlib/authdaemond start;
+        fi
 fi
 
 %post authpgsql
-METHOD=plain
-. /etc/sysconfig/authdaemon
-if [ "$METHOD" = "pgsql" ]; then
-	if [ -f /var/lock/subsys/authdaemon ]; then
-		/etc/rc.d/init.d/authdaemon restart >&2
-	else
-		echo "Run \"/etc/rc.d/init.d/authdaemon start\" to start courier-imap authdaemon."
-	fi
+if ps -A |grep -q authdaemond.pgs; then
+        %{_libexecdir}/authlib/authdaemond stop
+        %{_libexecdir}/authlib/authdaemond start
 fi
 
-%preun authpgsql
-METHOD=plain
-if [ -e /etc/sysconfig/authdaemon ]; then
-	. /etc/sysconfig/authdaemon
-	if [ "$1" = "$0" -a "$METHOD" = "pgsql" ]; then
-		if [ -f /var/lock/subsys/authdaemon ]; then
-			/etc/rc.d/init.d/authdaemon stop >&2
-		fi
-	fi
+%postun authpgsql
+if [ -x %{_libexecdir}/authlib/authdaemond ]; then
+        if ps -A |grep -q authdaemond.pgs; then
+                %{_libexecdir}/authlib/authdaemond stop;
+                %{_libexecdir}/authlib/authdaemond start;
+        fi
 fi
 
 %files
@@ -408,7 +368,6 @@ fi
 %files common
 %defattr(644,root,root,755)
 %doc AUTHORS ChangeLog imap/BUGS INSTALL README*
-#%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/authdaemon
 %attr(700,root,root) /var/lib/authdaemon
 %attr(750,root,root) %dir %{_sysconfdir}
 %dir %{_libexecdir}
