@@ -3,7 +3,6 @@
 #	- triggers
 #	- post, preun
 #	- add maildir.patch (like in courier-mta)
-#	- add certsdir.patch
 #
 # Conditional build:
 %bcond_without ldap	# without LDAP support
@@ -22,6 +21,8 @@ Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}.pamd
 Source4:	%{name}-pop3.pamd
+Patch0:		%{name}-dirs.patch
+Patch1:		%{name}-certsdir.patch
 URL:		http://www.inter7.com/courierimap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
@@ -44,8 +45,9 @@ Conflicts:	cyrus-imapd
 Conflicts:	imap
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_libexecdir	/usr/lib/courier-imap
+%define		_libexecdir	/usr/%{_lib}/courier-imap
 %define		_sysconfdir	/etc/courier-imap
+%define         _certsdir       %{_sysconfdir}/certs
 
 %description
 Courier-IMAP is an IMAP server for Maildir mailboxes.
@@ -54,8 +56,8 @@ Courier-IMAP is an IMAP server for Maildir mailboxes.
 Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 
 %package common
-Summary:	Common files for imap and pop daemons
-Summary(pl):	Pliki wspólne dla serwerów imap i pop
+Summary:	Common files for imap and pop3 daemons
+Summary(pl):	Pliki wspólne dla serwerów imap i pop3
 Group:		Networking/Daemons
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
@@ -65,10 +67,10 @@ Requires:	%{name}-userdb		= %{version}-%{release}
 Requires:	procps
 
 %description common
-Common files for imap and pop daemons.
+Common files for imap and pop3 daemons.
 
 %description common -l pl
-Pliki wspólne dla serwerów imap i pop.
+Pliki wspólne dla serwerów imap i pop3.
 
 %package userdb
 Summary:	Commands used to create the /etc/userdb.dat
@@ -166,19 +168,36 @@ IMAP.
 
 %prep
 %setup -q
+%patch0 -p1
+%patch1 -p1
+
+install %{SOURCE1} courier-imap.in
+install %{SOURCE2} courier-pop3.in
 
 %build
 cp -f /usr/share/automake/config.sub .
 cp -f /usr/share/automake/config.sub maildir
+
+%{__aclocal}
+%{__automake}
+%{__autoconf}
+
 cd authlib
 %{__aclocal}
 %{__automake}
 %{__autoconf}
+cd ../imap
+%{__aclocal}
+%{__automake}
+%{__autoconf}
 cd ..
+
 %configure \
+	--libexecdir=%{_libexecdir} \
 	--enable-unicode \
 	--with-authchangepwdir=/var/tmp \
 	--with-authdaemonvar=/var/lib/authdaemon \
+	--with-certsdir=%{_certsdir} \
 	%{?with_mysql:--with-mysql-libs=%{_libdir} --with-mysql-includes=%{_includedir}/mysql} \
 	%{!?with_mysql:--without-authmysql} \
 	%{?with_pgsql:--with-pgsql-libs=%{_libdir} --with-pgsql-includes=%{_includedir}/postgresql} \
@@ -190,13 +209,13 @@ cd ..
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig} \
-	$RPM_BUILD_ROOT{%{_sysconfdir}/shared,/var/lib/authdaemon}
+	$RPM_BUILD_ROOT{%{_sysconfdir}/shared,%{_certsdir},/var/lib/authdaemon}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
-install %{SOURCE2} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
+install courier-imap $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
+install courier-pop3 $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
 install %{SOURCE3} $RPM_BUILD_ROOT/etc/pam.d/imap
 install %{SOURCE4} $RPM_BUILD_ROOT/etc/pam.d/pop3
 
@@ -265,7 +284,9 @@ if [ "$1" = "0" ]; then
 	/sbin/chkconfig --del courier-imap
 fi
 
-%triggerin -- %{name} < 3.0.5
+%triggerpostin -- %{name} < 3.0.5
+echo pop3d.pem has been moved automatically to %{_certsdir}
+mv -f /var/lib/openssl/imapd.pem %{_certsdir}
 
 %triggerin -n %{name}-common -- %{name}-common < 3.0.5
 /sbin/chkconfig --del authdaemon
@@ -297,7 +318,9 @@ if [ "$1" = "0" ]; then
 	rm -f /etc/rc.d/init.d/courier-imap-pop3
 fi
 
-%triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
+%triggerpostin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
+echo pop3d.pem has been moved automatically to %{_certsdir}
+mv -f /var/lib/openssl/pop3d.pem %{_certsdir}
 
 %post authldap
 if ps -A |grep -q authdaemond.lda; then
@@ -370,6 +393,7 @@ fi
 %doc AUTHORS ChangeLog imap/BUGS INSTALL README*
 %attr(700,root,root) /var/lib/authdaemon
 %attr(750,root,root) %dir %{_sysconfdir}
+%attr(750,root,root) %dir %{_certsdir}
 %dir %{_libexecdir}
 %dir %{_libexecdir}/authlib
 %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authdaemonrc
