@@ -1,4 +1,0 @@
-# Authentication Method (plain, mysql, ldap)
-# 
-METHOD=plain
-
