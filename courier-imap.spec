@@ -1,3 +1,6 @@
+
+# SECURITY: CAN-2004-0224
+
 #
 # Conditional build:
 # _without_ldap - without LDAP support
