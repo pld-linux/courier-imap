@@ -2,12 +2,12 @@
 # Conditional build:
 # _without_ldap - without LDAP support
 # _without_mysql - without MySQL support
-# _without_postgresql - without PostgreSQL support
+# _without_pgsql - without PostgreSQL support
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.5.3
-Release:	5
+Release:	6
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz
@@ -21,7 +21,7 @@ Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
 Patch0:		ftp://ftp.pld.org.pl/people/siefca/patches/courier/%{name}-%{version}-myownquery.patch
 URL:		http://www.inter7.com/courierimap/
-%{!?_without_postgresql:BuildRequires:	postgresql-devel}
+%{!?_without_pgsql:BuildRequires:	postgresql-devel}
 %{!?_without_mysql:BuildRequires:	mysql-devel}
 %{!?_without_mysql:BuildRequires:	zlib-devel}
 %{!?_without_ldap:BuildRequires:	openldap-devel}
@@ -164,8 +164,8 @@ IMAP.
 	--with-authdaemonvar=/var/lib/authdaemon \
 	%{!?_without_mysql:--with-mysql-libs=%{_libdir} --with-mysql-includes=%{_includedir}/mysql} \
 	%{?_without_mysql:--without-authmysql} \
-	%{!?_without_postgresql:--with-pgsql-libs=%{_libdir} --with-pgsql-includes=%{_includedir}/postgresql} \
-	%{?_without_postgresql:--without-authpgsql} \
+	%{!?_without_pgsql:--with-pgsql-libs=%{_libdir} --with-pgsql-includes=%{_includedir}/postgresql} \
+	%{?_without_pgsql:--without-authpgsql} \
 	%{?_without_ldap:--without-authldap}
 
 %{__make}
