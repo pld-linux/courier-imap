@@ -261,11 +261,8 @@ touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
 ./sysconftool $RPM_BUILD_ROOT%{_sysconfdir}/*.dist
 
 # set yes to start imapd and pop3d
-sed 's/^POP3DSTART.*/POP3DSTART=YES/' < $RPM_BUILD_ROOT%{_sysconfdir}/pop3d > $RPM_BUILD_ROOT%{_sysconfdir}/pop3d.new
-mv -f $RPM_BUILD_ROOT%{_sysconfdir}/pop3d.new $RPM_BUILD_ROOT%{_sysconfdir}/pop3d
-
-sed 's/^IMAPDSTART.*/IMAPDSTART=YES/' < $RPM_BUILD_ROOT%{_sysconfdir}/imapd > $RPM_BUILD_ROOT%{_sysconfdir}/imapd.new
-mv -f $RPM_BUILD_ROOT%{_sysconfdir}/imapd.new $RPM_BUILD_ROOT%{_sysconfdir}/imapd
+sed -i 's/^POP3DSTART.*/POP3DSTART=YES/' $RPM_BUILD_ROOT%{_sysconfdir}/pop3d
+sed -i 's/^IMAPDSTART.*/IMAPDSTART=YES/' $RPM_BUILD_ROOT%{_sysconfdir}/imapd
 
 # remove unpackaged files
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/*.dist
@@ -302,19 +299,13 @@ if [ -f /etc/sysconfig/courier-imap ]; then
     for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
     do
 	eval opt2=\$$opt
-	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/imapd > %{_sysconfdir}/imapd.new
-	mv -f %{_sysconfdir}/imapd.new %{_sysconfdir}/imapd
-	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
-	mv -f %{_sysconfdir}/imapd-ssl.new %{_sysconfdir}/imapd-ssl
+	sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/imapd
+	sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/imapd-ssl
     done
-    sed s/^SSLADDRESS=.*/"SSLADDRESS=$ADDRESS_SSL"/ < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
-    sed s/^SSLPORT=.*/"SSLPORT=$PORTS_SSL"/ < %{_sysconfdir}/imapd-ssl.new > %{_sysconfdir}/imapd-ssl
-    sed s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
-    sed s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! < %{_sysconfdir}/imapd > %{_sysconfdir}/imapd.new
-    mv -f %{_sysconfdir}/imapd-ssl.new %{_sysconfdir}/imapd-ssl
-    mv -f %{_sysconfdir}/imapd.new %{_sysconfdir}/imapd
-    chmod 640 %{_sysconfdir}/imapd-ssl
-    chmod 640 %{_sysconfdir}/imapd
+    sed -i s/^SSLADDRESS=.*/"SSLADDRESS=$ADDRESS_SSL"/ %{_sysconfdir}/imapd-ssl
+    sed -i s/^SSLPORT=.*/"SSLPORT=$PORTS_SSL"/ %{_sysconfdir}/imapd-ssl
+    sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/imapd-ssl
+    sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/imapd
     echo
     echo IMAPD config file has been rewriten to %{_sysconfdir}/imapd,imapd-ssl
     echo please look at them
@@ -327,9 +318,7 @@ fi
 %triggerin -- %{name} < 3.0.6
 . %{_sysconfdir}/imapd-ssl
 if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
-    sed s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
-    mv -f %{_sysconfdir}/imapd-ssl.new %{_sysconfdir}/imapd-ssl
-    chmod 640 %{_sysconfdir}/imapd-ssl
+    sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/imapd-ssl
 fi
 
 %triggerin -n %{name}-common -- %{name}-common < 3.0.5
@@ -340,9 +329,7 @@ if [ -f /var/lock/subsys/authdaemon ]; then
 fi
 if [ -f /etc/sysconfig/authdaemon ]; then
     . /etc/sysconfig/authdaemon
-    sed s/^version.*/version=authdaemond.$METHOD/ <%{_sysconfdir}/authdaemonrc >%{_sysconfdir}/authdaemonrc.new
-    mv -f %{_sysconfdir}/authdaemonrc.new %{_sysconfdir}/authdaemonrc
-    chmod 640 %{_sysconfdir}/authdaemonrc
+    sed -i s/^version.*/version=authdaemond.$METHOD/ %{_sysconfdir}/authdaemonrc
 fi
 echo
 echo Changes to version 3.0.5 :
@@ -382,17 +369,11 @@ if [ -f /etc/sysconfig/courier-pop3 ]; then
     for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
     do
 	eval opt2=\$$opt
-	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/pop3d > %{_sysconfdir}/pop3d.new
-	mv -f %{_sysconfdir}/pop3d.new %{_sysconfdir}/pop3d
-	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/pop3d-ssl > %{_sysconfdir}/pop3d-ssl.new
-	mv -f %{_sysconfdir}/pop3d-ssl.new %{_sysconfdir}/pop3d-ssl
+	sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/pop3d
+	sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/pop3d-ssl
     done
-    sed s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! < %{_sysconfdir}/pop3d-ssl > %{_sysconfdir}/pop3d-ssl.new
-    sed s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! < %{_sysconfdir}/pop3d > %{_sysconfdir}/pop3d.new
-    mv -f %{_sysconfdir}/pop3d-ssl.new %{_sysconfdir}/pop3d-ssl
-    mv -f %{_sysconfdir}/pop3d.new %{_sysconfdir}/pop3d
-    chmod 640 %{_sysconfdir}/pop3d-ssl
-    chmod 640 %{_sysconfdir}/pop3d
+    sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/pop3d-ssl
+    sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/pop3d
     echo
     echo POP3D config file has been rewriten to %{_sysconfdir}/pop3d,pop3d-ssl
     echo please look at them
@@ -405,9 +386,7 @@ fi
 %triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.6
 . %{_sysconfdir}/pop3d-ssl
 if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
-    sed s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ < %{_sysconfdir}/pop3d-ssl > %{_sysconfdir}/pop3d-ssl.new
-    mv -f %{_sysconfdir}/pop3d-ssl.new %{_sysconfdir}/pop3d-ssl
-    chmod 640 %{_sysconfdir}/pop3d-ssl
+    sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/pop3d-ssl
 fi
 
 %post authldap
