@@ -1,7 +1,7 @@
 Summary:	Courier-IMAP 0.18 IMAP server
 Name:		courier-imap
 Version:	0.22
-Release:	1
+Release:	2
 License:	GPL
 Group:		Applications/Mail
 Group(pl):	Aplikacje/Poczta
