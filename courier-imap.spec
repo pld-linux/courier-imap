@@ -3,6 +3,7 @@
 # _without_ldap - without LDAP support
 # _without_mysql - without MySQL support
 # _without_postgresql - without PostgreSQL support
+#
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
@@ -10,7 +11,7 @@ Version:	1.7.0
 Release:	1
 License:	GPL
 Group:		Networking/Daemons
-Source0:	http://prdownloads.sourceforge.net/courier/%{name}-%{version}.tar.bz2
+Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}-authdaemon.init
@@ -29,6 +30,8 @@ BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
 BuildRequires:	openssl-devel
 PreReq:		%{name}-common = %{version}
+PreReq:		rc-scripts
+Requires(post,preun):	/sbin/chkconfig
 Provides:	imapdaemon
 Obsoletes:	imapdaemon
 Conflicts:	cyrus-imapd
@@ -49,7 +52,7 @@ Summary:	Common files for imap and pop daemons
 Summary(pl):	Pliki wspólne dla serwerów imap i pop
 Group:		Networking/Daemons
 PreReq:		rc-scripts
-PreReq:		/sbin/chkconfig
+Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name}-maildirmake
 Requires:	%{name}-deliverquota
 Requires:	%{name}-userdb
