@@ -26,7 +26,6 @@ Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 %prep
 %setup -q
 %build
-LDFLAGS="-s"; export LDFLAGS
 %configure \
 	--with-authvchkpw
 %{__make}
@@ -55,7 +54,7 @@ echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
 echo ".so makeuserdb.8" >$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
 echo ".so makeuserdb.8" >$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
 
-gzip -9nf $RPM_BUILD_ROOT%{_mandir}/*/* README* imap/BUGS AUTHORS COPYING
+gzip -9nf README* imap/BUGS AUTHORS COPYING
 
 touch $RPM_BUILD_ROOT/etc/security/blacklist.courier-imap
 
