@@ -25,7 +25,7 @@ MAXPERIP=4
 
 # Where mail is stored (relative to $HOME)
 #
-MAILDIR="Maildir"
+MAILDIR="Mail/Maildir"
 
 # Miscellaneous couriertcpd options that shouldn't be changed.
 #
