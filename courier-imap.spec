@@ -8,7 +8,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	3.0.8
-Release:	2
+Release:	3
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -23,6 +23,7 @@ Patch2:		%{name}-maildir.patch
 URL:		http://www.inter7.com/courierimap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
+BuildRequires:	fam-devel
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
 %{?with_mysql:BuildRequires:	mysql-devel}
