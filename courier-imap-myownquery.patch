@@ -1,7 +1,7 @@
 diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12/authlib/README.myownquery
 --- courier-imap-1.3.12.orig/authlib/README.myownquery	Thu Jan  1 01:00:00 1970
-+++ courier-imap-1.3.12/authlib/README.myownquery	Fri Dec 28 01:25:14 2001
-@@ -0,0 +1,605 @@
++++ courier-imap-1.3.12/authlib/README.myownquery	Sun Dec 30 01:41:38 2001
+@@ -0,0 +1,543 @@
 +
 +
 +
@@ -11,7 +11,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +
 +
 +
-+							document version: 1.02
++							document version: 1.03
 +							author:	Pawel Wilk
 +
 +
@@ -40,22 +40,20 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +  3.2 typedef size_t (*parsefunc)
 +  
 +4 New functions
-+  4.1 parse_core
-+  4.2 ParsePlugin_variable_len
-+  4.3 ParsePlugin_value_len
-+  4.4 ParsePlugin_validate
-+  4.5 ParsePlugin_build
-+  4.6 get_var_value
-+  4.7 parse_string
-+  4.8 validate_password
-+  4.9 get_localpart
-+  4.10 get_domain
-+  4.11 parse_select_clause
-+  4.12 parse_chpass_clause
++  4.1 get_variable
++  4.2 parse_core
++  4.3 ParsePlugin_counter
++  4.4 ParsePlugin_builder
++  4.5 parse_string
++  4.6 validate_password
++  4.7 get_localpart
++  4.8 get_domain
++  4.9 parse_select_clause
++  4.10 parse_chpass_clause
 +  
 +5 Ideas and TODO
 +
-+
++6 Thanks
 +
 +
 +
@@ -121,10 +119,11 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +		     2 Definitions
 +		    *-----------------------
 +
-+#define		SV_BEGIN_MARK	"$("
-+#define		SV_END_MARK	")"
-+#define		SV_BEGIN_LEN	((sizeof(SV_BEGIN_MARK))-1)
-+#define		SV_END_LEN	((sizeof(SV_END_MARK))-1)
++#define		MAX_SUBSTITUTION_LEN	32
++#define		SV_BEGIN_MARK		"$("
++#define		SV_END_MARK		")"
++#define		SV_BEGIN_LEN		((sizeof(SV_BEGIN_MARK))-1)
++#define		SV_END_LEN		((sizeof(SV_END_MARK))-1)
 +
 +These definitions allows to change substitution marks in an easy way.
 +SV_BEGIN_MARK refers to sequence of characters treated as a prefix of
@@ -132,6 +131,8 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +a closing suffix. If the expected substitution variable is called
 +'local_part' (without apostrophes) then '$(local_part)' is a valid
 +string representation for SV_BEGIN_MARK set to "$(" and SV_END_MARK to ")".
++MAX_SUBSTITUTION_LEN defines maximal length of a substitution variable's
++identifier (name).
 +
 +The last two definitions are just for code simplification.
 +
@@ -173,7 +174,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 + 
 +Example:
 +
-+struct var_data vd[] =	{
++struct var_data vdt[] =	{
 +    {"some",	"replacement",	sizeof("some"),		0},
 +    {"anotha",	NULL,		sizeof("anotha"),	0},
 +    {NULL,	NULL,		0,			0}
@@ -187,11 +188,11 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +
 +3.2 typedef size_t (*parsefunc)
 +
-+typedef size_t (*parsefunc)(const char *, size_t, struct var_data *);
++typedef int (*parsefunc)(const char *, size_t, void *);
 +
 +This type definition refers to the function pointer, which is used
 +to pass plugin functions into the core parsing subroutine. This definition
-+is included to simplify the declaration of plugin functions.
++is included to simplify the declaration of the parse_core() function.
 +
 +
 +
@@ -203,252 +204,177 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +
 +This section describes added functions.
 +
-+4.1 parse_core
++4.1 get_variable
++
++NAME
++
++	get_variable
++
++SYNOPSIS
++
++	static const struct var_data *get_variable (const char *begin,
++						    size_t len,
++  		  	        	  	    struct var_data *vdt);
++
++DESCRIPTION
++
++	This function searches an array pointed by vdt and tries to find
++	the substitution variable, which name is identified with begin
++	pointer and length of len bytes long.
++	
++	This function is also responsible for updating length cache field
++	of vdt elements and validating requested variables.
++	
++	This function repports errors by sending human readable
++	messages to the standard error stream.
++
++RETURN VALUE
++
++	This function returns a pointer to the array element which is
++	structure of var_data type, which contains variable definition
++	of a given name. It returns NULL on error or failure.
++
++
++4.2 parse_core
 +
 +NAME
 +
 +	parse_core
 +
 +SYNOPSIS
-+	static size_t parse_core (const char *source, struct var_data *vd,
-+				  parsefunc outfn, char *result);
++	static int    parse_core (const char *source, struct var_data *vdt,
++				  parsefunc outfn, void *result);
 +
 +DESCRIPTION
 +
 +	This is the parsing routine for query strings containing the
 +	substitution variables. It reads the string pointed with source
-+	and tries to catch a valid substitution variables from the
-+	var_data structure pointed with vd. For each found substitution
-+	variable it calls outfn function using function pointer of
-+	parsefunc type, which accords to:
++	and tries to catch a valid substitution variables or parts which
++	are plain text blocks. The main purpose of using this function
++	it to split source string into parts and for each part call
++	outfn() function. Those parts are substrings identified by
++	pointer to some element of the source string and size.
++	Those elements are the result of splitting source string into
++	logical parts: plain text substrings and substitution variables'
++	values. To get the values of any found substitution variables
++	parse_core() uses get_variable() function. To find places
++	where substitution variables occurs it uses strstr() function
++	in conjunction with SV_BEGIN_MARK and SV_END_MARK definitions.
++	It passes vdt structure pointer to get_variable() function is
++	it calls it.
++
++	outfn() function should be passed by its pointer which
++	refers to declaration:
 +	
-+	size_t (*parsefunc)(const char *variable_name,
-+			    size_t string_size,
-+			    struct var_data *vd);
++ 	int (*outfn)    (const char *begin,
++			 size_t string_length,
++			 void *void_pointer);
 +	
-+	variable name is a pointer to the string where the found
-+	substitution variable was found. string_size is a length
-+	of that variable name (plugin function needs to know how
-+	much characters of a string have to be read). vd structure
-+	pointer points to the first element of an array containing
-+	replacement instructions.
++	Each time outfn() is called the result argument of parse_core()
++	is passed to the outfn() as a last argument (void_pointer).
 +	
 +	Example:
 +	
 +	    Example string "$(local_part) AND $(domain)" will cause the
-+	    outfn() to be called twice. First time when variable_name
-+	    points the third character and string_size is set to 10.
-+	    Second time variable_name will point 'd' character (first
-+	    letter of the second substitution variable) and string_size
-+	    will be set to 6. The vd argument is simply passed as-is.
++	    outfn() to be called 3 times. First time for a value of
++	    $(local_part) substitution variable, second time
++	    for " AND " string, and the last time for $(domain) variable's
++	    value. Variables are passed to outfn() by their (found) values,
++	    plain text blocks are passed as they appear.
 +
-+WORKING MODES
-+	
-+	This function has two working modes: counting mode and building
-+	mode.
-+	
-+	When the function is in counting mode is summarizes return
-+	values of each subsequent outfn() calls, and then returns the
-+	calculated value as a result. Remember, that each outfn() call
-+	refers to one substitution variable found in the source string.
-+	
-+	When the function is in building mode it produces output string
-+	(using get_var_value() function) and places it into the buffer
-+	pointed by result argument.
-+	
-+	Function determines the working mode looking at its last
-+	argument (result). If it is set to NULL then function assumes
-+	that we are expecting it to work in the counting mode. If it
-+	points to the existing memory area then the output is produced.
-+	
-+	Note that in building mode outfn argument has no meaning. It implies
-+	the fact, that the ParsePlugin_build function pointer is always set
-+	to NULL.
-+	
++	This function repports errors by sending human readable
++	messages to the standard error stream.
++
 +RETURN VALUE
 +
-+	This function returns -1 when an error has occured. If the function
-+	was called in the counting mode it returns summarized return values
-+	of outfn() called for each found substiution variable. In the building
-+	mode it returns 0 on success.
++	This function returns -1 if an error has occured and 0 if
++	everything went good.
 +	
-+	
-+4.2 ParsePlugin_variable_len
++4.3 ParsePlugin_counter
 +
 +NAME
 +
-+	ParsePlugin_variable_len
++	ParsePlugin_counter
 +
 +SYNOPSIS
 +
-+	size_t ParsePlugin_variable_len (const char *begin, size_t len,
-+			        	 struct var_data *vd);
++	int    ParsePlugin_counter (const char *begin, size_t len,
++			            void *vp);
 +
 +DESCRIPTION
 +
-+	This is parsing plugin function. It returns the length of
-+	string of the passed substitution variable name, including
-+	the special symbols length.
++	This is parsing plugin function. It simply increments the value
++	found in the memory area pointed by vp. It assumes that
++	the memory area is allocated for the variable of size_t
++	type and that area was passed by (size_t *) pointer.
++	The value is incremented by len argument. Begin argument
++	is not used.
 +
-+WORKING MODE
-+
-+	Destinated to be called in parse_core()'s counting mode.
++	This function repports errors by sending human readable
++	messages to the standard error stream.
 +
 +RETURN VALUE
 +
 +	This function returns the variable size or -1 if an error
-+	has occured.
++	has occured, 0 if everything went good.
 +
-+4.3 ParsePlugin_value_len
-+
-+NAME
-+
-+	ParsePlugin_value_len
-+
-+SYNOPSIS
-+
-+	size_t ParsePlugin_value_len (const char *begin, size_t len,
-+			              struct var_data *vd);
-+
-+DESCRIPTION
-+
-+	This is parsing plugin function. It returns the length of
-+	string of the value found while looking at vd array for the
-+	substitution variable name pointed by the begin argument and
-+	length specified by len argument.
-+	
-+	The function updates a simple length cache inside of the
-+	proper element of array containing var_data structure elements.
-+	It checks the value_length field and calculates string length for the
-+	variable's value if it founds 0 there, and stores the result then.
-+	If it founds non-zero value it uses that value instead of
-+	recalculating.
-+
-+WORKING MODE
-+
-+	Destinated to be called in parse_core()'s counting mode.
-+
-+RETURN VALUE
-+
-+	This function returns the variable's value size or -1 if an error
-+	has occured.
-+
-+
-+4.4 ParsePlugin_validate
++4.4 ParsePlugin_builder
 +
 +NAME
 +
-+	ParsePlugin_validate
++	ParsePlugin_builder
 +
 +SYNOPSIS
 +
-+	size_t ParsePlugin_validate (const char *begin, size_t len,
-+				     struct var_data *vd);
++	int    ParsePlugin_builder (const char *begin, size_t len,
++			            void *vp);
 +
 +DESCRIPTION
 +
-+	This is parsing plugin function. It checks whether the
-+	substituion variable identified by the name passed by
-+	the begin pointer and len bytes of length is a correct,
-+	existing variable with a proper length and a defined value.
-+
-+WORKING MODE
-+
-+	Destinated to be called in parse_core()'s counting mode.
-+
-+RETURN VALUE
-+
-+	This function returns 0 on success or -1 if an error
-+	has occured or specified variable is invalid or unknown.
-+
-+
-+4.5 ParsePlugin_build
-+
-+NAME
-+
-+	ParsePlugin_build
-+
-+SYNOPSIS
-+
-+	typedef size_t (*parsefunc)(const char *, size_t, struct var_data *);
-+
-+	parsefunc ParsePlugin_build = NULL;
-+
-+DESCRIPTION
-+
-+	This is parsing plugin pseudo-function. It is a NULL function pointer.
-+	It has only easthetic meaning.
-+
-+WORKING MODE
-+
-+	Destinated to be called in parse_core()'s building mode.
++	This is parsing plugin function. It simply copies len bytes
++	of a string pointed by begin to the end of memory area pointed by
++	vp. It assumes that the area pointed by vp is passed by (char **)
++	type pointer and refers to the (char *) pointer variable.
++	After each call it shifts the value of pointer variable (char *)
++	incrementing it by len bytes. Be careful when using this function
++	- its changes the given pointer value. Always operate on an
++	additional pointer type variable when passing it as the third
++	argument.
 +
 +RETURN VALUE
 +
-+	None.
++	This function returns the variable size or -1 if an error
++	has occured, 0 if everything went good.
 +
-+
-+4.6 get_var_value
-+
-+NAME
-+
-+	get_var_value
-+
-+SYNOPSIS
-+
-+	static const char *get_var_value (const char *begin, size_t len,
-+  		  	        	  struct var_data *vd);
-+
-+DESCRIPTION
-+
-+	This function searches an array pointed by vd and tries to find
-+	the substitution variable defined with begin pointer and length
-+	of len bytes long.
-+
-+RETURN VALUE
-+
-+	This function returns a pointer to the value field of the
-+	var_data array entry, which contains value assigned to the
-+	substitution variable of a given name. It returns -1 on
-+	error or failure.
-+
-+
-+4.7 parse_string
++4.5 parse_string
 +
 +NAME
 +	parse_string
 +
 +SYNOPSIS
 +
-+	static char *parse_string (const char *source, struct var_data *vd);
++	static char *parse_string (const char *source, struct var_data *vdt);
 +
 +DESCRIPTION
 +
 +	This function parses the string pointed with source according to the
 +	replacement instructions set in var_data array, which is passed with
-+	its pointer vd. It produces changed string located in newly allocated
++	its pointer vdt. It produces changed string located in newly allocated
 +	memory area.
 +
-+	This function calls parse_core() function repeatedly with
-+	various parsing subroutines passed as function pointers:
++	This function calls parse_core() function with various parsing
++	subroutines passed as function pointers.
 +	
-+	Just after the function is called it invokes parse_core() with
-+	plugin function set to ParsePlugin_validate to make the source string
-+	validation probes against specified set of substitution variables
-+	which are expected to be made.
++	1. It uses parse_core() with ParsePlugin_counter to obtain the
++	   total amount	of memory needed for the output string.
 +	
-+	In the next step it uses parse_core() with ParsePlugin_value_len
-+	and then with ParsePlugin_variable_len to obtain the total amount
-+	of memory needed for the output string.
++	2. It allocates the memory.
 +	
-+	Then it allocates the memory.
-+	
-+	In the last phase the output string is built. parse_core() is
-+	used once again with ParsePlugin_build function pointer, which
-+	is NULL pointer indeed. The result is keept in the memory area
-+	allocated before. In this phase the parse_core() is called in
-+	the building mode - pointer to the area is passed by the last
-+	argument.
++	3. It uses parse_core() with ParsePlugin_builder to build the
++	   output string.
++
++	This function repports errors by sending human readable
++	messages to the standard error stream.
 +
 +RETURN VALUE
 +			   
@@ -462,7 +388,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +	freed with free().
 +
 +
-+4.8 validate_password
++4.6 validate_password
 +
 +NAME
 +	validate_password
@@ -484,7 +410,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +	validated password string or NULL if an error has occured.
 +
 +
-+4.9 get_localpart
++4.7 get_localpart
 +
 +NAME
 +	
@@ -507,7 +433,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +	NULL if there was some error.
 +
 +
-+4.10 get_domain
++4.8 get_domain
 +
 +NAME
 +
@@ -533,7 +459,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +	NULL if there was some error.
 +
 +
-+4.11 parse_select_clause
++4.9 parse_select_clause
 +
 +NAME
 +
@@ -559,7 +485,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +	Same as parse_string().
 +
 +
-+4.12 parse_chpass_clause
++4.10 parse_chpass_clause
 +
 +NAME
 +
@@ -592,7 +518,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +
 +		    *------------------------
 +		     5 Ideas and TODO
-+		    *-----------------------
++		    *------------------------
 +
 +- solve problem with fixed buffer length of local part and the domain part
 +  strings after split						(problem?)
@@ -603,13 +529,25 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +
 +  - MYSQL_PRESELECT_CLAUSE (query which comes before MYSQL_SELECT_CLAUSE)
 +  - MYSQL_POSTSELECT_CLAUSE (query which comes after MYSQL_SELECT_CLAUSE)
-+  
++
++
++
++
++
++		    *------------------------
++		     6 Thanks
++		    *------------------------
++
++At the beginning this patch was messy indeed. :> I would like to thank
++Sam Varshavchik for pointing me a lot how to make it more fast and solid.
++I would also thank Philip Hazel, Chris Lightfoot and Mike Bremford which
++by their software capabilities inspired me to write it.
 +
 +---------------------------------------------------------------------------
 +
 diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/authlib/authmysqllib.c
 --- courier-imap-1.3.12.orig/authlib/authmysqllib.c	Mon Aug  6 05:12:39 2001
-+++ courier-imap-1.3.12/authlib/authmysqllib.c	Fri Dec 28 01:11:49 2001
++++ courier-imap-1.3.12/authlib/authmysqllib.c	Sun Dec 30 01:41:00 2001
 @@ -3,7 +3,6 @@
  ** distribution information.
  */
@@ -618,33 +556,34 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/au
  #include	<stdio.h>
  #include	<stdlib.h>
  #include	<string.h>
-@@ -18,8 +17,25 @@
+@@ -18,8 +17,26 @@
  #include	"authmysqlrc.h"
  #include	"auth.h"
  
 +/* siefca@pld.org.pl */
-+#define		SV_BEGIN_MARK	"$("
-+#define		SV_END_MARK	")"
-+#define		SV_BEGIN_LEN	((sizeof(SV_BEGIN_MARK))-1)
-+#define		SV_END_LEN	((sizeof(SV_END_MARK))-1)
++#define		MAX_SUBSTITUTION_LEN	32
++#define		SV_BEGIN_MARK		"$("
++#define		SV_END_MARK		")"
++#define		SV_BEGIN_LEN		((sizeof(SV_BEGIN_MARK))-1)
++#define		SV_END_LEN		((sizeof(SV_END_MARK))-1)
 +
  static const char rcsid[]="$Id$";
  
++/* siefca@pld.org.pl */
 +struct var_data {			
 +	const char *name;
 +	const char *value;
 +	const size_t size;
 +	size_t value_length;
-+	} ;				/* siefca@pld.org.pl */
++	} ;
 +
-+typedef size_t (*parsefunc)(const char *, size_t, struct var_data *);
-+parsefunc ParsePlugin_build = NULL;	/* siefca@pld.org.pl */
-+
++/* siefca@pld.org.pl */
++typedef int (*parsefunc)(const char *, size_t, void *);
 +
  static const char *read_env(const char *env)
  {
  static char *mysqlauth=0;
-@@ -51,7 +67,13 @@
+@@ -51,7 +68,13 @@
  
  		for (i=0; i<mysqlauth_size; i++)
  			if (mysqlauth[i] == '\n')
@@ -659,25 +598,48 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/au
  		fclose(f);
  	}
  
-@@ -199,17 +221,384 @@
+@@ -199,17 +222,370 @@
  		strcat(strcpy(p, "@"), defdomain);
  }
  
 +/* siefca@pld.org.pl */
-+static const char *get_var_value (const char *begin, size_t len,
-+  		  	          struct var_data *vd)
++static struct var_data *get_variable (const char *begin, size_t len,
++  		  	                   struct var_data *vdt)
 +{
 +struct var_data *vdp;
 +
-+	for (vdp=vd; vdp->name; vdp++)
++	if (!begin || !vdt) /* should never happend */
++	{
++		fprintf (stderr, "authmysql: critical error while "
++				 "parsing substitution variable\n");
++		return NULL;
++	}
++	if (len < 1)
++	{
++		fprintf (stderr, "authmysql: unknown empty substitution "
++				 "variable - aborting\n");
++		return NULL;
++	}
++	if (len > MAX_SUBSTITUTION_LEN)
++	{
++		fprintf (stderr, "authmysql: variable name too long "
++				 "while parsing substitution\n"
++				 "authmysql: name begins with "
++				 SV_BEGIN_MARK
++				 "%.*s...\n", MAX_SUBSTITUTION_LEN, begin);
++		return NULL;
++	}
++	
++	for (vdp=vdt; vdp->name; vdp++)
 +		if (vdp->size == len+1 &&
 +		    !strncmp(begin, vdp->name, len))
-+		    	{
-+				if (vdp->value)
-+					return (vdp->value);
-+				else
-+					return "";
-+			}
++		{
++			if (!vdp->value)
++				vdp->value = "";
++			if (!vdp->value_length)		/* length cache */
++				vdp->value_length = strlen (vdp->value);
++			return vdp;
++		}
 +	
 +	fprintf (stderr, "authmysql: unknown substitution variable "
 +			 SV_BEGIN_MARK
@@ -689,23 +651,66 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/au
 +}
 +
 +/* siefca@pld.org.pl */
-+static size_t parse_core (const char *source, struct var_data *vd,
-+			  parsefunc outfn, char *result)
++static int ParsePlugin_counter (const char *p, size_t length, void *vp)
 +{
-+size_t	counter		= 0,
-+	s		= 0,
-+	v_size		= 0,
++	if (!p || !vp || length < 0)
++	{
++		fprintf (stderr, "authmysql: bad arguments while counting "
++				 "query string\n");
++		return -1;
++	}
++	
++	*((size_t *)vp) += length;
++   
++	return 0;
++}
++
++/* siefca@pld.org.pl */
++static int ParsePlugin_builder (const char *p, size_t length, void *vp)
++{
++char	**strptr = (char **) vp;
++
++	if (!p || !vp || length < 0)
++	{
++		fprintf (stderr, "authmysql: bad arguments while building "
++				 "query string\n");
++		return -1;
++	}
++	
++	if (!length) return 0;
++	memcpy ((void *) *strptr, (void *) p, length);
++	*strptr += length;
++	
++	return 0;
++}
++
++/* siefca@pld.org.pl */
++static int parse_core  (const char *source, struct var_data *vdt,
++			parsefunc outfn, void *result)
++{
++int	ret;
++size_t	v_size		= 0,
 +	t_size		= 0;
 +const char	*p, *q, *e,
 +		*v_begin, *v_end,
-+		*t_begin, *t_end,
-+		*var_value;
++		*t_begin, *t_end;
++struct var_data	*v_ptr;
 +
 +	if (!source)
 +		source = "";
-+	if (result)
-+		*result = '\0';
-+
++	if (!result)
++	{
++		fprintf (stderr, "authmysql: no memory allocated for result"
++				 "while parser core was invoked\n");
++		return -1;
++	}
++	if (!vdt)
++	{
++		fprintf (stderr, "authmysql: no substitution table found "
++				 "while parser core was invoked\n");
++		return -1;
++	}
++	
 +	q = source;
 +	while ( (p=strstr(q, SV_BEGIN_MARK)) )
 +	{
@@ -713,169 +718,89 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/au
 +		if (!e)
 +		{
 +			fprintf (stderr, "authmysql: syntax error in "
-+					 "substitution variable "
-+					 "- missing: "
-+					 SV_END_MARK
-+					 "\n"
-+					 "authmysql: bad variable begins "
-+					 "with: %.*s...\n", 20, p);
++					 "substitution "
++					 "- no closing symbol fould!\n"
++					 "authmysql: bad variable begins with:"
++					 "%.*s...\n", MAX_SUBSTITUTION_LEN, p);
 +			return -1;
 +		}
 +		
 +		/*
 +		 **
 +		 **	     __________sometext$(variable_name)_________
-+		 **	 	       |      |  |	     |	
++		 **	 	       |      |  |    	     |	
 +		 **	        t_begin' t_end'  `v_begin    `v_end
 +		 **
 +		  */
 +
-+		v_begin	= p+SV_BEGIN_LEN; /* variable field ptr		   */
-+		v_end	= e-SV_END_LEN;	  /* variable field last character */
-+		v_size	= v_end-v_begin+1;/* variable field length	   */
++		v_begin	= p+SV_BEGIN_LEN; /* variable field ptr		    */
++		v_end	= e-SV_END_LEN;	  /* variable field last character  */
++		v_size	= v_end-v_begin+1;/* variable field length	    */
 +		
-+		t_begin	= q;		  /* text field ptr		   */
-+		t_end	= p-1;		  /* text field last character	   */
-+		t_size	= t_end-t_begin+1;/* text field length		   */
++		t_begin	= q;		  /* text field ptr		    */
++		t_end	= p-1;		  /* text field last character	    */
++		t_size	= t_end-t_begin+1;/* text field length		    */
 +
-+		if (result)		/* function building mode */
-+		{
-+			 var_value = get_var_value (v_begin, v_size, vd);
-+			 if (!var_value) return -1;
-+			 strncat (result, t_begin, t_size);
-+			 strcat (result, var_value);
-+		}
-+		else			/* function counting mode */
-+		{			
-+			s = outfn (v_begin, v_size, vd);
-+			if (s == -1) return -1;
-+			counter += s;
-+		}
++		/* work on text */
++		if ( (outfn (t_begin, t_size, result)) == -1 )
++			return -1;
++		
++		/* work on variable */
++		v_ptr = get_variable (v_begin, v_size, vdt);
++		if (!v_ptr) return -1;
++		
++		if ( (outfn (v_ptr->value, v_ptr->value_length, result)) == -1 )
++			return -1;
++		
 +		q = e + 1;
 +	}
 +
-+	if (result)
-+		strcat(result, q);
-+		
-+	return counter;
++	/* work on last part of text if any */
++	if (*q != '\0')
++		if ( (outfn (q, strlen(q), result)) == -1 )
++			return -1;
++
++	return 0;
 +}
 +
 +/* siefca@pld.org.pl */
-+size_t ParsePlugin_variable_len (const char *begin, size_t len,
-+			         struct var_data *vd)
++static char *parse_string (const char *source, struct var_data *vdt)
 +{
-+	return (len + SV_BEGIN_LEN + SV_END_LEN);
-+}
-+
-+/* siefca@pld.org.pl */
-+size_t ParsePlugin_validate (const char *begin, size_t len,
-+			     struct var_data *vd)
-+{
-+struct var_data *vdp;
-+
-+	if (!len)
-+	{
-+		fprintf (stderr, "authmysql: unknown empty substitution "
-+				 "variable - aborting\n");
-+		return -1;
-+	}
-+
-+	if (!begin || !vd) /* should never happend */
-+	{
-+		fprintf (stderr, "authmysql: critical error while "
-+				  "parsing substitution variable\n");
-+		return -1;
-+	}
-+
-+	if (len > 32)
-+	{
-+		fprintf (stderr, "authmysql: variable name too long "
-+				 "while parsing substitution\n"
-+				 "authmysql: name begins with "
-+				 SV_BEGIN_MARK
-+				 "%.*s...\n", 32, begin);
-+		return -1;
-+	}
-+	
-+	for (vdp=vd; vdp->name; vdp++)
-+		if (vdp->size == len+1 &&
-+		    !strncmp(begin, vdp->name, len))
-+			return 0;
-+	
-+	fprintf (stderr, "authmysql: unknown substitution variable "
-+			 SV_BEGIN_MARK
-+			 "%.*s"
-+			 SV_END_MARK
-+			 "\n", len, begin);
-+	return -1;
-+}
-+
-+/* siefca@pld.org.pl */
-+size_t ParsePlugin_value_len   (const char *begin, size_t len,
-+			        struct var_data *vd)
-+{
-+struct var_data *vdp;
-+
-+	for (vdp=vd; vdp->name; vdp++)
-+		if (vdp->size == len+1 &&
-+		    !strncmp(begin, vdp->name, len))
-+		{
-+			if (!vdp->value)	/* should never happend */
-+				return 0;
-+			if (!vdp->value_length)		/* length cache */
-+				vdp->value_length = strlen (vdp->value);
-+			return (vdp->value_length);
-+		}
-+
-+	fprintf (stderr, "authmysql: missing variable while calculating values "
-+			 "for substitution!\n");
-+			 
-+	return -1;
-+}
-+
-+/* siefca@pld.org.pl */
-+static char *parse_string (const char *source, struct var_data *vd)
-+{
-+char	*output_buf;
-+size_t	buf_size,
-+	variables_size,
-+	values_size;
++char	*output_buf	= NULL,
++	*pass_buf	= NULL;
++size_t	buf_size	= 2;
 +
 +	if (source == NULL || *source == '\0' || 
-+	    vd == NULL     || vd[0].name == NULL)
++	    vdt == NULL    || vdt[0].name == NULL)
 +	{
 +		fprintf (stderr, "authmysql: source clause is empty "
 +				 "- this is critical error\n");
 +		return NULL;
 +	}
 +
-+	/* phase 1 - check for bad variables */
-+	if ((parse_core (source, vd, ParsePlugin_validate, NULL)) != 0)
++	/* phase 1 - count and validate string */
++	if ( (parse_core (source, vdt, &ParsePlugin_counter, &buf_size)) != 0)
 +		return NULL;
 +
-+	/* phase 2 - calculate output buffer space */
-+	values_size    = parse_core (source, vd, ParsePlugin_value_len, NULL);
-+	variables_size = parse_core (source, vd, ParsePlugin_variable_len, NULL);
-+	if (variables_size == -1 || values_size == -1)	return NULL;
-+	buf_size = 2 + (strlen(source)) + values_size - variables_size;
-+
-+	/* phase 3 - allocate memory */
++	/* phase 2 - allocate memory */
 +	output_buf = malloc (buf_size);
 +	if (!output_buf)
 +	{
 +		perror ("malloc");
 +		return NULL;
 +	}
++	pass_buf = output_buf;
 +
-+	/* phase 4 - build the output string */
-+	if ((parse_core (source, vd, ParsePlugin_build, output_buf)) != 0)
++	/* phase 3 - build the output string */
++	if ( (parse_core (source, vdt, &ParsePlugin_builder, &pass_buf)) != 0)
 +	{
 +		free (output_buf);
 +		return NULL;
-+	}
++	}	
++	*pass_buf = '\0';
 +	
 +	return output_buf;
-+}	
++}
 +
 +/* siefca@pld.org.pl */
 +static const char *get_localpart (const char *username)
@@ -1049,7 +974,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/au
  
  static const char query[]=
  	"SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = \"";
-@@ -232,79 +621,95 @@
+@@ -232,79 +608,95 @@
  		free(ui.fullname);
  	memset(&ui, 0, sizeof(ui));
  
@@ -1163,19 +1088,19 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/au
 +			perror("malloc");
 +			return (0);
 +		}
++
++		sprintf(querybuf, query, login_field, crypt_field, clear_field, 
++			uid_field, gid_field, home_field, maildir_field, quota_field,
++			name_field, user_table, login_field);
  
 -	sprintf(querybuf, query, login_field, crypt_field, clear_field, 
 -		uid_field, gid_field, home_field, maildir_field, quota_field,
 -		name_field, user_table, login_field);
 -	p=querybuf+strlen(querybuf);
-+		sprintf(querybuf, query, login_field, crypt_field, clear_field, 
-+			uid_field, gid_field, home_field, maildir_field, quota_field,
-+			name_field, user_table, login_field);
++		p=querybuf+strlen(querybuf);
  
 -	append_username(p, username, defdomain);
 -	strcat(p, "\"");
-+		p=querybuf+strlen(querybuf);
-+
 +		append_username(p, username, defdomain);
 +		strcat(p, "\"");
  	
@@ -1200,7 +1125,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/au
  	if (mysql_query (mysql, querybuf))
  	{
  		/* <o.blasnik@nextra.de> */
-@@ -379,12 +784,13 @@
+@@ -379,12 +771,13 @@
  	const char *comma;
  	int rc=0;
  
@@ -1220,7 +1145,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/au
  
  	if (!mysql)
  		return (-1);
-@@ -412,21 +818,34 @@
+@@ -412,21 +805,34 @@
  		++l;
  	}
  
@@ -1268,7 +1193,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/au
  
  	if (!sql_buf)
  	{
-@@ -434,53 +853,57 @@
+@@ -434,53 +840,57 @@
  		return (-1);
  	}
  
@@ -1365,7 +1290,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/au
  	{
 diff -Nur courier-imap-1.3.12.orig/authlib/authmysqlrc courier-imap-1.3.12/authlib/authmysqlrc
 --- courier-imap-1.3.12.orig/authlib/authmysqlrc	Sun Oct  7 18:32:56 2001
-+++ courier-imap-1.3.12/authlib/authmysqlrc	Fri Dec 28 01:11:49 2001
++++ courier-imap-1.3.12/authlib/authmysqlrc	Fri Dec 28 02:08:01 2001
 @@ -141,4 +141,65 @@
  #
  # MYSQL_WHERE_CLAUSE	server='mailhost.example.com'
