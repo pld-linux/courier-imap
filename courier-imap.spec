@@ -268,7 +268,7 @@ fi
 
 %post pop3
 /sbin/chkconfig --add courier-pop3
-/sbin/chkconfig --del courier-imap-pop3 2>&1 >/dev/null
+/sbin/chkconfig --del courier-imap-pop3 >/dev/null 2>&1 || : 
 if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
 	/etc/rc.d/init.d/courier-imap-pop3 stop >&2
 	/etc/rc.d/init.d/courier-pop3 start >&2
@@ -288,7 +288,7 @@ if [ "$1" = "0" ]; then
 	if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
 		/etc/rc.d/init.d/courier-imap-pop3 stop >&2
 	fi
-	/sbin/chkconfig --del courier-imap-pop3 2>&1 >/dev/null
+	/sbin/chkconfig --del courier-imap-pop3 >/dev/null 2>&1 || : 
 	rm -f /etc/rc.d/init.d/courier-imap-pop3
 fi
 
