@@ -79,7 +79,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc {AUTHORS,COPYING,imap/BUGS,README,README.imap,README.maildirquota}.gz
-%attr(640,root,root) %config /etc/pam.d/imap
+%attr(640,root,root) %config %verify(not size mtime md5) /etc/pam.d/imap
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.courier-imap
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
