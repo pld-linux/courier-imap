@@ -29,7 +29,7 @@ Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 LDFLAGS="-s"; export LDFLAGS
 %configure \
 	--with-authvchkpw
-make
+%{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
