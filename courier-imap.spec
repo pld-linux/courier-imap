@@ -7,7 +7,7 @@ Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
 Group(pl):	Sieciowe/Serwery
 URL:		http://www.inter7.com/courierimap/
-Source0:	http://www.inter7.com/courierimap/%{name}-%{version}.tar.gz
+Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz 
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}-authdaemon.init
