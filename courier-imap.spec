@@ -6,7 +6,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.11
-Release:	1
+Release:	2
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -27,7 +27,7 @@ BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
 Prereq:		rc-scripts
 Provides:	imapdaemon
-Requires:	%{name}-common = %{version}
+Prereq:		%{name}-common = %{version}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	imapdaemon
 
@@ -51,7 +51,7 @@ Prereq:		rc-scripts
 %description common
 Common files for imap and pop daemons.
 
-%description -l pl common
+%description common -l pl
 Pliki wspólne dla serwerów imap i pop.
 
 %package pop3
@@ -60,7 +60,7 @@ Summary(pl):	Serwer Courier-IMAP POP3
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
 Group(pl):	Sieciowe/Serwery
-Requires:	%{name}-common = %{version}
+Prereq:		%{name}-common = %{version}
 Prereq:		rc-scripts
 Provides:	pop3daemon
 Obsoletes:	pop3daemon
@@ -68,7 +68,7 @@ Obsoletes:	pop3daemon
 %description pop3
 Courier-IMAP POP3 is an POP3 server for Maildir mailboxes.
 
-%description -l pl pop3
+%description pop3 -l pl
 Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 
 %package authldap
