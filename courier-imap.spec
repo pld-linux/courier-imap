@@ -64,8 +64,10 @@ fi
 
 %preun
 if [ "$1" = "0" ]; then
+	if [ -f /var/lock/subsys/courier-imap ]; then
+		/etc/rc.d/init.d/courier-imap stop >&2
+	fi
 	/sbin/chkconfig --del courier-imap
-	/etc/rc.d/init.d/courier-imap stop >&2
 fi
 
 %clean
