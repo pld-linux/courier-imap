@@ -4,21 +4,15 @@
 # chkconfig:	345 80 20
 # description:	POP3 Daemon
 
+sysconfdir=/etc/courier-imap
+libexecdir=/usr/lib/courier-imap
+sbindir=/usr/sbin
+
 # Source function library
 . /etc/rc.d/init.d/functions
 
 # Get network config
 . /etc/sysconfig/network
-
-ADDRESS=0.0.0.0
-MAXPERIP=4
-MAXDAEMONS=40
-MAILDIR="Mail/Maildir"
-TCPDOPTS=
-POP3DSSLSTART="no"
-
-# Get service config
-[ -f /etc/sysconfig/courier-pop3 ] && . /etc/sysconfig/courier-pop3
 
 # Check that networking is up.
 if is_yes "${NETWORKING}"; then
@@ -36,68 +30,84 @@ case "$1" in
   start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-pop3 ]; then
-		# start authdaemon, if not running..
-		if [ ! -f /var/lock/subsys/authdaemon -a \
-		   -x /etc/rc.d/init.d/authdaemon ]; then
-			/etc/rc.d/init.d/authdaemon start
-			RETVAL=$?
-			if [ $RETVAL -ne 0 ]; then
-				msg_starting "Courier POP3"
-				fail
-				exit 1
-			fi
-		fi
-		msg_starting "Courier POP3"
-		/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-pop3 ; \
-			POP3_STARTTLS=$POP3DSTARTTLS ; export POP3_STARTTLS ; \
-			`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-pop3 | \
-			sed 's/=.*//;s/^/export /;s/$/;/'` \
-			/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
-			-stderrlogger=/usr/sbin/courierlogger \
-			-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
-			-pid=/var/run/pop3d.pid $TCPDOPTS 110 /usr/sbin/pop3login \
-			/usr/lib/courier-imap/authlib/authdaemon /usr/bin/pop3d $MAILDIR"
-		RETVAL=$?
-		if [ $RETVAL -eq 0 ]; then
-			ok
-		else
-			fail
-		fi
 
-		if is_yes "$POP3DSSLSTART"; then
-			msg_starting "Courier POP3 (SSL)"
-			/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-pop3 ; \
-				POP3_TLS=1; export POP3_TLS; \
-				`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-pop3 | \
-				sed 's/=.*//;s/^/export /;s/$/;/'`
-				/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
-				-stderrlogger=/usr/sbin/courierlogger \
-				-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
-				-pid=/var/run/pop3d-ssl.pid $TCPDOPTS \
-				995 /usr/bin/couriertls -server -tcpd \
-				/usr/sbin/pop3login /usr/lib/courier-imap/authlib/authdaemon \
-				/usr/bin/pop3d $MAILDIR"
-			RETVAL=$?
-			if [ $RETVAL -eq 0 ]; then
-				ok
-			else
-				fail
-			fi
-		fi
-		touch /var/lock/subsys/courier-pop3
+        POP3DSTART=""
+        POP3DSSLSTART=""
+
+        if test -f $sysconfdir/pop3d
+        then
+            . $sysconfdir/pop3d
+        fi
+
+        case x$POP3DSTART in
+        x[yY]*)
+        # Start daemons.
+	msg_starting pop3d
+        $libexecdir/pop3d.rc start
+	RETVAL=$?
+        if [ $RETVAL -eq 0 ]; then ok; else fail; fi
+        ;;
+        esac
+
+        if test -f $sysconfdir/pop3d-ssl
+        then
+        . $sysconfdir/pop3d-ssl
+        fi
+
+        case x$POP3DSSLSTART in
+	x[yY]*)
+        if test -x $COURIERTLS
+	then
+	# First time we start this, generate a dummy SSL certificate.
+	if test ! -f $TLS_CERTFILE
+	then
+	echo -n " generating-SSL-certificate..."
+	$sbindir/mkpop3dcert >/dev/null 2>&1
+	fi
+	msg_starting pop3d-ssl
+        $libexecdir/pop3d-ssl.rc start
+	RETVAL=$?
+    	if [ $RETVAL -eq 0 ]; then ok; else fail; fi
+
+	fi
+	;;
+	esac
+
+	touch /var/lock/subsys/courier-pop3
 	else
 		msg_already_running "Courier POP3"
 	fi
 	;;
   stop)
 	if [ -f /var/lock/subsys/courier-pop3 ]; then
-		msg_stopping "Courier POP3"
-		daemon /usr/lib/courier-imap/couriertcpd -pid=/var/run/pop3d.pid -stop
-		if is_yes "$POP3DSSLSTART"; then
-			msg_stopping "Courier POP3 (SSL)"
-			daemon /usr/lib/courier-imap/couriertcpd -pid=/var/run/pop3d-ssl.pid -stop
-		fi
-		rm -f /var/lock/subsys/courier-pop3
+
+        . $sysconfdir/pop3d
+        if [ -f $PIDFILE ]; then
+	    msg_stopping pop3d
+    	    $libexecdir/pop3d.rc stop
+	    RETVAL=$?
+    	    if [ $RETVAL -eq 0 ]; then
+		ok
+		rm -f $PIDFILE
+	    else
+		fail
+	    fi
+	fi
+
+        . $sysconfdir/pop3d-ssl
+        if [ -f $SSLPIDFILE ]; then
+	    msg_stopping pop3d-ssl
+    	    $libexecdir/pop3d-ssl.rc stop
+	    RETVAL=$?
+    	    if [ $RETVAL -eq 0 ]; then
+		ok
+		rm -f $SSLPIDFILE
+	    else 
+		fail
+	    fi
+	fi
+
+	rm -f /var/lock/subsys/courier-pop3
 	else
 		msg_not_running "Courier POP3"
 	fi

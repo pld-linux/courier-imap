@@ -4,21 +4,15 @@
 # chkconfig:	345 80 20
 # description:	IMAP Daemon
 
+sysconfdir=/etc/courier-imap
+libexecdir=/usr/lib/courier-imap
+sbindir=/usr/sbin
+
 # Source function library
 . /etc/rc.d/init.d/functions
 
 # Get network config
 . /etc/sysconfig/network
-
-ADDRESS=0.0.0.0
-MAXPERIP=4
-MAXDAEMONS=40
-MAILDIR="Mail/Maildir"
-TCPDOPTS=
-IMAPDSSLSTART="no"
-
-# Get service config
-[ -f /etc/sysconfig/courier-imap ] && . /etc/sysconfig/courier-imap
 
 # Check that networking is up.
 if is_yes "${NETWORKING}"; then
@@ -36,70 +30,84 @@ case "$1" in
   start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-imap ]; then
-		# start authdaemon, if not running..
-		if [ ! -f /var/lock/subsys/authdaemon -a \
-		   -x /etc/rc.d/init.d/authdaemon ]; then
-			/etc/rc.d/init.d/authdaemon start
-			RETVAL=$?
-			if [ $RETVAL -ne 0 ]; then
-				msg_starting "Courier IMAP"
-				fail
-				exit 1
-			fi
-		fi
-		msg_starting "Courier IMAP"
-		busy
-		ulimit -d $IMAP_ULIMITD
-		/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-imap ; \
-			`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap | \
-			sed 's/=.*//;s/^/export /;s/$/;/'` \
-			/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
-			-stderrlogger=/usr/sbin/courierlogger \
-			-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
-			-pid=/var/run/imapd.pid $TCPDOPTS $PORTS /usr/sbin/imaplogin \
-			/usr/lib/courier-imap/authlib/authdaemon /usr/bin/imapd $MAILDIR"
-		RETVAL=$?
-		if [ $RETVAL -eq 0 ]; then
-			ok
-		else
-			fail
-		fi
 
-		
-		if is_yes "$IMAPDSSLSTART"; then
-			msg_starting "Courier IMAP (SSL)"
-			/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-imap ; \
-				IMAP_TLS=1; export IMAP_TLS; \
-				`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap | \
-				sed 's/=.*//;s/^/export /;s/$/;/'`
-				/usr/lib/courier-imap/couriertcpd -address=$ADDRESS_SSL \
-				-stderrlogger=/usr/sbin/courierlogger \
-				-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
-				-pid=/var/run/imapd-ssl.pid $TCPDOPTS \
-				$PORTS_SSL $COURIERTLS -server -tcpd \
-				/usr/sbin/imaplogin /usr/lib/courier-imap/authlib/authdaemon \
-				/usr/bin/imapd $MAILDIR"
-			RETVAL=$?
-			if [ $RETVAL -eq 0 ]; then
-				ok
-			else
-				fail
-			fi
-		fi
-		touch /var/lock/subsys/courier-imap
+        IMAPDSTART=""
+        IMAPDSSLSTART=""
+
+        if test -f $sysconfdir/imapd
+        then
+            . $sysconfdir/imapd
+        fi
+
+        case x$IMAPDSTART in
+        x[yY]*)
+        # Start daemons.
+	msg_starting imapd
+        $libexecdir/imapd.rc start
+	RETVAL=$?
+        if [ $RETVAL -eq 0 ]; then ok; else fail; fi
+        ;;
+        esac
+
+        if test -f $sysconfdir/imapd-ssl
+        then
+        . $sysconfdir/imapd-ssl
+        fi
+
+        case x$IMAPDSSLSTART in
+	x[yY]*)
+        if test -x $COURIERTLS
+	then
+	# First time we start this, generate a dummy SSL certificate.
+	if test ! -f $TLS_CERTFILE
+	then
+	echo -n " generating-SSL-certificate..."
+	$sbindir/mkimapdcert >/dev/null 2>&1
+	fi
+	msg_starting imapd-ssl
+        $libexecdir/imapd-ssl.rc start
+	RETVAL=$?
+    	if [ $RETVAL -eq 0 ]; then ok; else fail; fi
+
+	fi
+	;;
+	esac
+
+	touch /var/lock/subsys/courier-imap
 	else
 		msg_already_running "Courier IMAP"
 	fi
 	;;
   stop)
 	if [ -f /var/lock/subsys/courier-imap ]; then
-		msg_stopping "Courier IMAP"
-		daemon /usr/lib/courier-imap/couriertcpd -pid=/var/run/imapd.pid -stop
-		if is_yes "$IMAPDSSLSTART"; then
-			msg_stopping "Courier IMAP (SSL)"
-			daemon /usr/lib/courier-imap/couriertcpd -pid=/var/run/imapd-ssl.pid -stop
-		fi
-		rm -f /var/lock/subsys/courier-imap
+
+        . $sysconfdir/imapd
+        if [ -f $PIDFILE ]; then
+	    msg_stopping imapd
+    	    $libexecdir/imapd.rc stop
+	    RETVAL=$?
+    	    if [ $RETVAL -eq 0 ]; then
+		ok
+		rm -f $PIDFILE
+	    else
+		fail
+	    fi
+	fi
+
+        . $sysconfdir/imapd-ssl
+        if [ -f $SSLPIDFILE ]; then
+	    msg_stopping imapd-ssl
+    	    $libexecdir/imapd-ssl.rc stop
+	    RETVAL=$?
+    	    if [ $RETVAL -eq 0 ]; then
+		ok
+		rm -f $SSLPIDFILE
+	    else 
+		fail
+	    fi
+	fi
+
+	rm -f /var/lock/subsys/courier-imap
 	else
 		msg_not_running "Courier IMAP"
 	fi
