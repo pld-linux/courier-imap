@@ -29,20 +29,20 @@ case "$1" in
 		
 		LIBAUTHMODULES=""
 		for f in `echo $AUTHMODULES`; do
-	    	    LIBAUTHMODULES="$LIBAUTHMODULES /usr/lib/courier-imap/$f"
+	    	    LIBAUTHMODULES="$LIBAUTHMODULES /usr/lib/courier-imap/authlib/$f"
 		done
 
 		/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
 		    -maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
 		    -pid=/var/run/imapd.pid -stderrlogger=/usr/lib/courier-imap/logger \
 		    -forcebind -nodnslookup -noidentlookup $PORT \
-		    /usr/bin/imaplogin $LIBAUTHMODULES /usr/bin/imapd $MAILDIR &
+		    /usr/sbin/imaplogin $LIBAUTHMODULES /usr/bin/imapd $MAILDIR &
 
-		if ps ax | grep -v grep | grep -q couriertcpd; then
+		if ps -C couriertcpd >/dev/null 2>&1; then
 	            touch /var/lock/subsys/courier-imap
-	    	    deltext;ok
+	    	    ok
 		else
-	    	    deltext;fail
+	    	    fail
 		fi
 	else
 		msg_Already_Running IMAP
