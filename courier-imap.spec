@@ -94,12 +94,10 @@ rm -rf  $RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,auth
 mv -f imap/README README.imap
 mv -f maildir/README.maildirquota.txt README.maildirquota
 
-mv -f $RPM_BUILD_ROOT%{_sysconfdir}/authdaemonrc.dist \
-	$RPM_BUILD_ROOT%{_sysconfdir}/authdaemonrc
-mv -f $RPM_BUILD_ROOT%{_sysconfdir}/authldaprc.dist \
-	$RPM_BUILD_ROOT%{_sysconfdir}/authldaprc
-mv -f $RPM_BUILD_ROOT%{_sysconfdir}/authmysqlrc.dist \
-	$RPM_BUILD_ROOT%{_sysconfdir}/authmysqlrc
+install authlib/authdaemonrc		$RPM_BUILD_ROOT%{_sysconfdir}
+install authlib/authldaprc		$RPM_BUILD_ROOT%{_sysconfdir}
+install authlib/authmysqlrc		$RPM_BUILD_ROOT%{_sysconfdir}
+
 mv -f $RPM_BUILD_ROOT%{_datadir}/*db \
 	$RPM_BUILD_ROOT%{_sbindir}
 mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert \
