@@ -211,17 +211,17 @@ mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert \
 mv -f tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
 mv -f imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
 
-echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
-echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpam.8
-echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpwd.8
-echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authshadow.8
-echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
-echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
-echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemon.8
-echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemond.8
-%{!?_without_pgsql:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpgsql.8}
-%{!?_without_mysql:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8}
-%{!?_without_ldap:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8}
+echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
+echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpam.8
+echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpwd.8
+echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authshadow.8
+echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
+echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
+echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemon.8
+echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemond.8
+%{!?_without_pgsql:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpgsql.8}
+%{!?_without_mysql:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8}
+%{!?_without_ldap:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8}
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
 
