@@ -4,174 +4,87 @@ Version:	0.18
 Release:	1
 Copyright:	GPL
 Group:		Applications/Mail
-Source:		http://www.inter7.com/courierimap/%{name}-%{version}.tar.gz
+Source0:	http://www.inter7.com/courierimap/%{name}-%{version}.tar.gz
+Source1:	%{name}.initd
+Source2:	%{name}.pamd
+Source3:	%{name}.sysconfig
 URL:		http://www.inter7.com/courierimap/
 BuildRoot:	/tmp/%{name}-%{version}-root
+Provides:	imapdaemon
+Obsoletes:	imapdaemon
+
+%define		_libdir /usr/lib/courier-imap
 
 %description
 Courier-IMAP is an IMAP server for Maildir mailboxes.
 
 %prep
 %setup -q
-
-#
-# Always include authvchkpw, even if the build machine does not have it.
-#
-
-./configure --with-authvchkpw --prefix=/usr/lib/courier-imap\
 %build
+LDFLAGS="-s"; export LDFLAGS
+%configure \
+	--with-authvchkpw
 make
 make check
+
 %install
-
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/etc/pam.d
-make install-strip DESTDIR=$RPM_BUILD_ROOT
+install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig}
 
-#
-# Red Hat init.d file
-#
+make install DESTDIR=$RPM_BUILD_ROOT
 
-install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
+install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
+install %{SOURCE2} $RPM_BUILD_ROOT/etc/pam.d/imap
+install %{SOURCE3} $RPM_BUILD_ROOT/etc/sysconfig/courier-imap
 
-cat >$RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap <<EOF
-#!/bin/sh
-#
-# chkconfig: 2345 80 30
-# description: Courier-IMAP - IMAP server
-#
-#
-#
+mv imap/README README.imap
+mv maildir/README.maildirquota.txt README.maildirquota
 
-case "\$1" in
-start)
-        cd /
-	. /usr/lib/courier-imap/lib/imapd.config
-	case x\$IMAPDSTART in
-	x[yY]*)
-		# Start daemons.
-		touch /var/lock/subsys/courier-imap
+rm -rf $RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw}.8
 
-		echo -n "Starting Courier-IMAP server:"
-		/usr/lib/courier-imap/lib/imapd.rc start
-		echo " imaplogin"
-		;;
-	esac
-	;;
-stop)
-        echo -n "Stopping Courier-IMAP server:"
-	/usr/lib/courier-imap/lib/imapd.rc stop
-	echo " imaplogin"
-	;;
-restart)
-	\$0 stop
-	\$0 start
-        ;;
-esac
-exit 0
-EOF
+echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
+echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authpam.8
+echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authpwd.8
+echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authshadow.8
+echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
+echo ".so authlib.8" >>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
 
-#
-# Fix imapd.config
-#
+gzip -9nf $RPM_BUILD_ROOT%{_mandir}/*/* README* imap/BUGS AUTHORS COPYING
 
-sed 's/^IMAPDSTART=.*/IMAPDSTART=YES/' \
-	<$RPM_BUILD_ROOT/usr/lib/courier-imap/lib/imapd.config \
-	>$RPM_BUILD_ROOT/usr/lib/courier-imap/lib/imapd.config.tmp
-
-mv $RPM_BUILD_ROOT/usr/lib/courier-imap/lib/imapd.config.tmp \
-	$RPM_BUILD_ROOT/usr/lib/courier-imap/lib/imapd.config
-
-
-#
-# Red Hat /etc/profile.d scripts
-#
-
-mkdir -p $RPM_BUILD_ROOT/etc/profile.d
-cat >$RPM_BUILD_ROOT/etc/profile.d/courier-imap.sh <<EOF
-if echo "\$MANPATH" | tr ':' '\012' | fgrep -qx /usr/lib/courier-imap/man
-then
-:
-else
-	MANPATH="/usr/lib/courier-imap/man:\$MANPATH"
-	export MANPATH
-fi
-EOF
-
-cat >$RPM_BUILD_ROOT/etc/profile.d/courier-imap.csh <<EOF
-
-echo "\$MANPATH" | tr ':' '\012' | fgrep -qx /usr/lib/courier-imap/man
-
-if ( \$? ) then
-	true
-else
-	if ( \$?MANPATH ) then
-	  true
-	else
-	  setenv MANPATH ""
-	endif
-	setenv MANPATH "/usr/lib/courier-imap/man:\$MANPATH"
-endif
-EOF
-
-#
-# Compress everything in man
-#
-
-find $RPM_BUILD_ROOT/usr/lib/courier-imap/man ! -type d -print | perl -e '
-
-	while (<>)
-	{
-		chop if /\n$/;
-		$file=$_;
-		if ( -l $file)
-		{
-                        symlink readlink("$file")
-                                . ".gz", "$file.gz";
-			unlink($file);
-                }
-                else
-                {
-                        system("gzip <$file >$file.gz");
-			unlink($file);
-		}
-	}
-'
-
-for f in `cat authlib/modulelist`
-do
-	echo "/usr/lib/courier-imap/lib/$f"
-done >filelist
-
-cp imap/README README.imap
-cp maildir/README.maildirquota.txt README.maildirquota
+touch $RPM_BUILD_ROOT/etc/security/blacklist.courier-imap
 
 %post
 /sbin/chkconfig --add courier-imap
 
-%preun
-
-if test "$1" = "0"
-then
-	/sbin/chkconfig --del courier-imap
+if [ -f /var/lock/subsys/courier-imap ]; then
+	/etc/rc.d/init.d/courier-imap restart >&2
+else
+	echo "Run \"/etc/rc.d/init.d/courier-imap start\" to start courier-imap daemon."
 fi
 
-/usr/lib/courier-imap/lib/imapd.rc stop
+%preun
+if [ "$1" = "0" ]; then
+	/sbin/chkconfig --del courier-imap
+	/etc/rc.d/init.d/courier-imap stop >&2
+fi
 
-%files -f filelist
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
 %defattr(644,root,root,755)
-%config /etc/pam.d/imap
-%config /etc/profile.d/courier-imap.csh
-%config /etc/profile.d/courier-imap.sh
-%attr(755, bin, bin) /etc/rc.d/init.d/courier-imap
-%dir /usr/lib/courier-imap
-%dir /usr/lib/courier-imap/lib
-/usr/lib/courier-imap/lib/couriertcpd
-%config /usr/lib/courier-imap/lib/imapd.config
-/usr/lib/courier-imap/lib/imapd.rc
-/usr/lib/courier-imap/lib/makedatprog
-/usr/lib/courier-imap/lib/deliverquota
-/usr/lib/courier-imap/lib/logger
-/usr/lib/courier-imap/bin
-/usr/lib/courier-imap/man
-%doc AUTHORS COPYING imap/BUGS README README.imap README.maildirquota
+%doc {AUTHORS,COPYING,imap/BUGS,README,README.imap,README.maildirquota}.gz
+%attr(640,root,root) %config /etc/pam.d/imap
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.courier-imap
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap
+%attr(754,root,root) /etc/rc.d/init.d/courier-imap
+%dir %{_libdir}
+%attr(755,root,root) %{_bindir}/*
+%attr(755,root,root) %{_libdir}/authuserdb
+%attr(755,root,root) %{_libdir}/authpam
+%attr(755,root,root) %{_libdir}/authvchkpw
+%attr(755,root,root) %{_libdir}/couriertcpd
+%attr(755,root,root) %{_libdir}/deliverquota
+%attr(755,root,root) %{_libdir}/logger
+%attr(755,root,root) %{_libdir}/makedatprog
+%{_mandir}/*/*
