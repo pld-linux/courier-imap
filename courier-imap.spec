@@ -8,7 +8,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	3.0.5
-Release:	1
+Release:	2
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -298,7 +298,7 @@ if [ -f /var/lib/openssl/certs/imapd.pem ]; then
 fi
 if [ -f /etc/sysconfig/courier-imap ]; then
     . /etc/sysconfig/courier-imap
-    for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR|grep -v COURIERTLS |cut -d= -f1`;
+    for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v COURIERTLS |cut -d= -f1`;
     do
 	eval opt2=\$$opt
 	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/imapd > %{_sysconfdir}/imapd.new
@@ -313,6 +313,7 @@ if [ -f /etc/sysconfig/courier-imap ]; then
     chmod 640 %{_sysconfdir}/imapd
     echo
     echo IMAPD config file has been rewriten to %{_sysconfdir}/imapd,imapd-ssl
+    echo please look at them
     echo
 fi
 if [ -f /var/lock/subsys/courier-imap ]; then
@@ -366,7 +367,7 @@ if [ -f /var/lib/openssl/certs/pop3d.pem ]; then
 fi
 if [ -f /etc/sysconfig/courier-pop3 ]; then
     . /etc/sysconfig/courier-pop3
-    for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v MAILDIR|grep -v COURIERTLS |cut -d= -f1`;
+    for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v COURIERTLS |cut -d= -f1`;
     do
 	eval opt2=\$$opt
 	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/pop3d > %{_sysconfdir}/pop3d.new
@@ -378,6 +379,7 @@ if [ -f /etc/sysconfig/courier-pop3 ]; then
     chmod 640 %{_sysconfdir}/pop3d
     echo
     echo POP3D config file has been rewriten to %{_sysconfdir}/pop3d,pop3d-ssl
+    echo please look at them
     echo
 fi
 if [ -f /var/lock/subsys/courier-pop3 ]; then
