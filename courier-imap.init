@@ -22,7 +22,7 @@ IMAPDSSLSTART="no"
 
 # Check that networking is up.
 if is_no "${NETWORKING}" ; then
-	msg_Network_Down "Courier IMAP"
+	msg_network_down "Courier IMAP"
 	exit 1
 fi
 
@@ -71,7 +71,7 @@ case "$1" in
 		fi
 		touch /var/lock/subsys/courier-imap
 	else
-		msg_Already_Running "Courier IMAP"
+		msg_already_running "Courier IMAP"
 		exit 1
 	fi
 	;;
@@ -98,7 +98,7 @@ case "$1" in
 	status couriertcpd
 	;;
   *)
-	msg_Usage "$0 {start|stop|restart|reload|status}"
+	msg_usage "$0 {start|stop|restart|reload|status}"
 	exit 1
 esac
 

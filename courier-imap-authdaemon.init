@@ -16,7 +16,7 @@ METHOD="plain"
 
 # Check that networking is up.
 if is_no "${NETWORKING}" ; then
-	msg_Network_Down "Courier IMAP - Authdaemon"
+	msg_network_down "Courier IMAP - Authdaemon"
 	exit 1
 fi
 
@@ -30,7 +30,7 @@ case "$1" in
                 RETVAL=$?
                 [ $RETVAL -eq 0 ] && touch /var/lock/subsys/authdaemon
 	else
-		msg_Already_Running "Courier IMAP - Authdaemon"
+		msg_already_running "Courier IMAP - Authdaemon"
 		exit 1
 	fi
 	;;
@@ -53,7 +53,7 @@ case "$1" in
 	status authdaemond.$METHOD
 	;;
   *)
-	msg_Usage "$0 {start|stop|restart|reload|status}"
+	msg_usage "$0 {start|stop|restart|reload|status}"
 	exit 1
 esac
 
