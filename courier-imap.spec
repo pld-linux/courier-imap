@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	3.0.3
-Release:	2
+Release:	4
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -60,6 +60,7 @@ Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name}-deliverquota	= %{version}-%{release}
 Requires:	%{name}-maildirmake	= %{version}-%{release}
 Requires:	%{name}-userdb		= %{version}-%{release}
+Requires:	procps
 
 %description common
 Common files for imap and pop daemons.
