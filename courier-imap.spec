@@ -159,7 +159,7 @@ Ten pakiet pozwala na korzystanie z autentykacji PostgreSQL w Courier IMAP.
 	--with-authdaemonvar=/var/lib/authdaemon \
 	%{!?_without_mysql:--with-mysql-libs=%{_libdir} --with-mysql-includes=%{_includedir}/mysql} \
 	%{?_without_mysql:--without-authmysql} \
-	%{!?_without_postgresql:--with-mysql-libs=%{_libdir} --with-pgsql-includes=%{_includedir}/postgresql} \
+	%{!?_without_postgresql:--with-pgsql-libs=%{_libdir} --with-pgsql-includes=%{_includedir}/postgresql} \
 	%{?_without_postgresql:--without-authpgsql} \
 	%{?_without_ldap:--without-authldap}
 
