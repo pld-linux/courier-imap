@@ -1,3 +1,4 @@
+P rpm.groups
 #
 # Conditional build:	
 # _without_ldap - without LDAP support
@@ -6,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.11
-Release:	2
+Release:	3
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -47,12 +48,44 @@ Group(de):	Netzwerkwesen/Server
 Group(pl):	Sieciowe/Serwery
 Prereq:		rc-scripts
 Prereq:		/sbin/chkconfig
+Requires:	%{name}-maildirmake
+Requires:	%{name}-deliverquota
+Requires:	%{name}-userdb
 
 %description common
 Common files for imap and pop daemons.
 
 %description common -l pl
 Pliki wspólne dla serwerów imap i pop.
+
+%package userdb
+Summary:	Commands used to create the /etc/userdb.dat
+Group:		Networking/Daemons
+Group(de):	Netzwerkwesen/Server
+Group(pl):	Sieciowe/Serwery
+
+%description userdb
+Commands used to create the /etc/userdb.dat
+
+%package deliverquota
+Summary:	Deliver to a maildir with a quota
+Group:		Networking/Daemons
+Group(de):	Netzwerkwesen/Server
+Group(pl):	Sieciowe/Serwery
+
+%description deliverquota
+deliverquota is a temporary hack to implement E-mail delivery to a
+maildir with a software-imposed quota.
+
+%package maildirmake
+Summary:	Tool for making mail folders in Maildir format.
+Group:		Networking/Daemons
+Group(de):	Netzwerkwesen/Server
+Group(pl):	Sieciowe/Serwery
+Conflicts:	qmail-maildirmake
+
+%description maildirmake
+Maildirmake is a tool for making mail folders in Maildir format.
 
 %package pop3
 Summary:	Courier-IMAP POP3 Server
@@ -104,7 +137,7 @@ Ten pakiet pozwala na korzystanie z autentykacji MySQL w Courier IMAP.
 %build
 %configure2_13 \
 	--with-authdaemonvar=/var/lib/authdaemon \
-	%{!?_without_mysql:--with-mysql-libs=/usr/lib --with-mysql-includes=/usr/include/mysql} \
+	%{!?_without_mysql:--with-mysql-libs=%{_libdir} --with-mysql-includes=%{_includedir}/mysql} \
 	%{?_without_ldap:--without-authldap}
 
 %{__make}
@@ -278,22 +311,36 @@ fi
 %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authdaemonrc
 %{_sysconfdir}/quotawarnmsg.example
 %attr(755,root,root) %{_bindir}/couriertls
-%attr(755,root,root) %{_bindir}/maildirmake
+%attr(755,root,root) %{_libexecdir}/authlib/authdaemon
+%attr(755,root,root) %{_libexecdir}/authlib/authdaemond.plain
+%attr(755,root,root) %{_libexecdir}/couriertcpd
+%attr(755,root,root) %{_libexecdir}/logger
+%attr(755,root,root) %{_libexecdir}/makedatprog
+%{_mandir}/man8/auth[cdpsuv]*
+%{_mandir}/man8/authlib*
+%{_mandir}/man8/couriertcpd*
+%{_mandir}/man8/mk*
+
+%files userdb
+%defattr(644,root,root,755)
 %attr(755,root,root) %{_sbindir}/makeuserdb
 %attr(755,root,root) %{_sbindir}/pw2userdb
 %attr(755,root,root) %{_sbindir}/userdb
 %attr(755,root,root) %{_sbindir}/userdbpw
 %attr(755,root,root) %{_sbindir}/vchkpw2userdb
-%attr(755,root,root) %{_libexecdir}/authlib/authdaemon
-%attr(755,root,root) %{_libexecdir}/authlib/authdaemond.plain
-%attr(755,root,root) %{_libexecdir}/couriertcpd
+%{_mandir}/man8/makeuserdb*
+%{_mandir}/man8/userdb*
+%{_mandir}/man8/*pw2userdb*
+
+%files deliverquota
+%defattr(644,root,root,755)
 %attr(755,root,root) %{_libexecdir}/deliverquota
-%attr(755,root,root) %{_libexecdir}/logger
-%attr(755,root,root) %{_libexecdir}/makedatprog
-%{_mandir}/man1/*
-%{_mandir}/man8/auth[cdpsuv]*
-%{_mandir}/man8/authlib*
-%{_mandir}/man8/[cdmpuv]*
+%{_mandir}/man8/deliverquota*
+
+%files maildirmake
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_bindir}/maildirmake
+%{_mandir}/man1/maildirmake*
 
 %files pop3
 %defattr(644,root,root,755)
