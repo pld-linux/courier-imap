@@ -1,4 +1,11 @@
 #
+# TODO:
+#	- triggers
+#	- post, preun
+#	- add maildir.patch (like in courier-mta)
+#	- add certsdir.patch
+#	- init scripts
+#
 # Conditional build:
 %bcond_without ldap	# without LDAP support
 %bcond_without mysql	# without MySQL support
@@ -7,7 +14,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	3.0.5
-Release:	1
+Release:	0.1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -17,9 +24,7 @@ Source2:	%{name}-pop3.init
 Source3:	%{name}-authdaemon.init
 Source4:	%{name}.pamd
 Source5:	%{name}-pop3.pamd
-Source6:	%{name}.sysconfig
-Source7:	%{name}-pop3.sysconfig
-Source8:	%{name}-authdaemon.sysconfig
+Source6:	%{name}-authdaemon.sysconfig
 URL:		http://www.inter7.com/courierimap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
@@ -195,14 +200,8 @@ install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig} \
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
-install %{SOURCE3} $RPM_BUILD_ROOT/etc/rc.d/init.d/authdaemon
-
 install %{SOURCE4} $RPM_BUILD_ROOT/etc/pam.d/imap
 install %{SOURCE5} $RPM_BUILD_ROOT/etc/pam.d/pop3
-
-install %{SOURCE6} $RPM_BUILD_ROOT/etc/sysconfig/courier-imap
-install %{SOURCE7} $RPM_BUILD_ROOT/etc/sysconfig/courier-pop3
-install %{SOURCE8} $RPM_BUILD_ROOT/etc/sysconfig/authdaemon
 
 rm -rf	$RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb,authdaemon,authdaemond,authldap,authmysql}.8 \
 	$RPM_BUILD_ROOT%{_sbindir}/{*db,mk*cert}
@@ -243,9 +242,11 @@ echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
 
 touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
 
+# make config files
+./sysconftool $RPM_BUILD_ROOT%{_sysconfdir}/*.dist
+
 # remove unpackaged files
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/*.dist
-rm -f $RPM_BUILD_ROOT%{_libexecdir}/*.rc
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -267,9 +268,9 @@ if [ "$1" = "0" ]; then
 	/sbin/chkconfig --del courier-imap
 fi
 
-%post common
-/sbin/chkconfig --add authdaemon
+%triggerin -- %{name} < 3.0.5
 
+%post common
 if [ -f /var/lock/subsys/authdaemon ]; then
 	/etc/rc.d/init.d/authdaemon restart >&2
 else
@@ -281,9 +282,10 @@ if [ "$1" = "0" ]; then
 	if [ -f /var/lock/subsys/authdaemon ]; then
 		/etc/rc.d/init.d/authdaemon stop >&2
 	fi
-
-	/sbin/chkconfig --del authdaemon
 fi
+
+%triggerin -n %{name}-common -- %{name}-common < 3.0.5
+/sbin/chkconfig --del authdaemon
 
 %post pop3
 /sbin/chkconfig --add courier-pop3
@@ -310,6 +312,8 @@ if [ "$1" = "0" ]; then
 	/sbin/chkconfig --del courier-imap-pop3 >/dev/null 2>&1 || :
 	rm -f /etc/rc.d/init.d/courier-imap-pop3
 fi
+
+%triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
 
 %post authldap
 METHOD=plain
@@ -382,9 +386,10 @@ fi
 %doc maildir/README.sharedfolders.html
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/imap
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.imap
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap
-%attr(754,root,root) /etc/rc.d/init.d/courier-imap
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd-ssl
 %{_sysconfdir}/imapd.cnf
+%attr(754,root,root) /etc/rc.d/init.d/courier-imap
 %attr(750,daemon,daemon) %dir %{_sysconfdir}/shared
 %attr(755,root,root) %{_bindir}/imapd
 %attr(755,root,root) %{_bindir}/maildiracl
@@ -394,6 +399,8 @@ fi
 %attr(755,root,root) %{_sbindir}/mkimapdcert
 %attr(755,root,root) %{_sbindir}/sharedindexinstall
 %attr(755,root,root) %{_sbindir}/sharedindexsplit
+%attr(755,root,root) %{_libexecdir}/imapd.rc
+%attr(755,root,root) %{_libexecdir}/imapd-ssl.rc
 %{_mandir}/man8/imapd*
 %{_mandir}/man1/maildiracl.1*
 %{_mandir}/man1/maildirkw.1*
@@ -401,8 +408,7 @@ fi
 %files common
 %defattr(644,root,root,755)
 %doc AUTHORS ChangeLog imap/BUGS INSTALL README*
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/authdaemon
-%attr(754,root,root) /etc/rc.d/init.d/authdaemon
+#%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/authdaemon
 %attr(700,root,root) /var/lib/authdaemon
 %attr(750,root,root) %dir %{_sysconfdir}
 %dir %{_libexecdir}
@@ -448,11 +454,14 @@ fi
 %defattr(644,root,root,755)
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/pop3
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.pop3
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-pop3
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/pop3d
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/pop3d-ssl
 %attr(754,root,root) /etc/rc.d/init.d/courier-pop3
 %attr(755,root,root) %{_bindir}/pop3d
 %attr(755,root,root) %{_sbindir}/mkpop3dcert
 %attr(755,root,root) %{_sbindir}/pop3login
+%attr(755,root,root) %{_libexecdir}/pop3d.rc
+%attr(755,root,root) %{_libexecdir}/pop3d-ssl.rc
 %{_sysconfdir}/pop3d.cnf
 %{_mandir}/man8/courierpop*
 
