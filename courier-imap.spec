@@ -193,8 +193,6 @@ cd ../imap
 cd ..
 
 %configure \
-	--localstatedir=%{_localstatedir} \
-	--libexecdir=%{_libexecdir} \
 	--enable-unicode \
 	--with-authchangepwdir=/var/tmp \
 	--with-authdaemonvar=/var/lib/authdaemon \
@@ -376,7 +374,7 @@ if [ -f /etc/sysconfig/courier-pop3 ]; then
     sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/pop3d-ssl
     sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/pop3d
     echo
-    echo POP3D config file has been rewriten to %{_sysconfdir}/pop3d,pop3d-ssl
+    echo POP3D config file has been rewriten to %{_sysconfdir}/{pop3d,pop3d-ssl}
     echo please look at them
     echo
 fi
