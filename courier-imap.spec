@@ -108,7 +108,7 @@ formacie Maildir.
 Summary:	Courier-IMAP POP3 Server
 Summary(pl):	Serwer Courier-IMAP POP3
 Group:		Networking/Daemons
-PreReq:		%{name}-common = %{version}
+PreReq:		%{name}-common = %{version}-%{release}
 Requires:	pam >= 0.77.3
 Provides:	pop3daemon
 Obsoletes:	pop3daemon
@@ -127,7 +127,7 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 Summary:	LDAP authentication daemon for Courier IMAP
 Summary(pl):	Demon autentykacji LDAP do Courier IMAP
 Group:		Networking/Daemons
-PreReq:		%{name}-common = %{version}
+PreReq:		%{name}-common = %{version}-%{release}
 
 %description authldap
 This package provides LDAP authentication for Courier IMAP.
@@ -139,7 +139,7 @@ Ten pakiet pozwala na korzystanie z autentykacji LDAP w Courier IMAP.
 Summary:	MySQL authentication daemon for Courier IMAP
 Summary(pl):	Demon autentykacji MySQL do Courier IMAP
 Group:		Networking/Daemons
-PreReq:		%{name}-common = %{version}
+PreReq:		%{name}-common = %{version}-%{release}
 Requires:	zlib
 
 %description authmysql
@@ -152,7 +152,7 @@ Ten pakiet pozwala na korzystanie z autentykacji MySQL w Courier IMAP.
 Summary:	PostgreSQL authentication daemon for Courier IMAP
 Summary(pl):	Demon autentykacji PostgreSQL do Courier IMAP
 Group:		Networking/Daemons
-PreReq:		%{name}-common = %{version}
+PreReq:		%{name}-common = %{version}-%{release}
 
 %description authpgsql
 This package provides PostgreSQL authentication for Courier IMAP.
