@@ -1,5 +1,5 @@
 #
-# Conditional build:	
+# Conditional build:
 # _without_ldap - without LDAP support
 # _without_mysql - without MySQL support
 # _without_postgresql - without PostgreSQL support
@@ -44,7 +44,7 @@ BuildRequires:	libstdc++-devel
 BuildRequires:	openssl-devel
 BuildRequires:	kernel-headers
 Provides:	imapdaemon
-Prereq:		%{name}-common = %{version}
+PreReq:		%{name}-common = %{version}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	imapdaemon
 
@@ -75,8 +75,8 @@ Group(ru):	Û≈‘ÿ/‰≈ÕœŒŸ
 Group(sl):	Omreæni/Streæniki
 Group(sv):	N‰tverk/Demoner
 Group(uk):	Ì≈“≈÷¡/‰≈ÕœŒ…
-Prereq:		rc-scripts
-Prereq:		/sbin/chkconfig
+PreReq:		rc-scripts
+PreReq:		/sbin/chkconfig
 Requires:	%{name}-maildirmake
 Requires:	%{name}-deliverquota
 Requires:	%{name}-userdb
@@ -106,7 +106,10 @@ Group(sv):	N‰tverk/Demoner
 Group(uk):	Ì≈“≈÷¡/‰≈ÕœŒ…
 
 %description userdb
-Commands used to create the /etc/userdb.dat
+Commands used to create the /etc/userdb.dat.
+
+%description userdb -l pl
+Polecenia uøywane do stworzenia /etc/userdb.dat.
 
 %package deliverquota
 Summary:	Deliver to a maildir with a quota
@@ -130,6 +133,10 @@ Group(uk):	Ì≈“≈÷¡/‰≈ÕœŒ…
 deliverquota is a temporary hack to implement E-mail delivery to a
 maildir with a software-imposed quota.
 
+%description deliverquota -l pl
+deliverquota jest tymczasowym rozwi±zaniem implementuj±cym
+dostarczanie e-maili do maildir z programowo narzucon± quot±.
+
 %package maildirmake
 Summary:	Tool for making mail folders in Maildir format.
 Group:		Networking/Daemons
@@ -152,6 +159,10 @@ Conflicts:	qmail-maildirmake
 %description maildirmake
 Maildirmake is a tool for making mail folders in Maildir format.
 
+%description maildirmake -l pl
+Maildirmake jest narzÍdziem do tworzenia folderÛw pocztowych w
+formacie Maildir.
+
 %package pop3
 Summary:	Courier-IMAP POP3 Server
 Summary(pl):	Serwer Courier-IMAP POP3
@@ -170,7 +181,7 @@ Group(ru):	Û≈‘ÿ/‰≈ÕœŒŸ
 Group(sl):	Omreæni/Streæniki
 Group(sv):	N‰tverk/Demoner
 Group(uk):	Ì≈“≈÷¡/‰≈ÕœŒ…
-Prereq:		%{name}-common = %{version}
+PreReq:		%{name}-common = %{version}
 Provides:	pop3daemon
 Obsoletes:	pop3daemon
 
@@ -198,7 +209,7 @@ Group(ru):	Û≈‘ÿ/‰≈ÕœŒŸ
 Group(sl):	Omreæni/Streæniki
 Group(sv):	N‰tverk/Demoner
 Group(uk):	Ì≈“≈÷¡/‰≈ÕœŒ…
-Prereq:		%{name}-common = %{version}
+PreReq:		%{name}-common = %{version}
 
 %description authldap
 This package provides LDAP authentication for Courier IMAP.
@@ -224,7 +235,7 @@ Group(ru):	Û≈‘ÿ/‰≈ÕœŒŸ
 Group(sl):	Omreæni/Streæniki
 Group(sv):	N‰tverk/Demoner
 Group(uk):	Ì≈“≈÷¡/‰≈ÕœŒ…
-Prereq:		%{name}-common = %{version}
+PreReq:		%{name}-common = %{version}
 Requires:	zlib
 
 %description authmysql
@@ -251,7 +262,7 @@ Group(ru):	Û≈‘ÿ/‰≈ÕœŒŸ
 Group(sl):	Omreæni/Streæniki
 Group(sv):	N‰tverk/Demoner
 Group(uk):	Ì≈“≈÷¡/‰≈ÕœŒ…
-Prereq:		%{name}-common = %{version}
+PreReq:		%{name}-common = %{version}
 
 %description authpgsql
 This package provides PostgreSQL authentication for Courier IMAP.
@@ -295,7 +306,7 @@ install %{SOURCE6} $RPM_BUILD_ROOT/etc/sysconfig/courier-imap
 install %{SOURCE7} $RPM_BUILD_ROOT/etc/sysconfig/courier-imap-pop3
 install %{SOURCE8} $RPM_BUILD_ROOT/etc/sysconfig/authdaemon
 
-rm -rf  $RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb,authdaemon,authdaemond,authldap,authmysql}.8 \
+rm -rf	$RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb,authdaemon,authdaemond,authldap,authmysql}.8 \
 	$RPM_BUILD_ROOT%{_sbindir}/{*db,mk*cert}
 
 mv -f authlib/README.authmysql.html README.authmysql.html
