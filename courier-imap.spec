@@ -1,7 +1,6 @@
 #
 # TODO:
-#	- triggers
-#	- post, preun
+#	- tests and rel.1
 #
 # Conditional build:
 %bcond_without ldap	# without LDAP support
@@ -11,7 +10,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	3.0.5
-Release:	0.5
+Release:	0.9
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -299,10 +298,38 @@ if [ -f /var/lib/openssl/certs/imapd.pem ]; then
     echo
     mv -f /var/lib/openssl/certs/imapd.pem %{_certsdir}
 fi
+if [ -f /etc/sysconfig/courier-imap ]; then
+    . /etc/sysconfig/courier-imap
+    for opt in `grep ^[^#] courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR|grep -v COURIERTLS |cut -d= -f1`;
+    do
+	eval opt2=\$$opt
+	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/imapd > %{_sysconfdir}/imapd.new
+	mv -f %{_sysconfdir}/imapd.new %{_sysconfdir}/imapd
+	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
+	mv -f %{_sysconfdir}/imapd-ssl.new %{_sysconfdir}/imapd-ssl
+    done
+fi
+sed s/^SSLADDRESS=.*/"SSLADDRESS=$ADDRESS_SSL"/ < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
+mv -f %{_sysconfdir}/imapd-ssl.new %{_sysconfdir}/imapd-ssl
+echo
+echo IMAPD config file has been rewriten to %{_sysconfdir}/imapd,imapd-ssl
+echo
+if [ -f /var/lock/subsys/courier-imap ]; then
+	/etc/rc.d/init.d/courier-imap restart >&2
+fi
 
 %triggerin -n %{name}-common -- %{name}-common < 3.0.5
 /sbin/chkconfig --del authdaemon
 rm -f /var/lock/subsys/authdaemon
+if [ -f /etc/sysconfig/authdaemon ]; then
+    . /etc/sysconfig/authdaemon
+    sed s/^version.*/version=authdaemon.$METHOD/ <%{_sysconfdir}/authdaemonrc >%{_sysconfdir}/authdaemonrc.new
+    mv -f %{_sysconfdir}/authdaemonrc.new %{_sysconfdir}/authdaemonrc
+fi
+echo Changes to version 3.0.5 :
+echo - config files has been splited and moved to %{_sysconfdir}
+echo - certificates directory has changed to %{_certsdir}
+echo
 
 %post pop3
 /sbin/chkconfig --add courier-pop3
@@ -315,7 +342,6 @@ elif [ -f /var/lock/subsys/courier-pop3 ]; then
 else
 	echo "Run \"/etc/rc.d/init.d/courier-pop3 start\" to start courier-pop3 daemon."
 fi
-rm -f /etc/rc.d/init.d/courier-imap-pop3
 
 %preun pop3
 if [ "$1" = "0" ]; then
@@ -323,11 +349,6 @@ if [ "$1" = "0" ]; then
 		/etc/rc.d/init.d/courier-pop3 stop >&2
 	fi
 	/sbin/chkconfig --del courier-pop3
-	if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
-		/etc/rc.d/init.d/courier-imap-pop3 stop >&2
-	fi
-	/sbin/chkconfig --del courier-imap-pop3 >/dev/null 2>&1 || :
-	rm -f /etc/rc.d/init.d/courier-imap-pop3
 fi
 
 %triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
@@ -336,6 +357,23 @@ if [ -f /var/lib/openssl/certs/pop3d.pem ]; then
     echo pop3d.pem has been moved automatically to %{_certsdir}
     echo
     mv -f /var/lib/openssl/certs/pop3d.pem %{_certsdir}
+fi
+if [ -f /etc/sysconfig/courier-pop3 ]; then
+    . /etc/sysconfig/courier-pop3
+    for opt in `grep ^[^#] courier-pop3 |grep -v TLS_CERTFILE |grep -v MAILDIR|grep -v COURIERTLS |cut -d= -f1`;
+    do
+	eval opt2=\$$opt
+	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/pop3d > %{_sysconfdir}/pop3d.new
+	mv -f %{_sysconfdir}/pop3d.new %{_sysconfdir}/pop3d
+	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/pop3d-ssl > %{_sysconfdir}/pop3d-ssl.new
+	mv -f %{_sysconfdir}/pop3d-ssl.new %{_sysconfdir}/pop3d-ssl
+    done
+fi
+echo
+echo POP3D config file has been rewriten to %{_sysconfdir}/pop3d,pop3d-ssl
+echo
+if [ -f /var/lock/subsys/courier-pop3 ]; then
+	/etc/rc.d/init.d/courier-pop3 restart >&2
 fi
 
 %post authldap
