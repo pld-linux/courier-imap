@@ -458,7 +458,7 @@ fi
 %if %{with ldap}
 %files authldap
 %defattr(644,root,root,755)
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authldaprc
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authldaprc
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.ldap
 %{_mandir}/man8/authldap*
 %endif
@@ -466,7 +466,7 @@ fi
 %if %{with mysql}
 %files authmysql
 %defattr(644,root,root,755)
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authmysqlrc
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authmysqlrc
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.mysql
 %{_mandir}/man8/authmysql*
 %endif
@@ -474,7 +474,7 @@ fi
 %if %{with pgsql}
 %files authpgsql
 %defattr(644,root,root,755)
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authpgsqlrc
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authpgsqlrc
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.pgsql
 %{_mandir}/man8/authpgsql*
 %endif
