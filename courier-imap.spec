@@ -1,11 +1,12 @@
 Summary:	Courier-IMAP server
 Name:		courier-imap
-Version:	1.3.2
-Release:	2
+Version:	1.3.8.2
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
 Group(pl):	Sieciowe/Serwery
+URL:		http://www.inter7.com/courierimap/
 Source0:	http://www.inter7.com/courierimap/%{name}-%{version}.tar.gz
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
@@ -15,12 +16,13 @@ Source5:	%{name}-pop3.pamd
 Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
-URL:		http://www.inter7.com/courierimap/
-BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
-Prereq:		rc-scripts
 Requires:	%{name}-common = %{version}
+BuildRequires:	mysql-devel
+BuildRequires:	openldap-devel
+Prereq:		rc-scripts
 Provides:	imapdaemon
 Obsoletes:	imapdaemon
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libexecdir	/usr/lib/courier-imap
 %define		_sysconfdir	/etc/courier-imap
@@ -64,7 +66,7 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 %setup -q
 
 %build
-%configure \
+%configure2_13 \
 	--with-authdaemonvar=/var/lib/authdaemon
 %{__make}
 
@@ -103,18 +105,18 @@ mv -f $RPM_BUILD_ROOT%{_datadir}/*db \
 mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert \
 	$RPM_BUILD_ROOT%{_sbindir}
 
-echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
-echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authpam.8
-echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authpwd.8
-echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authshadow.8
-echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
-echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
-echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authdaemon.8
-echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authdaemond.8
-echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8
-echo ".so authlib.8" >$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8
-echo ".so makeuserdb.8" >$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
-echo ".so makeuserdb.8" >$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
+echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
+echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpam.8
+echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpwd.8
+echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authshadow.8
+echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
+echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
+echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemon.8
+echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemond.8
+echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8
+echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8
+echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
+echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
 
 gzip -9nf README* imap/BUGS AUTHORS COPYING
 
