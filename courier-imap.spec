@@ -6,7 +6,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.12
-Release:	1
+Release:	2
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -135,6 +135,8 @@ Ten pakiet pozwala na korzystanie z autentykacji MySQL w Courier IMAP.
 
 %build
 %configure2_13 \
+	--enable-unicode \
+	--with-authchangepwdir=/var/tmp \
 	--with-authdaemonvar=/var/lib/authdaemon \
 	%{!?_without_mysql:--with-mysql-libs=%{_libdir} --with-mysql-includes=%{_includedir}/mysql} \
 	%{?_without_ldap:--without-authldap}
@@ -173,6 +175,8 @@ mv -f $RPM_BUILD_ROOT%{_datadir}/*db \
 	$RPM_BUILD_ROOT%{_sbindir}
 mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert \
 	$RPM_BUILD_ROOT%{_sbindir}
+
+imap/html2man.pl tcpd/couriertls.html > $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
 
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpam.8
@@ -317,7 +321,7 @@ fi
 %attr(755,root,root) %{_libexecdir}/makedatprog
 %{_mandir}/man8/auth[cdpsuv]*
 %{_mandir}/man8/authlib*
-%{_mandir}/man8/couriertcpd*
+%{_mandir}/man8/couriert*
 %{_mandir}/man8/mk*
 
 %files userdb
