@@ -6,8 +6,8 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	1.4.1
-Release:	4
+Version:	1.4.2
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -21,7 +21,6 @@ Source5:	%{name}-pop3.pamd
 Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
-Patch0:		ftp://ftp.pld.org.pl/people/siefca/patches/courier/%{name}-myownquery.patch
 URL:		http://www.inter7.com/courierimap/
 %{!?_without_postgresql:BuildRequires:	postgresql-devel}
 %{!?_without_mysql:BuildRequires:	mysql-devel}
@@ -153,7 +152,6 @@ Ten pakiet pozwala na korzystanie z autentykacji PostgreSQL w Courier IMAP.
 
 %prep
 %setup -q
-%patch0 -p1
 
 %build
 %configure2_13 \
@@ -191,7 +189,7 @@ rm -rf  $RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,auth
 
 mv -f authlib/README.authmysql.html README.authmysql.html
 mv -f authlib/README.ldap README.ldap
-mv -f authlib/README.myownquery README.myownquery
+mv -f authlib/README.authmysql.myownquery README.authmysql.myownquery
 mv -f imap/README README.imap
 mv -f maildir/README.maildirquota.txt README.maildirquota
 
