@@ -126,8 +126,8 @@ diff -Nur old/imap/mkimapdcert.html.in new/imap/mkimapdcert.html.in
  >X.509 certificate.</P
 diff -Nur old/imap/mkimapdcert.in new/imap/mkimapdcert.in
 --- old/imap/mkimapdcert.in	2001-08-26 15:49:50.000000000 +0000
-+++ new/imap/mkimapdcert.in	2004-07-08 17:01:33.000000000 +0000
-@@ -13,18 +13,18 @@
++++ new/imap/mkimapdcert.in	2004-07-10 12:23:46.000000000 +0000
+@@ -13,26 +13,26 @@
  
  prefix="@prefix@"
  
@@ -148,21 +148,25 @@ diff -Nur old/imap/mkimapdcert.in new/imap/mkimapdcert.in
  
  cleanup() {
 -	rm -f @datadir@/imapd.pem
+-	rm -f @datadir@/imapd.rand
 +	rm -f @certsdir@/imapd.pem
- 	rm -f @datadir@/imapd.rand
++	rm -f @certsdir@/imapd.rand
  	exit 1
  }
-@@ -32,7 +32,7 @@
- cd @datadir@
- dd if=@RANDOMV@ of=@datadir@/imapd.rand count=1 2>/dev/null
+ 
+-cd @datadir@
+-dd if=@RANDOMV@ of=@datadir@/imapd.rand count=1 2>/dev/null
++cd @certsdir@
++dd if=@RANDOMV@ of=@certsdir@/imapd.rand count=1 2>/dev/null
  @OPENSSL@ req -new -x509 -days 365 -nodes \
 -	-config @sysconfdir@/imapd.cnf -out @datadir@/imapd.pem -keyout @datadir@/imapd.pem || cleanup
 -@OPENSSL@ gendh -rand @datadir@/imapd.rand 512 >>@datadir@/imapd.pem || cleanup
 -@OPENSSL@ x509 -subject -dates -fingerprint -noout -in @datadir@/imapd.pem || cleanup
-+	-config @sysconfdir@/imapd.cnf -out @certsdir@/imapd.pem -keyout @datadir@/imapd.pem || cleanup
-+@OPENSSL@ gendh -rand @datadir@/imapd.rand 512 >>@certsdir@/imapd.pem || cleanup
+-rm -f @datadir@/imapd.rand
++	-config @sysconfdir@/imapd.cnf -out @certsdir@/imapd.pem -keyout @certsdir@/imapd.pem || cleanup
++@OPENSSL@ gendh -rand @certsdir@/imapd.rand 512 >>@certsdir@/imapd.pem || cleanup
 +@OPENSSL@ x509 -subject -dates -fingerprint -noout -in @certsdir@/imapd.pem || cleanup
- rm -f @datadir@/imapd.rand
++rm -f @certsdir@/imapd.rand
 diff -Nur old/imap/mkpop3dcert.8.in new/imap/mkpop3dcert.8.in
 --- old/imap/mkpop3dcert.8.in	2004-02-08 04:12:10.000000000 +0000
 +++ new/imap/mkpop3dcert.8.in	2004-07-08 17:00:01.000000000 +0000
