@@ -45,7 +45,7 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libexecdir	/usr/%{_lib}/courier-imap
 %define		_sysconfdir	/etc/courier-imap
-%define		_certsdir       %{_sysconfdir}/certs
+%define		_certsdir	%{_sysconfdir}/certs
 %define		_localstatedir	/var/spool/courier-imap
 
 %description
@@ -285,27 +285,27 @@ fi
 
 %triggerin -- %{name} < 3.0.5
 if [ -f /var/lib/openssl/certs/imapd.pem ]; then
-    echo
-    echo imapd.pem has been moved automatically to %{_certsdir}
-    echo
-    mv -f /var/lib/openssl/certs/imapd.pem %{_certsdir}
+	echo
+	echo imapd.pem has been moved automatically to %{_certsdir}
+	echo
+	mv -f /var/lib/openssl/certs/imapd.pem %{_certsdir}
 fi
 if [ -f /etc/sysconfig/courier-imap ]; then
-    . /etc/sysconfig/courier-imap
-    for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
-    do
-	eval opt2=\$$opt
-	sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/imapd
-	sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/imapd-ssl
-    done
-    sed -i s/^SSLADDRESS=.*/"SSLADDRESS=$ADDRESS_SSL"/ %{_sysconfdir}/imapd-ssl
-    sed -i s/^SSLPORT=.*/"SSLPORT=$PORTS_SSL"/ %{_sysconfdir}/imapd-ssl
-    sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/imapd-ssl
-    sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/imapd
-    echo
-    echo IMAPD config file has been rewriten to %{_sysconfdir}/imapd,imapd-ssl
-    echo please look at them
-    echo
+	. /etc/sysconfig/courier-imap
+	for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
+	do
+		eval opt2=\$$opt
+		sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/imapd
+		sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/imapd-ssl
+	done
+	sed -i s/^SSLADDRESS=.*/"SSLADDRESS=$ADDRESS_SSL"/ %{_sysconfdir}/imapd-ssl
+	sed -i s/^SSLPORT=.*/"SSLPORT=$PORTS_SSL"/ %{_sysconfdir}/imapd-ssl
+	sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/imapd-ssl
+	sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/imapd
+	echo
+	echo IMAPD config file has been rewriten to %{_sysconfdir}/imapd,imapd-ssl
+	echo please look at them
+	echo
 fi
 if [ -f /var/lock/subsys/courier-imap ]; then
 	/etc/rc.d/init.d/courier-imap restart >&2
@@ -314,18 +314,18 @@ fi
 %triggerin -- %{name} < 3.0.6
 . %{_sysconfdir}/imapd-ssl
 if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
-    sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/imapd-ssl
+	sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/imapd-ssl
 fi
 
 %triggerin -n %{name}-common -- %{name}-common < 3.0.5
 /sbin/chkconfig --del authdaemon
 if [ -f /var/lock/subsys/authdaemon ]; then
-    kill `cat /var/lib/authdaemon/pid`
-    rm -f /var/lock/subsys/authdaemon
+	kill `cat /var/lib/authdaemon/pid`
+	rm -f /var/lock/subsys/authdaemon
 fi
 if [ -f /etc/sysconfig/authdaemon ]; then
-    . /etc/sysconfig/authdaemon
-    sed -i s/^version.*/version=authdaemond.$METHOD/ %{_sysconfdir}/authdaemonrc
+	. /etc/sysconfig/authdaemon
+	sed -i s/^version.*/version=authdaemond.$METHOD/ %{_sysconfdir}/authdaemonrc
 fi
 echo
 echo Changes to version 3.0.5 :
@@ -355,25 +355,25 @@ fi
 
 %triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
 if [ -f /var/lib/openssl/certs/pop3d.pem ]; then
-    echo
-    echo pop3d.pem has been moved automatically to %{_certsdir}
-    echo
-    mv -f /var/lib/openssl/certs/pop3d.pem %{_certsdir}
+	echo
+	echo pop3d.pem has been moved automatically to %{_certsdir}
+	echo
+	mv -f /var/lib/openssl/certs/pop3d.pem %{_certsdir}
 fi
 if [ -f /etc/sysconfig/courier-pop3 ]; then
-    . /etc/sysconfig/courier-pop3
-    for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
-    do
-	eval opt2=\$$opt
-	sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/pop3d
-	sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/pop3d-ssl
-    done
-    sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/pop3d-ssl
-    sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/pop3d
-    echo
-    echo POP3D config file has been rewriten to %{_sysconfdir}/{pop3d,pop3d-ssl}
-    echo please look at them
-    echo
+	. /etc/sysconfig/courier-pop3
+	for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
+	do
+		eval opt2=\$$opt
+		sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/pop3d
+		sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/pop3d-ssl
+	done
+	sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/pop3d-ssl
+	sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/pop3d
+	echo
+	echo POP3D config file has been rewriten to %{_sysconfdir}/{pop3d,pop3d-ssl}
+	echo please look at them
+	echo
 fi
 if [ -f /var/lock/subsys/courier-pop3 ]; then
 	/etc/rc.d/init.d/courier-pop3 restart >&2
@@ -382,49 +382,49 @@ fi
 %triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.6
 . %{_sysconfdir}/pop3d-ssl
 if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
-    sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/pop3d-ssl
+	sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/pop3d-ssl
 fi
 
 %post authldap
 if ps -A |grep -q authdaemond.lda; then
-        %{_libexecdir}/authlib/authdaemond stop
-        %{_libexecdir}/authlib/authdaemond start
+	%{_libexecdir}/authlib/authdaemond stop
+	%{_libexecdir}/authlib/authdaemond start
 fi
 
 %postun authldap
 if [ -x %{_libexecdir}/authlib/authdaemond ]; then
-        if ps -A |grep -q authdaemond.lda; then
-                %{_libexecdir}/authlib/authdaemond stop;
-                %{_libexecdir}/authlib/authdaemond start;
-        fi
+	if ps -A |grep -q authdaemond.lda; then
+		%{_libexecdir}/authlib/authdaemond stop;
+		%{_libexecdir}/authlib/authdaemond start;
+	fi
 fi
 
 %post authmysql
 if ps -A |grep -q authdaemond.mys; then
-        %{_libexecdir}/authlib/authdaemond stop
-        %{_libexecdir}/authlib/authdaemond start
+	%{_libexecdir}/authlib/authdaemond stop
+	%{_libexecdir}/authlib/authdaemond start
 fi
 
 %postun authmysql
 if [ -x %{_libexecdir}/authlib/authdaemond ]; then
-        if ps -A |grep -q authdaemond.mys; then
-                %{_libexecdir}/authlib/authdaemond stop;
-                %{_libexecdir}/authlib/authdaemond start;
-        fi
+	if ps -A |grep -q authdaemond.mys; then
+		%{_libexecdir}/authlib/authdaemond stop;
+		%{_libexecdir}/authlib/authdaemond start;
+	fi
 fi
 
 %post authpgsql
 if ps -A |grep -q authdaemond.pgs; then
-        %{_libexecdir}/authlib/authdaemond stop
-        %{_libexecdir}/authlib/authdaemond start
+	%{_libexecdir}/authlib/authdaemond stop
+	%{_libexecdir}/authlib/authdaemond start
 fi
 
 %postun authpgsql
 if [ -x %{_libexecdir}/authlib/authdaemond ]; then
-        if ps -A |grep -q authdaemond.pgs; then
-                %{_libexecdir}/authlib/authdaemond stop;
-                %{_libexecdir}/authlib/authdaemond start;
-        fi
+	if ps -A |grep -q authdaemond.pgs; then
+		%{_libexecdir}/authlib/authdaemond stop;
+		%{_libexecdir}/authlib/authdaemond start;
+	fi
 fi
 
 %files
