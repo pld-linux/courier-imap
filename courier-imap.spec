@@ -161,7 +161,7 @@ IMAP.
 #%patch0 -p1
 
 %build
-%configure2_13 \
+%configure \
 	--enable-unicode \
 	--with-authchangepwdir=/var/tmp \
 	--with-authdaemonvar=/var/lib/authdaemon \
