@@ -6,7 +6,7 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	1.4.0
+Version:	1.4.1
 Release:	1
 License:	GPL
 Group:		Networking/Daemons
@@ -202,7 +202,8 @@ mv -f $RPM_BUILD_ROOT%{_datadir}/*db \
 mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert \
 	$RPM_BUILD_ROOT%{_sbindir}
 
-imap/html2man.pl tcpd/couriertls.html > $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
+mv -f tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.1
+mv -f imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
 
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpam.8
@@ -347,8 +348,8 @@ fi
 %attr(755,root,root) %{_libexecdir}/logger
 %attr(755,root,root) %{_libexecdir}/makedatprog
 %{_mandir}/man8/auth[cdpsuv]*
-%{_mandir}/man8/authlib*
-%{_mandir}/man8/couriert*
+%{_mandir}/man7/authlib*
+%{_mandir}/man1/couriert*
 %{_mandir}/man8/mk*
 
 %files userdb
@@ -382,6 +383,7 @@ fi
 %attr(755,root,root) %{_sbindir}/mkpop3dcert
 %attr(755,root,root) %{_sbindir}/pop3login
 %{_sysconfdir}/pop3d.cnf
+%{_mandir}/man8/courierpop*
 
 %if %{?_without_ldap:0}%{!?_without_ldap:1}
 %files authldap

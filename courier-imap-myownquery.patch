@@ -688,13 +688,13 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/au
 +static int parse_core  (const char *source, struct var_data *vdt,
 +			parsefunc outfn, void *result)
 +{
-+int	ret;
 +size_t	v_size		= 0,
 +	t_size		= 0;
 +const char	*p, *q, *e,
 +		*v_begin, *v_end,
 +		*t_begin, *t_end;
 +struct var_data	*v_ptr;
++ 
 +
 +	if (!source)
 +		source = "";
