@@ -7,12 +7,12 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	2.0.0
-Release:	0.8
+Version:	2.1.1
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	636816de2338eac4ad66d9d406020cba
+# Source0-md5:	71d9e88053351dbf7df04943189ec1cd
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}-authdaemon.init
@@ -344,9 +344,11 @@ fi
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
 %{_sysconfdir}/imapd.cnf
 %attr(755,root,root) %{_bindir}/imapd
+%attr(755,root,root) %{_bindir}/maildirkw
 %attr(755,root,root) %{_sbindir}/imaplogin
 %attr(755,root,root) %{_sbindir}/mkimapdcert
 %{_mandir}/man8/imapd*
+%{_mandir}/man1/maildirkw.1*
 
 %files common
 %defattr(644,root,root,755)
