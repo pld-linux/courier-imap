@@ -33,6 +33,7 @@ BuildRequires:	openssl-devel >= 0.9.7
 PreReq:		%{name}-common = %{version}
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
+Requires:	pam >= 0.77.3
 Provides:	imapdaemon
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	imapdaemon
@@ -106,6 +107,7 @@ Summary:	Courier-IMAP POP3 Server
 Summary(pl):	Serwer Courier-IMAP POP3
 Group:		Networking/Daemons
 PreReq:		%{name}-common = %{version}
+Requires:	pam >= 0.77.3
 Provides:	pop3daemon
 Obsoletes:	pop3daemon
 Conflicts:	cyrus-imapd
