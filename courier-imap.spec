@@ -1,11 +1,9 @@
 #
-# TODO:
-#	- tests and rel.1
-#
 # Conditional build:
 %bcond_without ldap	# without LDAP support
 %bcond_without mysql	# without MySQL support
 %bcond_without pgsql	# without PostgreSQL support
+#
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
@@ -308,23 +306,30 @@ if [ -f /etc/sysconfig/courier-imap ]; then
 	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
 	mv -f %{_sysconfdir}/imapd-ssl.new %{_sysconfdir}/imapd-ssl
     done
+    sed s/^SSLADDRESS=.*/"SSLADDRESS=$ADDRESS_SSL"/ < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
+    sed s/^SSLPORT=.*/"SSLPORT=$PORTS_SSL"/ < %{_sysconfdir}/imapd-ssl.new > %{_sysconfdir}/imapd-ssl
+    rm -f %{_sysconfdir}/imapd-ssl.new
+    chmod 640 %{_sysconfdir}/imapd-ssl
+    chmod 640 %{_sysconfdir}/imapd
+    echo
+    echo IMAPD config file has been rewriten to %{_sysconfdir}/imapd,imapd-ssl
+    echo
 fi
-sed s/^SSLADDRESS=.*/"SSLADDRESS=$ADDRESS_SSL"/ < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
-sed s/^SSLPORT=.*/"SSLPORT=$PORTS_SSL"/ < %{_sysconfdir}/imapd-ssl.new > %{_sysconfdir}/imapd-ssl
-echo
-echo IMAPD config file has been rewriten to %{_sysconfdir}/imapd,imapd-ssl
-echo
 if [ -f /var/lock/subsys/courier-imap ]; then
 	/etc/rc.d/init.d/courier-imap restart >&2
 fi
 
 %triggerin -n %{name}-common -- %{name}-common < 3.0.5
 /sbin/chkconfig --del authdaemon
-rm -f /var/lock/subsys/authdaemon
+if [ -f /var/lock/subsys/authdaemon ]; then
+    kill `cat /var/lib/authdaemon/pid`
+    rm -f /var/lock/subsys/authdaemon
+fi
 if [ -f /etc/sysconfig/authdaemon ]; then
     . /etc/sysconfig/authdaemon
-    sed s/^version.*/version=authdaemon.$METHOD/ <%{_sysconfdir}/authdaemonrc >%{_sysconfdir}/authdaemonrc.new
+    sed s/^version.*/version=authdaemond.$METHOD/ <%{_sysconfdir}/authdaemonrc >%{_sysconfdir}/authdaemonrc.new
     mv -f %{_sysconfdir}/authdaemonrc.new %{_sysconfdir}/authdaemonrc
+    chmod 640 %{_sysconfdir}/authdaemonrc
 fi
 echo
 echo Changes to version 3.0.5 :
@@ -369,10 +374,12 @@ if [ -f /etc/sysconfig/courier-pop3 ]; then
 	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/pop3d-ssl > %{_sysconfdir}/pop3d-ssl.new
 	mv -f %{_sysconfdir}/pop3d-ssl.new %{_sysconfdir}/pop3d-ssl
     done
+    chmod 640 %{_sysconfdir}/pop3d-ssl
+    chmod 640 %{_sysconfdir}/pop3d
+    echo
+    echo POP3D config file has been rewriten to %{_sysconfdir}/pop3d,pop3d-ssl
+    echo
 fi
-echo
-echo POP3D config file has been rewriten to %{_sysconfdir}/pop3d,pop3d-ssl
-echo
 if [ -f /var/lock/subsys/courier-pop3 ]; then
 	/etc/rc.d/init.d/courier-pop3 restart >&2
 fi
@@ -451,7 +458,7 @@ fi
 %attr(750,root,root) %dir %{_certsdir}
 %dir %{_libexecdir}
 %dir %{_libexecdir}/authlib
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authdaemonrc
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authdaemonrc
 %{_sysconfdir}/quotawarnmsg.example
 %attr(755,root,root) %{_bindir}/couriertls
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemon
