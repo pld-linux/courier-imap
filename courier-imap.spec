@@ -23,21 +23,21 @@ Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
 # Patch0:		ftp://ftp.pld.org.pl/people/siefca/patches/courier/%{name}-myownquery.patch
 URL:		http://www.inter7.com/courierimap/
-%{!?_without_pgsql:BuildRequires:	postgresql-devel}
-%{!?_without_mysql:BuildRequires:	mysql-devel}
-%{!?_without_mysql:BuildRequires:	zlib-devel}
-%{!?_without_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
+%{!?_without_mysql:BuildRequires:	mysql-devel}
+%{!?_without_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	openssl-devel >= 0.9.7
+%{!?_without_pgsql:BuildRequires:	postgresql-devel}
+%{!?_without_mysql:BuildRequires:	zlib-devel}
 PreReq:		%{name}-common = %{version}
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
 Provides:	imapdaemon
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	imapdaemon
 Conflicts:	cyrus-imapd
 Conflicts:	imap
-BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libexecdir	/usr/lib/courier-imap
 %define		_sysconfdir	/etc/courier-imap
@@ -179,7 +179,8 @@ rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig} \
 	$RPM_BUILD_ROOT{%{_sysconfdir},/var/lib/authdaemon}
 
-%{__make} install DESTDIR=$RPM_BUILD_ROOT
+%{__make} install \
+	DESTDIR=$RPM_BUILD_ROOT
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
