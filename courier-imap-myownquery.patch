@@ -260,7 +260,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/README.myownquery courier-imap-1.3.12
 +	parse_core() uses get_variable() function. To find places
 +	where substitution variables occurs it uses strstr() function
 +	in conjunction with SV_BEGIN_MARK and SV_END_MARK definitions.
-+	It passes vdt structure pointer to get_variable() function is
++	It passes vdt structure pointer to get_variable() function if
 +	it calls it.
 +
 +	outfn() function should be passed by its pointer which
@@ -1304,7 +1304,7 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqlrc courier-imap-1.3.12/authl
 +# be used to do a SELECT operation on database, which should return fields
 +# in order specified bellow:
 +#
-+# username, cryptpw, uid, gid, clearpw, home, maildir, quota, fullname
++# username, cryptpw, clearpw, uid, gid, home, maildir, quota, fullname
 +#
 +# Enabling this option causes ignorance of any other field-related
 +# options, excluding default domain.
@@ -1322,9 +1322,9 @@ diff -Nur courier-imap-1.3.12.orig/authlib/authmysqlrc courier-imap-1.3.12/authl
 +#
 +# MYSQL_SELECT_CLAUSE	SELECT popbox.local_part,			\
 +#			CONCAT('{MD5}', popbox.password_hash),		\
++#			popbox.clearpw,					\
 +#			domain.uid,					\
 +#			domain.gid,					\
-+#			popbox.clearpw,					\
 +#			CONCAT(domain.path, '/', popbox.mbox_name),	\
 +#			'',						\
 +#			domain.quota,					\
