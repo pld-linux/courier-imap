@@ -23,6 +23,8 @@ Source8:	%{name}-authdaemon.sysconfig
 URL:		http://www.inter7.com/courierimap/
 %{!?_without_mysql:BuildRequires:	mysql-devel}
 %{!?_without_ldap:BuildRequires:	openldap-devel}
+BuildRequires:	gdbm-devel
+BuildRequires:	libstdc++-devel
 Prereq:		rc-scripts
 Provides:	imapdaemon
 Requires:	%{name}-common = %{version}
@@ -75,7 +77,7 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 %build
 %configure2_13 \
 	--with-authdaemonvar=/var/lib/authdaemon \
-	%{!?_without_mysql:--with-mysql-libs=/usr/lib} \
+	%{!?_without_mysql:--with-mysql-libs=/usr/lib --with-mysql-includes=/usr/include/mysql} \
 	%{?_without_ldap:--without-authldap}
 
 %{__make}
