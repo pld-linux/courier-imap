@@ -299,7 +299,7 @@ if [ -f /var/lib/openssl/certs/imapd.pem ]; then
 fi
 if [ -f /etc/sysconfig/courier-imap ]; then
     . /etc/sysconfig/courier-imap
-    for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v COURIERTLS |cut -d= -f1`;
+    for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
     do
 	eval opt2=\$$opt
 	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/imapd > %{_sysconfdir}/imapd.new
@@ -309,7 +309,10 @@ if [ -f /etc/sysconfig/courier-imap ]; then
     done
     sed s/^SSLADDRESS=.*/"SSLADDRESS=$ADDRESS_SSL"/ < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
     sed s/^SSLPORT=.*/"SSLPORT=$PORTS_SSL"/ < %{_sysconfdir}/imapd-ssl.new > %{_sysconfdir}/imapd-ssl
-    rm -f %{_sysconfdir}/imapd-ssl.new
+    sed s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
+    sed s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! < %{_sysconfdir}/imapd > %{_sysconfdir}/imapd.new
+    mv -f %{_sysconfdir}/imapd-ssl.new %{_sysconfdir}/imapd-ssl
+    mv -f %{_sysconfdir}/imapd.new %{_sysconfdir}/imapd
     chmod 640 %{_sysconfdir}/imapd-ssl
     chmod 640 %{_sysconfdir}/imapd
     echo
@@ -376,7 +379,7 @@ if [ -f /var/lib/openssl/certs/pop3d.pem ]; then
 fi
 if [ -f /etc/sysconfig/courier-pop3 ]; then
     . /etc/sysconfig/courier-pop3
-    for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v COURIERTLS |cut -d= -f1`;
+    for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
     do
 	eval opt2=\$$opt
 	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/pop3d > %{_sysconfdir}/pop3d.new
@@ -384,6 +387,10 @@ if [ -f /etc/sysconfig/courier-pop3 ]; then
 	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/pop3d-ssl > %{_sysconfdir}/pop3d-ssl.new
 	mv -f %{_sysconfdir}/pop3d-ssl.new %{_sysconfdir}/pop3d-ssl
     done
+    sed s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! < %{_sysconfdir}/pop3d-ssl > %{_sysconfdir}/pop3d-ssl.new
+    sed s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! < %{_sysconfdir}/pop3d > %{_sysconfdir}/pop3d.new
+    mv -f %{_sysconfdir}/pop3d-ssl.new %{_sysconfdir}/pop3d-ssl
+    mv -f %{_sysconfdir}/pop3d.new %{_sysconfdir}/pop3d
     chmod 640 %{_sysconfdir}/pop3d-ssl
     chmod 640 %{_sysconfdir}/pop3d
     echo
