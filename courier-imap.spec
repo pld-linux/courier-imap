@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	2.2.1
-Release:	2
+Release:	5
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -20,7 +20,9 @@ Source5:	%{name}-pop3.pamd
 Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
+Patch0:		%{name}-no_res_query.patch
 URL:		http://www.inter7.com/courierimap/
+BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
@@ -28,6 +30,7 @@ BuildRequires:	libstdc++-devel
 %{?with_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	openssl-devel >= 0.9.7c
 %{?with_pgsql:BuildRequires:	postgresql-devel}
+BuildRequires:	sysconftool
 %{?with_mysql:BuildRequires:	zlib-devel}
 PreReq:		%{name}-common = %{version}
 PreReq:		rc-scripts
@@ -160,10 +163,16 @@ IMAP.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 cp -f /usr/share/automake/config.sub .
 cp -f /usr/share/automake/config.sub maildir
+cd authlib
+%{__aclocal}
+%{__automake}
+%{__autoconf}
+cd ..
 %configure \
 	--enable-unicode \
 	--with-authchangepwdir=/var/tmp \
@@ -311,11 +320,13 @@ fi
 
 %preun authldap
 METHOD=plain
-. /etc/sysconfig/authdaemon
-if [ "$1" = "$0" -a "$METHOD" = "ldap" ]; then
-	if [ -f /var/lock/subsys/authdaemon ]; then
-		/etc/rc.d/init.d/authdaemon stop >&2
-	fi
+if [ -e /etc/sysconfig/authdaemon ]; then
+    . /etc/sysconfig/authdaemon
+    if [ "$1" = "$0" -a "$METHOD" = "ldap" ]; then
+	    if [ -f /var/lock/subsys/authdaemon ]; then
+		    /etc/rc.d/init.d/authdaemon stop >&2
+	    fi
+    fi
 fi
 
 %post authmysql
@@ -331,11 +342,35 @@ fi
 
 %preun authmysql
 METHOD=plain
+if [ -e /etc/sysconfig/authdaemon ]; then
+    . /etc/sysconfig/authdaemon
+    if [ "$1" = "$0" -a "$METHOD" = "mysql" ]; then
+	    if [ -f /var/lock/subsys/authdaemon ]; then
+		    /etc/rc.d/init.d/authdaemon stop >&2
+	    fi
+    fi
+fi
+
+%post authpgsql
+METHOD=plain
 . /etc/sysconfig/authdaemon
-if [ "$1" = "$0" -a "$METHOD" = "mysql" ]; then
+if [ "$METHOD" = "pgsql" ]; then
 	if [ -f /var/lock/subsys/authdaemon ]; then
-		/etc/rc.d/init.d/authdaemon stop >&2
+		/etc/rc.d/init.d/authdaemon restart >&2
+	else
+		echo "Run \"/etc/rc.d/init.d/authdaemon start\" to start courier-imap authdaemon."
 	fi
+fi
+
+%preun authpgsql
+METHOD=plain
+if [ -e /etc/sysconfig/authdaemon ]; then
+    . /etc/sysconfig/authdaemon
+    if [ "$1" = "$0" -a "$METHOD" = "pgsql" ]; then
+	    if [ -f /var/lock/subsys/authdaemon ]; then
+		    /etc/rc.d/init.d/authdaemon stop >&2
+	    fi
+    fi
 fi
 
 %files
