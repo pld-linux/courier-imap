@@ -6,12 +6,12 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	2.2.1
-Release:	4
+Version:	3.0.2
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	27c90ce2ac2412bc90994cacbd75616b
+# Source0-md5:	38d3ae003f66637be3ea12e81be4a111
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}-authdaemon.init
@@ -20,7 +20,6 @@ Source5:	%{name}-pop3.pamd
 Source6:	%{name}.sysconfig
 Source7:	%{name}-pop3.sysconfig
 Source8:	%{name}-authdaemon.sysconfig
-Patch0:		%{name}-no_res_query.patch
 URL:		http://www.inter7.com/courierimap/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -163,7 +162,6 @@ IMAP.
 
 %prep
 %setup -q
-%patch0 -p1
 
 %build
 cp -f /usr/share/automake/config.sub .
@@ -242,6 +240,10 @@ echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
 
 touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
+
+# remove unpackaged files
+rm -f $RPM_BUILD_ROOT%{_sysconfdir}/*.dist
+rm -f $RPM_BUILD_ROOT%{_libexecdir}/*.rc
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -375,16 +377,22 @@ fi
 
 %files
 %defattr(644,root,root,755)
+%doc maildir/README.sharedfolders.html
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/imap
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.imap
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/courier-imap
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
 %{_sysconfdir}/imapd.cnf
 %attr(755,root,root) %{_bindir}/imapd
+%attr(755,root,root) %{_bindir}/maildiracl
 %attr(755,root,root) %{_bindir}/maildirkw
+%attr(755,root,root) %{_sbindir}/authenumerate
 %attr(755,root,root) %{_sbindir}/imaplogin
 %attr(755,root,root) %{_sbindir}/mkimapdcert
+%attr(755,root,root) %{_sbindir}/sharedindexinstall
+%attr(755,root,root) %{_sbindir}/sharedindexsplit
 %{_mandir}/man8/imapd*
+%{_mandir}/man1/maildiracl.1*
 %{_mandir}/man1/maildirkw.1*
 
 %files common
@@ -400,10 +408,11 @@ fi
 %{_sysconfdir}/quotawarnmsg.example
 %attr(755,root,root) %{_bindir}/couriertls
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemon
+%attr(755,root,root) %{_libexecdir}/authlib/authdaemond
 %attr(755,root,root) %{_libexecdir}/authlib/authdaemond.plain
 %attr(755,root,root) %{_libexecdir}/couriertcpd
-%attr(755,root,root) %{_libexecdir}/courierlogger
 %attr(755,root,root) %{_libexecdir}/makedatprog
+%attr(755,root,root) %{_sbindir}/courierlogger
 %{_mandir}/man8/auth[cdsuv]*
 %{_mandir}/man8/authp[aw]*
 %{_mandir}/man7/authlib*
