@@ -7,12 +7,12 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	3.0.5
+Version:	3.0.8
 Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	8b0c79997905dc46cfe4cc13be74ceaf
+# Source0-md5:	1b431e6dac39ed728d839ceb35474040
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}.pamd
@@ -30,6 +30,7 @@ BuildRequires:	libstdc++-devel
 BuildRequires:	openssl-devel >= 0.9.6m
 %{?with_pgsql:BuildRequires:	postgresql-devel}
 BuildRequires:	procps
+BuildRequires:	sed >= 4.0
 BuildRequires:	sysconftool
 %{?with_mysql:BuildRequires:	zlib-devel}
 PreReq:		%{name}-common = %{version}-%{release}
@@ -45,6 +46,7 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		_libexecdir	/usr/%{_lib}/courier-imap
 %define		_sysconfdir	/etc/courier-imap
 %define		_certsdir	%{_sysconfdir}/certs
+%define		_localstatedir	/var/spool/courier-imap
 
 %description
 Courier-IMAP is an IMAP server for Maildir mailboxes.
@@ -191,6 +193,7 @@ cd ../imap
 cd ..
 
 %configure \
+	--localstatedir=%{_localstatedir} \
 	--libexecdir=%{_libexecdir} \
 	--enable-unicode \
 	--with-authchangepwdir=/var/tmp \
@@ -206,8 +209,7 @@ cd ..
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig} \
-	$RPM_BUILD_ROOT{%{_sysconfdir}/shared,%{_certsdir},/var/lib/authdaemon}
+install -d $RPM_BUILD_ROOT{/etc/{pam.d,rc.d/init.d,security},%{_certsdir}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
@@ -298,7 +300,7 @@ if [ -f /var/lib/openssl/certs/imapd.pem ]; then
 fi
 if [ -f /etc/sysconfig/courier-imap ]; then
     . /etc/sysconfig/courier-imap
-    for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v COURIERTLS |cut -d= -f1`;
+    for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
     do
 	eval opt2=\$$opt
 	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/imapd > %{_sysconfdir}/imapd.new
@@ -318,6 +320,14 @@ if [ -f /etc/sysconfig/courier-imap ]; then
 fi
 if [ -f /var/lock/subsys/courier-imap ]; then
 	/etc/rc.d/init.d/courier-imap restart >&2
+fi
+
+%triggerin -- %{name} < 3.0.6
+. %{_sysconfdir}/imapd-ssl
+if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
+	sed s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ < %{_sysconfdir}/imapd-ssl > %{_sysconfdir}/imapd-ssl.new
+	mv -f %{_sysconfdir}/imapd-ssl.new %{_sysconfdir}/imapd-ssl
+	chmod 640 %{_sysconfdir}/imapd-ssl
 fi
 
 %triggerin -n %{name}-common -- %{name}-common < 3.0.5
@@ -367,7 +377,7 @@ if [ -f /var/lib/openssl/certs/pop3d.pem ]; then
 fi
 if [ -f /etc/sysconfig/courier-pop3 ]; then
     . /etc/sysconfig/courier-pop3
-    for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v COURIERTLS |cut -d= -f1`;
+    for opt in `grep ^[^#] /etc/sysconfig/courier-pop3 |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
     do
 	eval opt2=\$$opt
 	sed s/^$opt=.*/"$opt=\"$opt2\""/ < %{_sysconfdir}/pop3d > %{_sysconfdir}/pop3d.new
@@ -384,6 +394,14 @@ if [ -f /etc/sysconfig/courier-pop3 ]; then
 fi
 if [ -f /var/lock/subsys/courier-pop3 ]; then
 	/etc/rc.d/init.d/courier-pop3 restart >&2
+fi
+
+%triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.6
+. %{_sysconfdir}/pop3d-ssl
+if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
+	sed s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ < %{_sysconfdir}/pop3d-ssl > %{_sysconfdir}/pop3d-ssl.new
+	mv -f %{_sysconfdir}/pop3d-ssl.new %{_sysconfdir}/pop3d-ssl
+	chmod 640 %{_sysconfdir}/pop3d-ssl
 fi
 
 %post authldap
@@ -437,7 +455,8 @@ fi
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd-ssl
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd.cnf
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
-%attr(750,daemon,daemon) %dir %{_sysconfdir}/shared
+%attr(755,daemon,daemon) %dir %{_sysconfdir}/shared
+%attr(755,daemon,daemon) %dir %{_sysconfdir}/shared.tmp
 %attr(755,root,root) %{_bindir}/imapd
 %attr(755,root,root) %{_bindir}/maildiracl
 %attr(755,root,root) %{_bindir}/maildirkw
@@ -455,9 +474,10 @@ fi
 %files common
 %defattr(644,root,root,755)
 %doc AUTHORS ChangeLog imap/BUGS INSTALL README*
-%attr(700,root,root) /var/lib/authdaemon
+%attr(770,daemon,daemon) /var/lib/authdaemon
 %attr(750,root,root) %dir %{_sysconfdir}
 %attr(750,root,root) %dir %{_certsdir}
+%attr(770,daemon,daemon) %dir %{_localstatedir}
 %dir %{_libexecdir}
 %dir %{_libexecdir}/authlib
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authdaemonrc
