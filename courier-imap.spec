@@ -1,8 +1,8 @@
 #
 # Conditional build:
-%bcond_with ldap	# without LDAP support
-%bcond_with mysql	# without MySQL support
-%bcond_with pgsql	# without PostgreSQL support
+%bcond_without ldap	# without LDAP support
+%bcond_without mysql	# without MySQL support
+%bcond_without pgsql	# without PostgreSQL support
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
