@@ -5,7 +5,7 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	1.3.8.2
+Version:	1.3.9
 Release:	1
 License:	GPL
 Group:		Networking/Daemons
@@ -83,7 +83,7 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/etc/{pam.d,rc.d/init.d,security,sysconfig} \
-	$RPM_BUILD_ROOT%{_sysconfdir}
+	$RPM_BUILD_ROOT{%{_sysconfdir},/var/lib/authdaemon}
 
 %{__make} install DESTDIR=$RPM_BUILD_ROOT
 
@@ -201,6 +201,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc *.gz imap/*.gz
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/authdaemon
 %attr(754,root,root) /etc/rc.d/init.d/authdaemon
+%attr(700,root,root) /var/lib/authdaemon
 %attr(750,root,root) %dir %{_sysconfdir}
 %dir %{_libexecdir}
 %dir %{_libexecdir}/authlib
