@@ -1,0 +1,18 @@
+diff -Nur old/imap/imapd.dist.in new/imap/imapd.dist.in
+--- old/imap/imapd.dist.in	2004-04-18 15:54:39.000000000 +0000
++++ new/imap/imapd.dist.in	2004-07-08 19:00:52.000000000 +0000
+@@ -376,4 +376,4 @@
+ #
+ # MAILDIRPATH - directory name of the maildir directory.
+ #
+-MAILDIRPATH=Maildir
++MAILDIRPATH=Mail/Maildir
+diff -Nur old/imap/pop3d.dist.in new/imap/pop3d.dist.in
+--- old/imap/pop3d.dist.in	2004-04-18 15:54:39.000000000 +0000
++++ new/imap/pop3d.dist.in	2004-07-08 19:00:59.000000000 +0000
+@@ -151,4 +151,4 @@
+ #
+ # MAILDIRPATH - directory name of the maildir directory.
+ #
+-MAILDIRPATH=Maildir
++MAILDIRPATH=Mail/Maildir
