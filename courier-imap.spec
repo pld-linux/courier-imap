@@ -10,20 +10,6 @@ Version:	1.4.2
 Release:	2
 License:	GPL
 Group:		Networking/Daemons
-Group(cs):	Sí»ové/Démoni
-Group(da):	Netværks/Dæmoner
-Group(de):	Netzwerkwesen/Server
-Group(es):	Red/Servidores
-Group(fr):	Réseau/Serveurs
-Group(is):	Net/Púkar
-Group(it):	Rete/Demoni
-Group(no):	Nettverks/Daemoner
-Group(pl):	Sieciowe/Serwery
-Group(pt):	Rede/Servidores
-Group(ru):	óÅÔØ/äÅÍÏÎÙ
-Group(sl):	Omre¾ni/Stre¾niki
-Group(sv):	Nätverk/Demoner
-Group(uk):	íÅÒÅÖÁ/äÅÍÏÎÉ
 Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
@@ -61,20 +47,6 @@ Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 Summary:	Common files for imap and pop daemons
 Summary(pl):	Pliki wspólne dla serwerów imap i pop
 Group:		Networking/Daemons
-Group(cs):	Sí»ové/Démoni
-Group(da):	Netværks/Dæmoner
-Group(de):	Netzwerkwesen/Server
-Group(es):	Red/Servidores
-Group(fr):	Réseau/Serveurs
-Group(is):	Net/Púkar
-Group(it):	Rete/Demoni
-Group(no):	Nettverks/Daemoner
-Group(pl):	Sieciowe/Serwery
-Group(pt):	Rede/Servidores
-Group(ru):	óÅÔØ/äÅÍÏÎÙ
-Group(sl):	Omre¾ni/Stre¾niki
-Group(sv):	Nätverk/Demoner
-Group(uk):	íÅÒÅÖÁ/äÅÍÏÎÉ
 PreReq:		rc-scripts
 PreReq:		/sbin/chkconfig
 Requires:	%{name}-maildirmake
@@ -90,20 +62,6 @@ Pliki wspólne dla serwerów imap i pop.
 %package userdb
 Summary:	Commands used to create the /etc/userdb.dat
 Group:		Networking/Daemons
-Group(cs):	Sí»ové/Démoni
-Group(da):	Netværks/Dæmoner
-Group(de):	Netzwerkwesen/Server
-Group(es):	Red/Servidores
-Group(fr):	Réseau/Serveurs
-Group(is):	Net/Púkar
-Group(it):	Rete/Demoni
-Group(no):	Nettverks/Daemoner
-Group(pl):	Sieciowe/Serwery
-Group(pt):	Rede/Servidores
-Group(ru):	óÅÔØ/äÅÍÏÎÙ
-Group(sl):	Omre¾ni/Stre¾niki
-Group(sv):	Nätverk/Demoner
-Group(uk):	íÅÒÅÖÁ/äÅÍÏÎÉ
 
 %description userdb
 Commands used to create the /etc/userdb.dat.
@@ -114,20 +72,6 @@ Polecenia u¿ywane do stworzenia /etc/userdb.dat.
 %package deliverquota
 Summary:	Deliver to a maildir with a quota
 Group:		Networking/Daemons
-Group(cs):	Sí»ové/Démoni
-Group(da):	Netværks/Dæmoner
-Group(de):	Netzwerkwesen/Server
-Group(es):	Red/Servidores
-Group(fr):	Réseau/Serveurs
-Group(is):	Net/Púkar
-Group(it):	Rete/Demoni
-Group(no):	Nettverks/Daemoner
-Group(pl):	Sieciowe/Serwery
-Group(pt):	Rede/Servidores
-Group(ru):	óÅÔØ/äÅÍÏÎÙ
-Group(sl):	Omre¾ni/Stre¾niki
-Group(sv):	Nätverk/Demoner
-Group(uk):	íÅÒÅÖÁ/äÅÍÏÎÉ
 
 %description deliverquota
 deliverquota is a temporary hack to implement E-mail delivery to a
@@ -140,20 +84,6 @@ dostarczanie e-maili do maildir z programowo narzucon± quot±.
 %package maildirmake
 Summary:	Tool for making mail folders in Maildir format.
 Group:		Networking/Daemons
-Group(cs):	Sí»ové/Démoni
-Group(da):	Netværks/Dæmoner
-Group(de):	Netzwerkwesen/Server
-Group(es):	Red/Servidores
-Group(fr):	Réseau/Serveurs
-Group(is):	Net/Púkar
-Group(it):	Rete/Demoni
-Group(no):	Nettverks/Daemoner
-Group(pl):	Sieciowe/Serwery
-Group(pt):	Rede/Servidores
-Group(ru):	óÅÔØ/äÅÍÏÎÙ
-Group(sl):	Omre¾ni/Stre¾niki
-Group(sv):	Nätverk/Demoner
-Group(uk):	íÅÒÅÖÁ/äÅÍÏÎÉ
 Conflicts:	qmail-maildirmake
 
 %description maildirmake
@@ -167,20 +97,6 @@ formacie Maildir.
 Summary:	Courier-IMAP POP3 Server
 Summary(pl):	Serwer Courier-IMAP POP3
 Group:		Networking/Daemons
-Group(cs):	Sí»ové/Démoni
-Group(da):	Netværks/Dæmoner
-Group(de):	Netzwerkwesen/Server
-Group(es):	Red/Servidores
-Group(fr):	Réseau/Serveurs
-Group(is):	Net/Púkar
-Group(it):	Rete/Demoni
-Group(no):	Nettverks/Daemoner
-Group(pl):	Sieciowe/Serwery
-Group(pt):	Rede/Servidores
-Group(ru):	óÅÔØ/äÅÍÏÎÙ
-Group(sl):	Omre¾ni/Stre¾niki
-Group(sv):	Nätverk/Demoner
-Group(uk):	íÅÒÅÖÁ/äÅÍÏÎÉ
 PreReq:		%{name}-common = %{version}
 Provides:	pop3daemon
 Obsoletes:	pop3daemon
@@ -195,20 +111,6 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 Summary:	LDAP authentication daemon for Courier IMAP
 Summary(pl):	Demon autentykacji LDAP do Courier IMAP
 Group:		Networking/Daemons
-Group(cs):	Sí»ové/Démoni
-Group(da):	Netværks/Dæmoner
-Group(de):	Netzwerkwesen/Server
-Group(es):	Red/Servidores
-Group(fr):	Réseau/Serveurs
-Group(is):	Net/Púkar
-Group(it):	Rete/Demoni
-Group(no):	Nettverks/Daemoner
-Group(pl):	Sieciowe/Serwery
-Group(pt):	Rede/Servidores
-Group(ru):	óÅÔØ/äÅÍÏÎÙ
-Group(sl):	Omre¾ni/Stre¾niki
-Group(sv):	Nätverk/Demoner
-Group(uk):	íÅÒÅÖÁ/äÅÍÏÎÉ
 PreReq:		%{name}-common = %{version}
 
 %description authldap
@@ -221,20 +123,6 @@ Ten pakiet pozwala na korzystanie z autentykacji LDAP w Courier IMAP.
 Summary:	MySQL authentication daemon for Courier IMAP
 Summary(pl):	Demon autentykacji MySQL do Courier IMAP
 Group:		Networking/Daemons
-Group(cs):	Sí»ové/Démoni
-Group(da):	Netværks/Dæmoner
-Group(de):	Netzwerkwesen/Server
-Group(es):	Red/Servidores
-Group(fr):	Réseau/Serveurs
-Group(is):	Net/Púkar
-Group(it):	Rete/Demoni
-Group(no):	Nettverks/Daemoner
-Group(pl):	Sieciowe/Serwery
-Group(pt):	Rede/Servidores
-Group(ru):	óÅÔØ/äÅÍÏÎÙ
-Group(sl):	Omre¾ni/Stre¾niki
-Group(sv):	Nätverk/Demoner
-Group(uk):	íÅÒÅÖÁ/äÅÍÏÎÉ
 PreReq:		%{name}-common = %{version}
 Requires:	zlib
 
@@ -248,20 +136,6 @@ Ten pakiet pozwala na korzystanie z autentykacji MySQL w Courier IMAP.
 Summary:	PostgreSQL authentication daemon for Courier IMAP
 Summary(pl):	Demon autentykacji PostgreSQL do Courier IMAP
 Group:		Networking/Daemons
-Group(cs):	Sí»ové/Démoni
-Group(da):	Netværks/Dæmoner
-Group(de):	Netzwerkwesen/Server
-Group(es):	Red/Servidores
-Group(fr):	Réseau/Serveurs
-Group(is):	Net/Púkar
-Group(it):	Rete/Demoni
-Group(no):	Nettverks/Daemoner
-Group(pl):	Sieciowe/Serwery
-Group(pt):	Rede/Servidores
-Group(ru):	óÅÔØ/äÅÍÏÎÙ
-Group(sl):	Omre¾ni/Stre¾niki
-Group(sv):	Nätverk/Demoner
-Group(uk):	íÅÒÅÖÁ/äÅÍÏÎÉ
 PreReq:		%{name}-common = %{version}
 
 %description authpgsql
