@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	2.2.1
-Release:	3
+Release:	4
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -320,11 +320,13 @@ fi
 
 %preun authldap
 METHOD=plain
-. /etc/sysconfig/authdaemon
-if [ "$1" = "$0" -a "$METHOD" = "ldap" ]; then
-	if [ -f /var/lock/subsys/authdaemon ]; then
-		/etc/rc.d/init.d/authdaemon stop >&2
-	fi
+if [ -e /etc/sysconfig/authdaemon ]; then
+    . /etc/sysconfig/authdaemon
+    if [ "$1" = "$0" -a "$METHOD" = "ldap" ]; then
+	    if [ -f /var/lock/subsys/authdaemon ]; then
+		    /etc/rc.d/init.d/authdaemon stop >&2
+	    fi
+    fi
 fi
 
 %post authmysql
@@ -340,11 +342,35 @@ fi
 
 %preun authmysql
 METHOD=plain
+if [ -e /etc/sysconfig/authdaemon ]; then
+    . /etc/sysconfig/authdaemon
+    if [ "$1" = "$0" -a "$METHOD" = "mysql" ]; then
+	    if [ -f /var/lock/subsys/authdaemon ]; then
+		    /etc/rc.d/init.d/authdaemon stop >&2
+	    fi
+    fi
+fi
+
+%post authpgsql
+METHOD=plain
 . /etc/sysconfig/authdaemon
-if [ "$1" = "$0" -a "$METHOD" = "mysql" ]; then
+if [ "$METHOD" = "pgsql" ]; then
 	if [ -f /var/lock/subsys/authdaemon ]; then
-		/etc/rc.d/init.d/authdaemon stop >&2
+		/etc/rc.d/init.d/authdaemon restart >&2
+	else
+		echo "Run \"/etc/rc.d/init.d/authdaemon start\" to start courier-imap authdaemon."
 	fi
+fi
+
+%preun authpgsql
+METHOD=plain
+if [ -e /etc/sysconfig/authdaemon ]; then
+    . /etc/sysconfig/authdaemon
+    if [ "$1" = "$0" -a "$METHOD" = "pgsql" ]; then
+	    if [ -f /var/lock/subsys/authdaemon ]; then
+		    /etc/rc.d/init.d/authdaemon stop >&2
+	    fi
+    fi
 fi
 
 %files
