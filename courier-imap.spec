@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.5.3
-Release:	5
+Release:	6
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz
@@ -219,7 +219,7 @@ echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemon.8
 echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemond.8
-%{!?_without_pgsql:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpgsql.8}
+%{!?_without_postgresql:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpgsql.8}
 %{!?_without_mysql:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8}
 %{!?_without_ldap:echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8}
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
@@ -415,7 +415,7 @@ fi
 %{_mandir}/man8/authmysql*
 %endif
 
-%if %{?_without_pgsql:0}%{!?_without_pgsql:1}
+%if %{?_without_postgresql:0}%{!?_without_postgresql:1}
 %files authpgsql
 %defattr(644,root,root,755)
 %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authpgsqlrc
