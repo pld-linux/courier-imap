@@ -18,7 +18,7 @@ TCPDOPTS=
 IMAPDSSLSTART="no"
 
 # Get service config
-[ -f /etc/sysconfig/courier-imap ] && . /etc/sysconfig/courier-imap-imap
+[ -f /etc/sysconfig/courier-imap ] && . /etc/sysconfig/courier-imap
 
 # Check that networking is up.
 if is_no "${NETWORKING}" ; then
