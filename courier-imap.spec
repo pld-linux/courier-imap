@@ -25,6 +25,7 @@ URL:		http://www.inter7.com/courierimap/
 %{!?_without_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
+BuildRequires:	openssl-devel
 Provides:	imapdaemon
 Prereq:		%{name}-common = %{version}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
