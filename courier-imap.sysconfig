@@ -1,36 +1,181 @@
-# $Revision$
+# Address to listen on, can be set to a single IP address.
 #
-#  Address to listen on, can be set to a single IP address.
-#
-#  Example: ADDRESS=127.0.0.1
-#
-ADDRESS=0
+ADDRESS=0.0.0.0
 
-#
-#  You better have a good reason for changing the port
-#
-PORT=143
-
-#
-#  Maximum number of IMAP servers started
+# Maximum number of IMAP servers started
 #
 MAXDAEMONS=40
 
-#
-#  Maximum number of connections to accept from the same IP address
+# Maximum number of connections to accept from the same IP address
 #
 MAXPERIP=4
 
-#
-# Authentication modules.  Here's the default list:
-#
-#    authpam authuserdb authvchkpw
-#
-# The default is set during the initial configuration.
-#
-AUTHMODULES="authpam authuserdb authvchkpw"
-
-#
-# Courier supports only Mailbox in QMAIL Maildir Format
+# Where mail is stored (relative to $HOME)
 #
 MAILDIR="Maildir"
+
+# Miscellaneous couriertcpd options that shouldn't be changed.
+#
+#TCPDOPTS="-nodnslookup -noidentlookup"
+
+# If this version of Courier-IMAP includes support for CRAM-MD5
+# authentication (the authcram authentication modules gets compiled and
+# installed), you change IMAP_CAPABILITY below to read as follows:
+#
+# IMAP_CAPABILITY="IMAP4rev1 CHILDREN NAMESPACE THREAD=ORDEREDSUBJECT THREAD=REFERENCES SORT AUTH=CRAM-MD5"
+#
+IMAP_CAPABILITY="IMAP4rev1 CHILDREN NAMESPACE THREAD=ORDEREDSUBJECT THREAD=REFERENCES SORT"
+
+# The following setting will advertise SASL PLAIN authentication after
+# STARTTLS is established.  If you want to allow SASL PLAIN authentication
+# with or without TLS then just comment this out, and add AUTH=PLAIN to
+# IMAP_CAPABILITY
+#
+IMAP_CAPABILITY_TLS="$IMAP_CAPABILITY AUTH=PLAIN"
+
+# Set IMAP_DISABLETHREADSORT to disable the THREAD and SORT commands -
+# server side sorting and threading.
+#
+# Those capabilities will still be advertised, but the server will reject
+# them.  Set this option if you want to disable all the extra load from
+# server-side threading and sorting.  Not advertising those capabilities
+# will simply result in the clients reading the entire folder, and sorting
+# it on the client side.  That will still put some load on the server.
+# advertising these capabilities, but rejecting the commands, will stop this
+# silliness.
+#
+IMAP_DISABLETHREADSORT=0
+
+# Set IMAP_CHECK_ALL_FOLDERS to 1 if you want the server to check for new
+# mail in every folder.  Not all IMAP clients use an IMAP's server new mail
+# indicator, but some do, and normally new mail is checked only in INBOX,
+# because it is a comparatively time consuming operation, and it would be
+# a complete waste of time unless mail filters are used to deliver new
+# mail directly to folders.
+#
+# When IMAP clients are used which support new mail indication, and when
+# mail filters are used to sort incoming mail into folders, setting
+# IMAP_CHECK_ALL_FOLDERS to 1 will allow IMAP clients to announce new
+# mail in folders.  Note that this will result in slightly more load on the
+# server.
+#
+IMAP_CHECK_ALL_FOLDERS=0
+
+# Set IMAP_OBSOLETE_CLIENT if your IMAP client expects \\NoInferiors to mean
+# what \\HasNoChildren really means.
+#
+IMAP_OBSOLETE_CLIENT=0
+
+# IMAP_ULIMITD sets the maximum size of the data segment of the server
+# process.  The value of IMAP_ULIMITD is simply passed to the "ulimit -d"
+# command.  The argument to ulimit -d sets the upper limit on the size
+# of the data segment of the server process, in kilobytes.  The default
+# value of 65536 sets a very generous limit of 64 megabytes, which should
+# be more than plenty for anyone.
+#
+# This feature is used as an additional safety check that should stop
+# any potential denial-of-service attacks that exploit any kind of
+# a memory leak to exhaust all the available memory on the server.
+# It is theoretically possible that obscenely huge folders will also
+# result in the server running out of memory when doing server-side
+# sorting (by my calculations you have to have at least 100,000 messages
+# in a single folder, for that to happen).
+#
+IMAP_ULIMITD=65536
+
+# Set IMAP_USELOCKS to 1 if you experience weird problems when using IMAP
+# clients that open multiple connections to the server.  I would hope that
+# most IMAP clients are sane enough not to issue commands to multiple IMAP
+# channels which conflict with each other.
+#
+IMAP_USELOCKS=0
+
+# Purge messages from the Trash folder after this number of days.  This is
+# mainly for the Netscape Communicator client, which automatically moves
+# deleted messages into Trash.  Remove this variable complete to disable
+# Trash purging.
+#
+IMAP_EMPTYTRASH=7
+
+# Set IMAP_MOVE_EXPUNGE_TO_TRASH to move expunged messages to Trash.  This
+# effectively allows an undo of message deletion by fishing the deleted
+# mail from trash.  Trash can be manually expunged as usually, and mail
+# will get automatically expunged from Trash according to IMAP_EMPTYTRASH.
+#
+# NOTE: shared folders are still expunged as usual.  Shared folders are
+# not affected.
+#
+IMAP_MOVE_EXPUNGE_TO_TRASH=0
+
+# Whether or not to start IMAP over SSL on simap port:
+#
+IMAPDSSLSTART=NO
+
+# Whether or not to implement IMAP STARTTLS extension instead:
+#
+IMAPDSTARTTLS=YES
+
+# Set IMAP_TLS_REQUIRED to 1 if you REQUIRE STARTTLS for everyone.
+# (this option advertises the LOGINDISABLED IMAP capability, until STARTTLS
+# is issued).
+#
+#IMAP_TLS_REQUIRED=1
+
+# TLS_PROTOCOL sets the protocol version.  The possible versions are:
+#
+# SSL2 - SSLv2
+# SSL3 - SSLv3
+# TLS1 - TLS1
+#
+TLS_PROTOCOL=SSL3
+
+# TLS_CIPHER_LIST optionally sets the list of ciphers to be used by the
+# OpenSSL library.  In most situations you can leave TLS_CIPHER_LIST
+# undefined
+#
+#TLS_CIPHER_LIST="ALL:!ADH:RC4+RSA:+SSLv2:@STRENGTH"
+
+# TLS_DHCERTFILE - PEM file that stores our Diffie-Hellman cipher pair.
+# When OpenSSL is compiled to use Diffie-Hellman ciphers instead of RSA
+# you must generate a DH pair that will be used.  In most situations the
+# DH pair is to be treated as confidential, and the file specified by
+# TLS_DHCERTFILE must not be world-readable.
+#
+#TLS_DHCERTFILE=
+
+# TLS_CERTFILE - certificate to use.  TLS_CERTFILE is required for SSL/TLS
+# servers, and is optional for SSL/TLS clients.  TLS_CERTFILE is usually
+# treated as confidential, and must not be world-readable.
+#
+TLS_CERTFILE=/var/lib/openssl/certs/imapd.pem
+
+# TLS_PEERCERTDIR, TLS_OURCACERT - when it is required that all peer
+# certificates are signed by a specific certificate authority, set
+# TLS_OURCACERT to the name of the file containing the certificate authority
+# root key, and set TLS_PEERCERTDIR to the name of the directory containing
+# the allowed certificates.
+#
+#TLS_PEERCERTDIR=
+#TLS_OURCACERT=
+
+# TLS_VERIFYPEER - how to verify peer certificates.  The possible values of
+# this setting are:
+#
+# NONE - do not verify anything
+#
+# PEER - verify the peer certificate, if one's presented
+#
+# REQUIREPEER - require a peer certificate, fail if one's not presented
+#
+# SSL/TLS servers will usually set TLS_VERIFYPEER to NONE.  SSL/TLS clients
+# will usually set TLS_VERIFYPEER to REQUIREPEER.
+#
+TLS_VERIFYPEER=NONE
+
+# TLS_ALLOWSELFSIGNEDCERT - this is an alternative to clients using
+# TLS_VERIFYPEER=NONE.  TLS_ALLOWSELFSIGNEDCERT ignores server certificates
+# that are not signed by a recognized certificate authority.  This allows
+# clients to simply verify that a server certificate is available.
+#
+#TLS_ALLOWSELFSIGNEDCERT=1
+
