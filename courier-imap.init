@@ -34,13 +34,12 @@ case "$1" in
 		msg_starting "Courier IMAP"
 		ulimit -d $IMAP_ULIMITD
 		/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-imap ; \
-			IMAP_STARTTLS=$POP3DSTARTTLS ; export POP3_STARTTLS ; \
 			`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap | \
 			sed 's/=.*//;s/^/export /;s/$/;/'` \
 			/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
 			-stderrlogger=/usr/lib/courier-imap/logger \
 			-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
-			-pid=/var/run/imapd.pid $TCPDOPTS 143 /usr/sbin/imaplogin \
+			-pid=/var/run/imapd.pid $TCPDOPTS $PORTS /usr/sbin/imaplogin \
 			/usr/lib/courier-imap/authlib/authdaemon /usr/bin/imapd $MAILDIR"
 		RETVAL=$?
 		if [ $RETVAL -eq 0 ]; then
@@ -53,14 +52,14 @@ case "$1" in
 		if is_yes "$IMAPDSSLSTART"; then
 			msg_starting "Courier IMAP (SSL)"
 			/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-imap ; \
-				IMAP_TLS=1; export POP3_TLS; \
+				IMAP_TLS=1; export IMAP_TLS; \
 				`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap | \
 				sed 's/=.*//;s/^/export /;s/$/;/'`
-				/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
+				/usr/lib/courier-imap/couriertcpd -address=$ADDRESS_SSL \
 				-stderrlogger=/usr/lib/courier-imap/logger \
 				-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
 				-pid=/var/run/imapd-ssl.pid $TCPDOPTS \
-				993 /usr/bin/couriertls -server -tcpd \
+				$PORTS_SSL $COURIERTLS -server -tcpd \
 				/usr/sbin/imaplogin /usr/lib/courier-imap/authlib/authdaemon \
 				/usr/bin/imapd $MAILDIR"
 			RETVAL=$?
