@@ -1,6 +1,6 @@
 #%PAM-1.0
 auth		required	/lib/security/pam_listfile.so item=user sense=deny file=/etc/security/blacklist onerr=succeed
-auth		required	/lib/security/pam_listfile.so item=user sense=deny file=/etc/security/blacklist.courier-imap onerr=succeed
+auth		required	/lib/security/pam_listfile.so item=user sense=deny file=/etc/security/blacklist.imap onerr=succeed
 auth		required	/lib/security/pam_unix.so
 auth		required	/lib/security/pam_tally.so file=/var/log/faillog onerr=succeed no_magic_root
 auth		required	/lib/security/pam_nologin.so
