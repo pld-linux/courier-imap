@@ -8,7 +8,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	3.0.7
-Release:	1
+Release:	2
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -460,10 +460,10 @@ fi
 %files common
 %defattr(644,root,root,755)
 %doc AUTHORS ChangeLog imap/BUGS INSTALL README*
-%attr(700,root,root) /var/lib/authdaemon
+%attr(770,daemon,daemon) /var/lib/authdaemon
 %attr(750,root,root) %dir %{_sysconfdir}
 %attr(750,root,root) %dir %{_certsdir}
-%attr(700,daemon,daemon) %dir %{_localstatedir}
+%attr(770,daemon,daemon) %dir %{_localstatedir}
 %dir %{_libexecdir}
 %dir %{_libexecdir}/authlib
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authdaemonrc
