@@ -1,18 +1,17 @@
 #
-# Conditional build:
-%bcond_without ldap	# without LDAP support
-%bcond_without mysql	# without MySQL support
-%bcond_without pgsql	# without PostgreSQL support
+# TODO:
+#	- triggers
+#	- tests
 #
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	3.0.8
-Release:	2
+Version:	4.0.0
+Release:	0.1
 License:	GPL
 Group:		Networking/Daemons
-Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	1b431e6dac39ed728d839ceb35474040
+Source0:	http://www.courier-mta.org/beta/imap/%{name}-%{version}.tar.bz2
+# Source0-md5:	4c5654259d4dd03750d7c6f2aa4be7ec
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}.pamd
@@ -20,19 +19,16 @@ Source4:	%{name}-pop3.pamd
 Patch0:		%{name}-dirs.patch
 Patch1:		%{name}-certsdir.patch
 Patch2:		%{name}-maildir.patch
+Patch3:		%{name}-build.patch
 URL:		http://www.inter7.com/courierimap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
-%{?with_mysql:BuildRequires:	mysql-devel}
-%{?with_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	openssl-devel >= 0.9.7d
-%{?with_pgsql:BuildRequires:	postgresql-devel}
 BuildRequires:	procps
 BuildRequires:	sed >= 4.0
 BuildRequires:	sysconftool
-%{?with_mysql:BuildRequires:	zlib-devel}
 PreReq:		%{name}-common = %{version}-%{release}
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
@@ -67,17 +63,6 @@ Common files for imap and pop3 daemons.
 
 %description common -l pl
 Pliki wspólne dla serwerów imap i pop3.
-
-%package userdb
-Summary:	Commands used to create the /etc/userdb.dat
-Summary(pl):	Polecenia do tworzenia /etc/userdb.dat
-Group:		Networking/Daemons
-
-%description userdb
-Commands used to create the /etc/userdb.dat.
-
-%description userdb -l pl
-Polecenia u¿ywane do stworzenia /etc/userdb.dat.
 
 %package deliverquota
 Summary:	Deliver to a Maildir with a quota
@@ -124,49 +109,12 @@ Courier-IMAP POP3 is an POP3 server for Maildir mailboxes.
 %description pop3 -l pl
 Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 
-%package authldap
-Summary:	LDAP authentication daemon for Courier IMAP
-Summary(pl):	Demon autentykacji LDAP do Courier IMAP
-Group:		Networking/Daemons
-PreReq:		%{name}-common = %{version}-%{release}
-
-%description authldap
-This package provides LDAP authentication for Courier IMAP.
-
-%description authldap -l pl
-Ten pakiet pozwala na korzystanie z autentykacji LDAP w Courier IMAP.
-
-%package authmysql
-Summary:	MySQL authentication daemon for Courier IMAP
-Summary(pl):	Demon autentykacji MySQL do Courier IMAP
-Group:		Networking/Daemons
-PreReq:		%{name}-common = %{version}-%{release}
-Requires:	zlib
-
-%description authmysql
-This package provides MySQL authentication for Courier IMAP.
-
-%description authmysql -l pl
-Ten pakiet pozwala na korzystanie z autentykacji MySQL w Courier IMAP.
-
-%package authpgsql
-Summary:	PostgreSQL authentication daemon for Courier IMAP
-Summary(pl):	Demon autentykacji PostgreSQL do Courier IMAP
-Group:		Networking/Daemons
-PreReq:		%{name}-common = %{version}-%{release}
-
-%description authpgsql
-This package provides PostgreSQL authentication for Courier IMAP.
-
-%description authpgsql -l pl
-Ten pakiet pozwala na korzystanie z autentykacji PostgreSQL w Courier
-IMAP.
-
 %prep
 %setup -q
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 install %{SOURCE1} courier-imap.in
 install %{SOURCE2} courier-pop3.in
@@ -175,30 +123,22 @@ install %{SOURCE2} courier-pop3.in
 cp -f /usr/share/automake/config.sub .
 cp -f /usr/share/automake/config.sub maildir
 
+%{__libtoolize}
 %{__aclocal}
-%{__automake}
 %{__autoconf}
+%{__automake}
 
-cd authlib
+cd imap
 %{__aclocal}
-%{__automake}
 %{__autoconf}
-cd ../imap
-%{__aclocal}
+ln -s ../ltmain.sh .
 %{__automake}
-%{__autoconf}
 cd ..
 
 %configure \
 	--enable-unicode \
 	--with-authchangepwdir=/var/tmp \
-	--with-authdaemonvar=/var/lib/authdaemon \
-	--with-certsdir=%{_certsdir} \
-	%{?with_mysql:--with-mysql-libs=%{_libdir} --with-mysql-includes=%{_includedir}/mysql} \
-	%{!?with_mysql:--without-authmysql} \
-	%{?with_pgsql:--with-pgsql-libs=%{_libdir} --with-pgsql-includes=%{_includedir}/postgresql} \
-	%{!?with_pgsql:--without-authpgsql} \
-	%{!?with_ldap:--without-authldap}
+	--with-certsdir=%{_certsdir}
 
 %{__make}
 
@@ -214,42 +154,17 @@ install courier-pop3 $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
 install %{SOURCE3} $RPM_BUILD_ROOT/etc/pam.d/imap
 install %{SOURCE4} $RPM_BUILD_ROOT/etc/pam.d/pop3
 
-rm -rf	$RPM_BUILD_ROOT%{_mandir}/man8/{authcram,authpam,authpwd,authshadow,authuserdb,authvchkpw,pw2userdb,vchkpw2userdb,authdaemon,authdaemond,authldap,authmysql}.8 \
-	$RPM_BUILD_ROOT%{_sbindir}/{*db,mk*cert}
+rm -rf $RPM_BUILD_ROOT%{_sbindir}/mk*cert
 
-mv -f authlib/README.authmysql.html README.authmysql.html
-mv -f authlib/README.ldap README.ldap
-mv -f authlib/README.authmysql.myownquery README.authmysql.myownquery
 mv -f imap/README README.imap
 mv -f imap/ChangeLog ChangeLog
 mv -f maildir/README.maildirquota.txt README.maildirquota
 
-install authlib/authdaemonrc		$RPM_BUILD_ROOT%{_sysconfdir}
-install authlib/authldaprc		$RPM_BUILD_ROOT%{_sysconfdir}
-install authlib/authmysqlrc		$RPM_BUILD_ROOT%{_sysconfdir}
-install authlib/authpgsqlrc		$RPM_BUILD_ROOT%{_sysconfdir}
-
-mv -f $RPM_BUILD_ROOT%{_datadir}/*db \
-	$RPM_BUILD_ROOT%{_sbindir}
 mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert \
 	$RPM_BUILD_ROOT%{_sbindir}
 
 mv -f tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
 mv -f imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
-
-echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authcram.8
-echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpam.8
-echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpwd.8
-echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authshadow.8
-echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authuserdb.8
-echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authvchkpw.8
-echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemon.8
-echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemond.8
-%{?with_pgsql:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authpgsql.8}
-%{?with_mysql:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authmysql.8}
-%{?with_ldap:echo ".so man7/authlib.7"	>$RPM_BUILD_ROOT%{_mandir}/man8/authldap.8}
-echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
-echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
 
 touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
 
@@ -385,48 +300,6 @@ if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
 	sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/pop3d-ssl
 fi
 
-%post authldap
-if ps -A |grep -q authdaemond.lda; then
-	%{_libexecdir}/authlib/authdaemond stop
-	%{_libexecdir}/authlib/authdaemond start
-fi
-
-%postun authldap
-if [ -x %{_libexecdir}/authlib/authdaemond ]; then
-	if ps -A |grep -q authdaemond.lda; then
-		%{_libexecdir}/authlib/authdaemond stop;
-		%{_libexecdir}/authlib/authdaemond start;
-	fi
-fi
-
-%post authmysql
-if ps -A |grep -q authdaemond.mys; then
-	%{_libexecdir}/authlib/authdaemond stop
-	%{_libexecdir}/authlib/authdaemond start
-fi
-
-%postun authmysql
-if [ -x %{_libexecdir}/authlib/authdaemond ]; then
-	if ps -A |grep -q authdaemond.mys; then
-		%{_libexecdir}/authlib/authdaemond stop;
-		%{_libexecdir}/authlib/authdaemond start;
-	fi
-fi
-
-%post authpgsql
-if ps -A |grep -q authdaemond.pgs; then
-	%{_libexecdir}/authlib/authdaemond stop
-	%{_libexecdir}/authlib/authdaemond start
-fi
-
-%postun authpgsql
-if [ -x %{_libexecdir}/authlib/authdaemond ]; then
-	if ps -A |grep -q authdaemond.pgs; then
-		%{_libexecdir}/authlib/authdaemond stop;
-		%{_libexecdir}/authlib/authdaemond start;
-	fi
-fi
-
 %files
 %defattr(644,root,root,755)
 %doc maildir/README.sharedfolders.html
@@ -441,7 +314,6 @@ fi
 %attr(755,root,root) %{_bindir}/imapd
 %attr(755,root,root) %{_bindir}/maildiracl
 %attr(755,root,root) %{_bindir}/maildirkw
-%attr(755,root,root) %{_sbindir}/authenumerate
 %attr(755,root,root) %{_sbindir}/imaplogin
 %attr(755,root,root) %{_sbindir}/mkimapdcert
 %attr(755,root,root) %{_sbindir}/sharedindexinstall
@@ -455,39 +327,17 @@ fi
 %files common
 %defattr(644,root,root,755)
 %doc AUTHORS ChangeLog imap/BUGS INSTALL README*
-%attr(770,daemon,daemon) /var/lib/authdaemon
 %attr(750,root,root) %dir %{_sysconfdir}
 %attr(750,root,root) %dir %{_certsdir}
 %attr(770,daemon,daemon) %dir %{_localstatedir}
 %dir %{_libexecdir}
-%dir %{_libexecdir}/authlib
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authdaemonrc
 %{_sysconfdir}/quotawarnmsg.example
 %attr(755,root,root) %{_bindir}/couriertls
-%attr(755,root,root) %{_libexecdir}/authlib/authdaemon
-%attr(755,root,root) %{_libexecdir}/authlib/authdaemond
-%attr(755,root,root) %{_libexecdir}/authlib/authdaemond.plain
 %attr(755,root,root) %{_libexecdir}/couriertcpd
 %attr(755,root,root) %{_libexecdir}/makedatprog
-%attr(755,root,root) %{_sbindir}/courierlogger
-%{_mandir}/man8/auth[cdsuv]*
-%{_mandir}/man8/authp[aw]*
-%{_mandir}/man7/authlib*
-%{_mandir}/man1/courierlogger*
 %{_mandir}/man1/couriert*
 %{_mandir}/man8/couriert*
 %{_mandir}/man8/mk*
-
-%files userdb
-%defattr(644,root,root,755)
-%attr(755,root,root) %{_sbindir}/makeuserdb
-%attr(755,root,root) %{_sbindir}/pw2userdb
-%attr(755,root,root) %{_sbindir}/userdb
-%attr(755,root,root) %{_sbindir}/userdbpw
-%attr(755,root,root) %{_sbindir}/vchkpw2userdb
-%{_mandir}/man8/makeuserdb*
-%{_mandir}/man8/userdb*
-%{_mandir}/man8/*pw2userdb*
 
 %files deliverquota
 %defattr(644,root,root,755)
@@ -513,27 +363,3 @@ fi
 %attr(755,root,root) %{_libexecdir}/pop3d.rc
 %attr(755,root,root) %{_libexecdir}/pop3d-ssl.rc
 %{_mandir}/man8/courierpop*
-
-%if %{with ldap}
-%files authldap
-%defattr(644,root,root,755)
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authldaprc
-%attr(755,root,root) %{_libexecdir}/authlib/authdaemond.ldap
-%{_mandir}/man8/authldap*
-%endif
-
-%if %{with mysql}
-%files authmysql
-%defattr(644,root,root,755)
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authmysqlrc
-%attr(755,root,root) %{_libexecdir}/authlib/authdaemond.mysql
-%{_mandir}/man8/authmysql*
-%endif
-
-%if %{with pgsql}
-%files authpgsql
-%defattr(644,root,root,755)
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/authpgsqlrc
-%attr(755,root,root) %{_libexecdir}/authlib/authdaemond.pgsql
-%{_mandir}/man8/authpgsql*
-%endif
