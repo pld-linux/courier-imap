@@ -1,138 +1,261 @@
 diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/authlib/authmysqllib.c
 --- courier-imap-1.3.12.orig/authlib/authmysqllib.c	Mon Aug  6 05:12:39 2001
-+++ courier-imap-1.3.12/authlib/authmysqllib.c	Sun Dec  9 23:58:55 2001
-@@ -20,6 +20,12 @@
++++ courier-imap-1.3.12/authlib/authmysqllib.c	Wed Dec 26 05:46:05 2001
+@@ -3,7 +3,6 @@
+ ** distribution information.
+ */
+ 
+-
+ #include	<stdio.h>
+ #include	<stdlib.h>
+ #include	<string.h>
+@@ -20,6 +19,17 @@
  
  static const char rcsid[]="$Id$";
  
-+struct var_data {		/* siefca@pld.org.pl */
++struct var_data {			
 +	const char *name;
 +	const char *value;
 +	const size_t size;
-+	} ;
++	size_t value_length;
++	} ;				/* siefca@pld.org.pl */
++
++typedef size_t (*parsefunc)(const char *, size_t, struct var_data *);
++parsefunc ParsePlugin_build = NULL;	/* siefca@pld.org.pl */
++
 +
  static const char *read_env(const char *env)
  {
  static char *mysqlauth=0;
-@@ -51,7 +57,13 @@
+@@ -51,7 +61,13 @@
  
  		for (i=0; i<mysqlauth_size; i++)
  			if (mysqlauth[i] == '\n')
 -				mysqlauth[i]=0;
 +			{	/* siefca@pld.org.pl */
-+				if (i && mysqlauth[i-1] == '\\')
-+					mysqlauth[i-1]=
-+					mysqlauth[i]=' ';
++				if (!i || mysqlauth[i-1] != '\\')
++					mysqlauth[i]	='\0';
 +				else
-+					mysqlauth[i]=0;
++					mysqlauth[i]	=
++					mysqlauth[i-1]	= ' ';
 +			}
  		fclose(f);
  	}
  
-@@ -199,17 +211,218 @@
+@@ -199,17 +215,356 @@
  		strcat(strcpy(p, "@"), defdomain);
  }
  
 +/* siefca@pld.org.pl */
-+static char *parse_string (const char *source, size_t init_bufsize, 
-+			   struct var_data *vd)
++static const char *get_var_value (const char *begin, size_t len,
++  		  	          struct var_data *vd)
 +{
-+    struct var_data	*vdp;
-+    static size_t	querybuf_size 	= 0; /* will learn after first run */
-+    size_t		lenbuf		=0,
-+			querybuf_taken	=0,
-+			willtake	=0;
-+    char		*p, *q, *r, *querybuf;
++struct var_data *vdp;
++
++	for (vdp=vd; vdp->name; vdp++)
++		if (vdp->size == len+1 &&
++		    !strncmp(begin, vdp->name, len))
++		    	{
++				if (vdp->value)
++					return (vdp->value);
++				else
++					return "";
++			}
++	
++	fprintf (stderr, "authmysql: unknown substitution variable "
++			 "$(%.*s)\n", len, begin);
++	
++	return NULL;
++}
++
++/* siefca@pld.org.pl */
++static size_t parse_core (const char *source, struct var_data *vd,
++			  parsefunc outfn, char *result)
++{
++size_t	counter	= 0,
++	s	= 0,
++	v_size	= 0,
++	t_size	= 0;
++const char	*p, *q, *e,
++		*v_begin, *v_end,
++		*t_begin, *t_end,
++		*var_value;
++
++	if (!source)
++		source = "";
++	if (result)
++		*result = '\0';
++
++	q = source;
++	while ( (p=strstr(q, "$(")) )
++	{
++		e = strchr (p, ')');
++		if (!e)
++		{
++			fprintf (stderr, "authmysql: syntax error in "
++					 "substitution variable "
++					 "- no closing bracket!\n"
++					 "authmysql: bad variable begins "
++					 "with: %.*s...\n", 20, p);
++			return -1;
++		}
++		
++		/*
++		 **
++		 **	     __________sometext$(variable_name)_________
++		 **	 	       |      |  |	     |	
++		 **	        t_begin' t_end'  `v_begin    `v_end
++		 **
++		  */
++
++		v_begin	= p+2;		  /* variable field ptr		   */
++		v_end	= e-1;		  /* variable field last character */
++		v_size	= v_end-v_begin+1;/* variable field length	   */
++		
++		t_begin	= q;		  /* text field ptr		   */
++		t_end	= p-1;		  /* text field last character	   */
++		t_size	= t_end-t_begin+1;/* text field length		   */
++
++		if (result)		/* function building mode */
++		{
++			 var_value = get_var_value (v_begin, v_size, vd);
++			 if (!var_value) return -1;
++			 strncat (result, t_begin, t_size);
++			 strcat (result, var_value);
++		}
++		else			/* function counting mode */
++		{			
++			s = outfn (v_begin, v_size, vd);
++			if (s == -1) return -1;
++			counter += s;
++		}
++		q = e + 1;
++	}
++
++	if (result)
++		strcat(result, q);
++		
++	return counter;
++}
++
++/* siefca@pld.org.pl */
++size_t ParsePlugin_variable_len (const char *begin, size_t len,
++			         struct var_data *vd)
++{
++	return (len + 3);
++}
++
++/* siefca@pld.org.pl */
++size_t ParsePlugin_validate (const char *begin, size_t len,
++			     struct var_data *vd)
++{
++struct var_data *vdp;
++
++	if (!len)
++	{
++		fprintf (stderr, "authmysql: unknown empty substitution "
++				 "variable - aborting\n");
++		return -1;
++	}
++
++	if (!begin || !vd) /* should never happend */
++	{
++		fprintf (stderr, "authmysql: critical error while "
++				  "parsing substitution variable\n");
++		return -1;
++	}
++
++	if (len > 32)
++	{
++		fprintf (stderr, "authmysql: variable name too long "
++				 "while parsing substitution\n"
++				 "authmysql: name begins with "
++				 "$(%.*s...\n", 32, begin);
++		return -1;
++	}
++	
++	for (vdp=vd; vdp->name; vdp++)
++		if (vdp->size == len+1 &&
++		    !strncmp(begin, vdp->name, len))
++			return 0;
++	
++	fprintf (stderr, "authmysql: unknown substitution variable "
++			 "$(%.*s)\n", len, begin);
++	return -1;
++}
++
++/* siefca@pld.org.pl */
++size_t ParsePlugin_value_len   (const char *begin, size_t len,
++			        struct var_data *vd)
++{
++struct var_data *vdp;
++
++	for (vdp=vd; vdp->name; vdp++)
++		if (vdp->size == len+1 &&
++		    !strncmp(begin, vdp->name, len))
++		{
++			if (!vdp->value)	/* should never happend */
++				return 0;
++			if (!vdp->value_length)		/* length cache */
++				vdp->value_length = strlen (vdp->value);
++			return (vdp->value_length);
++		}
++
++	fprintf (stderr, "authmysql: missing variable while calculating values "
++			 "for substitution!\n");
++			 
++	return -1;
++}
++
++/* siefca@pld.org.pl */
++static char *parse_string (const char *source, struct var_data *vd)
++{
++char	*output_buf;
++size_t	buf_size,
++	variables_size,
++	values_size;
 +
 +	if (source == NULL || *source == '\0' || 
 +	    vd == NULL     || vd[0].name == NULL)
++	{
++		fprintf (stderr, "authmysql: source clause is empty "
++				 "- this is critical error\n");
++		return NULL;
++	}
++
++	/* phase 1 - check for bad variables */
++	if ((parse_core (source, vd, ParsePlugin_validate, NULL)) != 0)
 +		return NULL;
 +
-+	if (!querybuf_size) /* first time invoked */
-+	{
-+		querybuf_size = 10 		+ 
-+				init_bufsize	+ 
-+		                strlen(source); /* initial value */
-+		/* assuming that each value of the expected variables
-+		 * will appear once... if it is too small
-+		 * (e.g. will appear more than once) don't worry,
-+		 * we will expand amount of memory later
-+		 */
-+		for (vdp=vd; vdp->name; vdp++)
-+			querybuf_size += strlen (vdp->value);
-+	}
-+	querybuf = malloc(querybuf_size);
-+	if (!querybuf)
++	/* phase 2 - calculate output buffer space */
++	values_size    = parse_core (source, vd, ParsePlugin_value_len, NULL);
++	variables_size = parse_core (source, vd, ParsePlugin_variable_len, NULL);
++	if (variables_size == -1 || values_size == -1)	return NULL;
++	buf_size = 2 + (strlen(source)) + values_size - variables_size;
++
++	/* phase 3 - allocate memory */
++	output_buf = malloc (buf_size);
++	if (!output_buf)
 +	{
 +		perror ("malloc");
 +		return NULL;
-+	} 
-+	*querybuf='\0';
-+	querybuf_taken=0;
-+	q=(char*)source;
-+	for (;;)
-+	{
-+		p=strstr(q,"$(");
-+		if (!p || *p == '\0') break;
-+		p+=2;
-+		if (*p == '\0' || *p == ')') break;
-+		r=strchr(p, ')');
-+		if (!r || (r-p+1) > (32*sizeof(char))) break;
-+		for (vdp=vd; vdp->name; vdp++)
-+		{
-+			if (r-p+1 == vdp->size &&
-+			    !strncmp(p, vdp->name, r-p))
-+			{
-+				lenbuf=vdp->size;
-+				break;
-+			}
-+		}
-+		if (vdp->name == NULL)
-+		{
-+			fprintf(stderr, "authmysql: unknown variable in "
-+					"substitution: $(%.*s)\n", r-p, p);
-+			return NULL;
-+		}
-+		willtake = (strlen(vdp->value))+(p-q);
-+		if (willtake+querybuf_taken >= querybuf_size-16)
-+		{
-+			querybuf_size += willtake + 16;
-+			/* learned new querybuf's size */
-+			querybuf=realloc(querybuf, querybuf_size);
-+			if (!querybuf)
-+			{
-+				perror ("realloc");
-+				return NULL;
-+			}
-+			/* warning: querybuf's address may have change! */
-+			/* but for now it's safe...			 */
-+		}
-+		strncat(querybuf, q, p-q-2);
-+		strcat(querybuf, vdp->value);
-+		querybuf_taken += willtake;
-+		q=p+lenbuf;
 +	}
-+	willtake = (strlen(q));
-+	if (willtake+querybuf_taken >= querybuf_size-16)
-+		{
-+			querybuf_size += willtake + 16;
-+			querybuf=realloc(querybuf, querybuf_size);
-+			if (!querybuf)
-+			{
-+				perror ("realloc");
-+				return NULL;
-+			}
-+		}
-+	strcat(querybuf, q);
 +
-+	return querybuf;	
-+}
++	/* phase 4 - build the output string */
++	if ((parse_core (source, vd, ParsePlugin_build, output_buf)) != 0)
++	{
++		free (output_buf);
++		return NULL;
++	}
++	
++	return output_buf;
++}	
 +
 +/* siefca@pld.org.pl */
 +static const char *get_localpart (const char *username)
 +{
-+	char *p;
-+	static char localpart_buf[130];
++char *p;
++static char localpart_buf[130];
 +	
 +	if (!username || *username == '\0') return NULL;
 +	p = strchr(username,'@');
@@ -148,17 +271,18 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/aut
 +	}
 +
 +	for (p = localpart_buf; *p; p++)
-+		if (*p == '\\' || (int)(unsigned char)*p < ' ')
++		if (*p == '\"' || *p == '\\' ||
++		    *p == '\'' || (int)(unsigned char)*p < ' ')
 +			*p=' ';
-+	
++
 +	return localpart_buf;
 +}
 +
 +/* siefca@pld.org.pl */
 +static const char *get_domain (const char *username, const char *defdomain)
 +{
-+	static char domain_buf[260];
-+	char *p, *q;
++static char	domain_buf[260];
++char		*p, *q;
 +	
 +	if (!username || *username == '\0') return NULL;
 +	p = strchr(username,'@');
@@ -168,8 +292,9 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/aut
 +		p++;
 +		if ((strlen(p)) > 256) return NULL;
 +		for (q=domain_buf; *p; p++, q++)
-+		    if (*p == '\\' || (int)(unsigned char)*p < ' ')
-+			*q=' ';
++		   if (*p == '\"' || *p == '\\' ||
++		       *p == '\'' || (int)(unsigned char)*p < ' ')
++			*p=' ';
 +		    else
 +			*q=*p;
 +		*q='\0';
@@ -181,22 +306,47 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/aut
 +}
 +
 +/* siefca@pld.org.pl */
++
++static const char *validate_password (const char *password)
++{
++static char	pass_buf[260];
++const char	*p;
++char		*q;
++	
++	if (!password || *password == '\0') return NULL;
++	
++	if ((strlen(password)) > 256) return NULL;
++	strcpy (pass_buf, password);
++	for (p=password,q=pass_buf; *p != '\0'; p++, q++)
++	{
++		if (*p == '\"' || *p == '\\' || *p == '\'')
++			*q++ = '\\';
++		*q = *p;	
++	}
++	
++	*q = '\0';
++
++	return pass_buf;
++}
++
++
++/* siefca@pld.org.pl */
 +static char *parse_select_clause (const char *clause, const char *username,
 +				  const char *defdomain)
 +{
 +static struct var_data vd[]={
-+	    {"local_part",	NULL,	sizeof("local_part")},
-+	    {"domain",		NULL,	sizeof("domain")},
-+	    {NULL,		NULL,	0}};
++	    {"local_part",	NULL,	sizeof("local_part"),	0},
++	    {"domain",		NULL,	sizeof("domain"),	0},
++	    {NULL,		NULL,	0,			0}};
 +
 +	if (clause == NULL || *clause == '\0' ||
 +	    !username || *username == '\0') return NULL;
 +	
-+	vd[0].value=get_localpart (username);
-+	vd[1].value=get_domain (username, defdomain);
++	vd[0].value	= get_localpart (username);
++	vd[1].value	= get_domain (username, defdomain);
 +	if (!vd[0].value || !vd[1].value) return NULL;
 +	
-+	return (parse_string (clause, 16, vd));
++	return (parse_string (clause, vd));
 +}
 +
 +/* siefca@pld.org.pl */
@@ -205,26 +355,27 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/aut
 +				  const char *newpass_crypt)
 +{
 +static struct var_data vd[]={
-+	    {"local_part",	NULL,	sizeof("local_part")},
-+	    {"domain",		NULL,	sizeof("domain")},
-+	    {"newpass",		NULL, 	sizeof("newpass")},
-+	    {"newpass_crypt",	NULL,	sizeof("newpass_crypt")},
-+	    {NULL,		NULL,	0}};
++	    {"local_part",	NULL,	sizeof("local_part"),		0},
++	    {"domain",		NULL,	sizeof("domain"),		0},
++	    {"newpass",		NULL, 	sizeof("newpass"),		0},
++	    {"newpass_crypt",	NULL,	sizeof("newpass_crypt"),	0},
++	    {NULL,		NULL,	0,				0}};
 +
 +	if (clause == NULL || *clause == '\0'		||
 +	    !username || *username == '\0'		||
 +	    !newpass || *newpass == '\0'		||
 +	    !newpass_crypt || *newpass_crypt == '\0') return NULL;
 +
-+	vd[0].value=get_localpart (username);
-+	vd[1].value=get_domain (username, defdomain);
-+	vd[2].value=newpass;
-+	vd[3].value=newpass_crypt;
-+	if (!vd[0].value || !vd[1].value) return NULL;
++	vd[0].value	= get_localpart (username);
++	vd[1].value	= get_domain (username, defdomain);
++	vd[2].value	= validate_password (newpass);
++	vd[3].value	= validate_password (newpass_crypt);
++	
++	if (!vd[0].value || !vd[1].value ||
++	    !vd[2].value || !vd[3].value)	return NULL;
 +
-+	return (parse_string (clause, 16, vd));
++	return (parse_string (clause, vd));
 +}
-+
 +
  struct authmysqluserinfo *auth_mysql_getuserinfo(const char *username)
  {
@@ -253,7 +404,7 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/aut
  
  static const char query[]=
  	"SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s WHERE %s = \"";
-@@ -232,79 +445,95 @@
+@@ -232,79 +587,95 @@
  		free(ui.fullname);
  	memset(&ui, 0, sizeof(ui));
  
@@ -308,37 +459,37 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/aut
 +		if (!crypt_field) crypt_field="\"\"";
 +		if (!clear_field) clear_field="\"\"";
 +		if (!name_field) name_field="\"\"";
-+
-+		uid_field = read_env("MYSQL_UID_FIELD");
-+		if (!uid_field) uid_field = "uid";
  
 -	gid_field = read_env("MYSQL_GID_FIELD");
 -	if (!gid_field) gid_field = "gid";
-+		gid_field = read_env("MYSQL_GID_FIELD");
-+		if (!gid_field) gid_field = "gid";
++		uid_field = read_env("MYSQL_UID_FIELD");
++		if (!uid_field) uid_field = "uid";
  
 -	login_field = read_env("MYSQL_LOGIN_FIELD");
 -	if (!login_field) login_field = "id";
-+		login_field = read_env("MYSQL_LOGIN_FIELD");
-+		if (!login_field) login_field = "id";
++		gid_field = read_env("MYSQL_GID_FIELD");
++		if (!gid_field) gid_field = "gid";
  
 -	home_field = read_env("MYSQL_HOME_FIELD");
 -	if (!home_field) home_field = "home";
-+		home_field = read_env("MYSQL_HOME_FIELD");
-+		if (!home_field) home_field = "home";
++		login_field = read_env("MYSQL_LOGIN_FIELD");
++		if (!login_field) login_field = "id";
  
 -	maildir_field=read_env("MYSQL_MAILDIR_FIELD");
 -	if (!maildir_field) maildir_field="\"\"";
-+		maildir_field=read_env("MYSQL_MAILDIR_FIELD");
-+		if (!maildir_field) maildir_field="\"\"";
++		home_field = read_env("MYSQL_HOME_FIELD");
++		if (!home_field) home_field = "home";
  
 -	quota_field=read_env("MYSQL_QUOTA_FIELD");
 -	if (!quota_field) quota_field="\"\""; 
-+		quota_field=read_env("MYSQL_QUOTA_FIELD");
-+		if (!quota_field) quota_field="\"\""; 
++		maildir_field=read_env("MYSQL_MAILDIR_FIELD");
++		if (!maildir_field) maildir_field="\"\"";
  
 -	where_clause=read_env("MYSQL_WHERE_CLAUSE");
 -	if (!where_clause) where_clause = "";
++		quota_field=read_env("MYSQL_QUOTA_FIELD");
++		if (!quota_field) quota_field="\"\""; 
++
 +		where_clause=read_env("MYSQL_WHERE_CLAUSE");
 +		if (!where_clause) where_clause = "";
 +	}
@@ -349,15 +500,23 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/aut
 -		+ strlen(crypt_field) + strlen(clear_field) + strlen(maildir_field)
 -		+ strlen(uid_field) + strlen(gid_field) + 2 * strlen(login_field)
 -		+ strlen(home_field) + strlen(quota_field) + strlen(where_clause)
+-			+ strlen(name_field));
+-	if (!querybuf)
 +	if (!select_clause) /* siefca@pld.org.pl */
-+	{
+ 	{
+-		perror("malloc");
+-		return (0);
+-	}
 +		querybuf=malloc(sizeof(query) + 100 + strlen(user_table) + strlen(defdomain)
 +			+ strlen(crypt_field) + strlen(clear_field) + strlen(maildir_field)
 +			+ strlen(uid_field) + strlen(gid_field) + 2 * strlen(login_field)
 +			+ strlen(home_field) + strlen(quota_field) + strlen(where_clause)
- 			+ strlen(name_field));
--	if (!querybuf)
-+
++			+ strlen(name_field));
+ 
+-	sprintf(querybuf, query, login_field, crypt_field, clear_field, 
+-		uid_field, gid_field, home_field, maildir_field, quota_field,
+-		name_field, user_table, login_field);
+-	p=querybuf+strlen(querybuf);
 +		if (!querybuf)
 +		{
 +			perror("malloc");
@@ -369,43 +528,34 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/aut
 +			name_field, user_table, login_field);
 +
 +		p=querybuf+strlen(querybuf);
-+
+ 
+-	append_username(p, username, defdomain);
+-	strcat(p, "\"");
 +		append_username(p, username, defdomain);
 +		strcat(p, "\"");
-+	
+ 	
+-	if (strcmp(where_clause, "")) {
+-		strcat(p, " AND (");
+-		strcat(p, where_clause);
+-		strcat(p, ")");
 +		if (strcmp(where_clause, "")) {
 +			strcat(p, " AND (");
 +			strcat(p, where_clause);
 +			strcat(p, ")");
 +		}
-+	}
+ 	}
+-	
 +	else
- 	{
--		perror("malloc");
--		return (0);
++	{
 +		/* siefca@pld.org.pl */
 +		querybuf=parse_select_clause (select_clause, username, defdomain);
 +		if (!querybuf) return 0;
- 	}
- 
--	sprintf(querybuf, query, login_field, crypt_field, clear_field, 
--		uid_field, gid_field, home_field, maildir_field, quota_field,
--		name_field, user_table, login_field);
--	p=querybuf+strlen(querybuf);
--
--	append_username(p, username, defdomain);
--	strcat(p, "\"");
--	
--	if (strcmp(where_clause, "")) {
--		strcat(p, " AND (");
--		strcat(p, where_clause);
--		strcat(p, ")");
--	}
--	
++	}
++
  	if (mysql_query (mysql, querybuf))
  	{
  		/* <o.blasnik@nextra.de> */
-@@ -379,12 +608,13 @@
+@@ -379,12 +750,13 @@
  	const char *comma;
  	int rc=0;
  
@@ -425,7 +575,7 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/aut
  
  	if (!mysql)
  		return (-1);
-@@ -412,21 +642,34 @@
+@@ -412,21 +784,34 @@
  		++l;
  	}
  
@@ -473,7 +623,7 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/aut
  
  	if (!sql_buf)
  	{
-@@ -434,53 +677,57 @@
+@@ -434,53 +819,57 @@
  		return (-1);
  	}
  
@@ -570,8 +720,8 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqllib.c courier-imap-1.3.12/aut
  	{
 diff -ur courier-imap-1.3.12.orig/authlib/authmysqlrc courier-imap-1.3.12/authlib/authmysqlrc
 --- courier-imap-1.3.12.orig/authlib/authmysqlrc	Sun Oct  7 18:32:56 2001
-+++ courier-imap-1.3.12/authlib/authmysqlrc	Mon Dec 10 03:21:59 2001
-@@ -141,4 +141,64 @@
++++ courier-imap-1.3.12/authlib/authmysqlrc	Thu Dec 27 03:43:47 2001
+@@ -141,4 +141,65 @@
  #
  # MYSQL_WHERE_CLAUSE	server='mailhost.example.com'
  
@@ -582,7 +732,7 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqlrc courier-imap-1.3.12/authli
 +# This is optional, MYSQL_SELECT_CLAUSE can be set when you have a database,
 +# which is structuraly different from proposed. The fixed string will
 +# be used to do a SELECT operation on database, which should return fields
-+# specified bellow:
++# in order specified bellow:
 +#
 +# username, cryptpw, uid, gid, clearpw, home, maildir, quota, fullname
 +#
@@ -591,15 +741,16 @@ diff -ur courier-imap-1.3.12.orig/authlib/authmysqlrc courier-imap-1.3.12/authli
 +#
 +# There are two variables, which you can use. Substitution will be made
 +# for them, so you can put entered username (local part) and domain name
-+# in the right place of your query. There variables are:
-+# 	$(local_part) and $(domain)
++# in the right place of your query. These variables are:
++#	 	$(local_part) and $(domain)
 +#
 +# If a $(domain) is empty (not given by the remote user) the default domain
 +# name is used in its place.
 +#
 +# This example is a little bit modified adaptation of vmail-sql
 +# database scheme:
-+#MYSQL_SELECT_CLAUSE	SELECT popbox.local_part,			\
++#
++# MYSQL_SELECT_CLAUSE	SELECT popbox.local_part,			\
 +#			CONCAT('{MD5}', popbox.password_hash),		\
 +#			domain.uid,					\
 +#			domain.gid,					\

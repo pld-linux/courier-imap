@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.3.12
-Release:	7
+Release:	8
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
