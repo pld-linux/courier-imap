@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.4.1
-Release:	1
+Release:	2
 License:	GPL
 Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
@@ -25,10 +25,12 @@ Patch0:		ftp://ftp.pld.org.pl/people/siefca/patches/courier/%{name}-myownquery.p
 URL:		http://www.inter7.com/courierimap/
 %{!?_without_postgresql:BuildRequires:	postgresql-devel}
 %{!?_without_mysql:BuildRequires:	mysql-devel}
+%{!?_without_mysql:BuildRequires:	zlib-devel}
 %{!?_without_ldap:BuildRequires:	openldap-devel}
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
 BuildRequires:	openssl-devel
+BuildRequires:  kernel-headers
 Provides:	imapdaemon
 Prereq:		%{name}-common = %{version}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -127,6 +129,7 @@ Group:		Networking/Daemons
 Group(de):	Netzwerkwesen/Server
 Group(pl):	Sieciowe/Serwery
 Prereq:		%{name}-common = %{version}
+Requires:	zlib
 
 %description authmysql
 This package provides MySQL authentication for Courier IMAP.
