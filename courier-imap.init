@@ -10,12 +10,19 @@
 # Get network config
 . /etc/sysconfig/network
 
+ADDRESS=0.0.0.0
+MAXPERIP=4
+MAXDAEMONS=40
+MAILDIR="Maildir"
+TCPDOPTS=
+IMAPDSSLSTART="no"
+
 # Get service config
-[ -f /etc/sysconfig/courier-imap ] && . /etc/sysconfig/courier-imap
+[ -f /etc/sysconfig/courier-imap ] && . /etc/sysconfig/courier-imap-imap
 
 # Check that networking is up.
 if is_no "${NETWORKING}" ; then
-	msg_Network_Down IMAP
+	msg_Network_Down "Courier IMAP"
 	exit 1
 fi
 
@@ -24,36 +31,65 @@ case "$1" in
   start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-imap ]; then
-		msg_starting IMAP
-		busy
-		
-		LIBAUTHMODULES=""
-		for f in `echo $AUTHMODULES`; do
-	    	    LIBAUTHMODULES="$LIBAUTHMODULES /usr/lib/courier-imap/authlib/$f"
-		done
-
-		/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
-		    -maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
-		    -pid=/var/run/imapd.pid -stderrlogger=/usr/lib/courier-imap/logger \
-		    -forcebind -nodnslookup -noidentlookup $PORT \
-		    /usr/sbin/imaplogin $LIBAUTHMODULES /usr/bin/imapd $MAILDIR &
-
-		if ps -C couriertcpd >/dev/null 2>&1; then
-	            touch /var/lock/subsys/courier-imap
-	    	    ok
+		msg_starting "Courier IMAP"
+		ulimit -d $IMAP_ULIMITD
+		/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-imap ; \
+			IMAP_STARTTLS=$POP3DSTARTTLS ; export POP3_STARTTLS ; \
+			`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap | \
+			sed 's/=.*//;s/^/export /;s/$/;/'` \
+			/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
+			-stderrlogger=/usr/lib/courier-imap/logger \
+			-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
+			-pid=/var/run/imapd.pid $TCPDOPTS 143 /usr/sbin/imaplogin \
+			/usr/lib/courier-imap/authlib/authdaemon /usr/bin/imapd $MAILDIR"
+		RETVAL=$?
+		if [ $RETVAL -eq 0 ]; then
+			ok
 		else
-	    	    fail
+			fail
 		fi
+
+		msg_starting "Courier IMAP (SSL)"
+		
+		if is_yes "$IMAPDSSLSTART"; then
+			/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-imap ; \
+				IMAP_TLS=1; export POP3_TLS; \
+				`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap | \
+				sed 's/=.*//;s/^/export /;s/$/;/'`
+				/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
+				-stderrlogger=/usr/lib/courier-imap/logger \
+				-maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
+				-pid=/var/run/imapd-ssl.pid $TCPDOPTS \
+				993 /usr/bin/couriertls -server -tcpd \
+				/usr/sbin/imaplogin /usr/lib/courier-imap/authlib/authdaemon \
+				/usr/bin/imapd $MAILDIR"
+		fi
+		RETVAL=$?
+		if [ $RETVAL -eq 0 ]; then
+			ok
+		else
+			fail
+		fi
+		touch /var/lock/subsys/courier-imap
 	else
-		msg_Already_Running IMAP
+		msg_Already_Running "Courier IMAP"
 		exit 1
 	fi
 	;;
   stop)
-	msg_stopping IMAP
-	killproc couriertcpd
-	rm -f /var/run/imapd.pid
-	rm -f /var/lock/subsys/courier-imap
+	if [ -f /var/lock/subsys/courier-imap ]; then
+		msg_stopping "Courier IMAP"
+		daemon /usr/lib/courier-imap/couriertcpd -pid=/var/run/imapd.pid -stop
+		if is_yes "$IMAPDSSLSTART"; then
+			msg_stopping "Courier IMAP (SSL)"
+			daemon /usr/lib/courier-imap/couriertcpd -pid=/var/run/imapd-ssl.pid -stop
+		fi
+		RETVAL=$?
+		rm -f /var/lock/subsys/courier-imap
+	else
+		msg_not_running "Courier IMAP"
+		exit 1
+	fi
 	;;
   restart|reload)
 	$0 stop
@@ -67,5 +103,5 @@ case "$1" in
 	exit 1
 esac
 
-exit 0
+exit $RETVAL
 
