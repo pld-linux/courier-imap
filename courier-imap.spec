@@ -7,7 +7,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	1.4.2
-Release:	3
+Release:	4
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://download.sourceforge.net/courier/%{name}-%{version}.tar.gz
@@ -28,11 +28,11 @@ URL:		http://www.inter7.com/courierimap/
 BuildRequires:	gdbm-devel
 BuildRequires:	libstdc++-devel
 BuildRequires:	openssl-devel
-BuildRequires:	kernel-headers
-Provides:	imapdaemon
 PreReq:		%{name}-common = %{version}
-BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+Provides:	imapdaemon
 Obsoletes:	imapdaemon
+Conflicts:	imap
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libexecdir	/usr/lib/courier-imap
 %define		_sysconfdir	/etc/courier-imap
@@ -61,6 +61,7 @@ Pliki wspólne dla serwerów imap i pop.
 
 %package userdb
 Summary:	Commands used to create the /etc/userdb.dat
+Summary(pl):	Polecenia do tworzenia /etc/userdb.dat
 Group:		Networking/Daemons
 
 %description userdb
@@ -70,19 +71,21 @@ Commands used to create the /etc/userdb.dat.
 Polecenia u¿ywane do stworzenia /etc/userdb.dat.
 
 %package deliverquota
-Summary:	Deliver to a maildir with a quota
+Summary:	Deliver to a Maildir with a quota
+Summary(pl):	Obs³uga quoty przy dostarczaniu poczty do skrzynek Maildir
 Group:		Networking/Daemons
 
 %description deliverquota
 deliverquota is a temporary hack to implement E-mail delivery to a
-maildir with a software-imposed quota.
+Maildir with a software-imposed quota.
 
 %description deliverquota -l pl
 deliverquota jest tymczasowym rozwi±zaniem implementuj±cym
-dostarczanie e-maili do maildir z programowo narzucon± quot±.
+dostarczanie e-maili do skrzynek Maildir z programowo narzucon± quot±.
 
 %package maildirmake
-Summary:	Tool for making mail folders in Maildir format.
+Summary:	Tool for making mail folders in Maildir format
+Summary(pl):	Narzêdzie do tworzenia folderów w formacie Maildir
 Group:		Networking/Daemons
 Conflicts:	qmail-maildirmake
 
@@ -100,6 +103,8 @@ Group:		Networking/Daemons
 PreReq:		%{name}-common = %{version}
 Provides:	pop3daemon
 Obsoletes:	pop3daemon
+Conflicts:	imap-pop3
+Conflicts:	tpop3d
 
 %description pop3
 Courier-IMAP POP3 is an POP3 server for Maildir mailboxes.
@@ -216,8 +221,6 @@ echo ".so authlib.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/authdaemond.8
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/pw2userdb.8
 echo ".so makeuserdb.8"	>$RPM_BUILD_ROOT%{_mandir}/man8/vchkpw2userdb.8
 
-gzip -9nf README* imap/BUGS AUTHORS COPYING
-
 touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
 
 %clean
@@ -329,7 +332,7 @@ fi
 
 %files common
 %defattr(644,root,root,755)
-%doc *.gz imap/*.gz
+%doc README* imap/BUGS AUTHORS COPYING
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/authdaemon
 %attr(754,root,root) /etc/rc.d/init.d/authdaemon
 %attr(700,root,root) /var/lib/authdaemon
