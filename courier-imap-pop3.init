@@ -32,7 +32,6 @@ case "$1" in
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-imap-pop3 ]; then
 		msg_starting "Courier IMAP - POP3"
-		ulimit -d $IMAP_ULIMITD
 		/usr/bin/env - /bin/sh -c " . /etc/sysconfig/courier-imap-pop3 ; \
 			POP3_STARTTLS=$POP3DSTARTTLS ; export POP3_STARTTLS ; \
 			`sed -n '/^#/d;/=/p' </etc/sysconfig/courier-imap-pop3 | \
