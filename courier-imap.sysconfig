@@ -1,0 +1,36 @@
+# $Revision$
+#
+#  Address to listen on, can be set to a single IP address.
+#
+#  Example: ADDRESS=127.0.0.1
+#
+ADDRESS=0
+
+#
+#  You better have a good reason for changing the port
+#
+PORT=143
+
+#
+#  Maximum number of IMAP servers started
+#
+MAXDAEMONS=40
+
+#
+#  Maximum number of connections to accept from the same IP address
+#
+MAXPERIP=4
+
+#
+# Authentication modules.  Here's the default list:
+#
+#    authpam authuserdb authvchkpw
+#
+# The default is set during the initial configuration.
+#
+AUTHMODULES="authpam authuserdb authvchkpw"
+
+#
+# Courier supports only Mailbox in QMAIL Maildir Format
+#
+MAILDIR="Maildir"

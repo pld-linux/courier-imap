@@ -1,0 +1,71 @@
+#!/bin/sh
+# IMAP Daemon
+#
+# chkconfig:	345 80 20
+# description:	IMAP Daemon
+
+# Source function library
+. /etc/rc.d/init.d/functions
+
+# Get network config
+. /etc/sysconfig/network
+
+# Get service config
+[ -f /etc/sysconfig/courier-imap ] && . /etc/sysconfig/courier-imap
+
+# Check that networking is up.
+if [ "${NETWORKING}" = "no" ]; then
+	nls "WARNING: Networking is down. IMAP service can't be runed."
+	exit 1
+fi
+
+
+# See how we were called.
+case "$1" in
+  start)
+	# Check if the service is already running?
+	if [ ! -f /var/lock/subsys/courier-imap ]; then
+		show Starting IMAP Daemon
+		busy
+		
+		LIBAUTHMODULES=""
+		for f in `echo $AUTHMODULES`; do
+	    	    LIBAUTHMODULES="$LIBAUTHMODULES /usr/lib/courier-imap/$f"
+		done
+
+		/usr/lib/courier-imap/couriertcpd -address=$ADDRESS \
+		    -maxprocs=$MAXDAEMONS -maxperip=$MAXPERIP \
+		    -pid=/var/run/imapd.pid -stderrlogger=/usr/lib/courier-imap/logger \
+		    -forcebind -nodnslookup -noidentlookup $PORT \
+		    /usr/bin/imaplogin $LIBAUTHMODULES /usr/bin/imapd $MAILDIR &
+
+		if ps ax | grep -v grep | grep -q couriertcpd; then
+	    	    deltext;ok
+		else
+	    	    deltext;fail
+		fi
+	else
+		nls "IMAP already is running\n"
+	fi
+	touch /var/lock/subsys/courier-imap
+	;;
+  stop)
+	show Stopping IMAP Daemon
+	killproc couriertcpd
+	rm -f /var/run/imapd.pid
+	rm -f /var/lock/subsys/courier-imap
+	;;
+  restart|reload)
+	$0 stop
+	$0 start
+	;;
+  status)
+	status couriertcpd
+	;;
+  *)
+	nls "Usage: $0 {start|stop|restart|reload|status}"
+	exit 1
+esac
+
+exit 0
+
