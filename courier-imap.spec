@@ -1,4 +1,3 @@
-P rpm.groups
 #
 # Conditional build:	
 # _without_ldap - without LDAP support
