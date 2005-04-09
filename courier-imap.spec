@@ -1,14 +1,8 @@
-#
-# TODO:
-#	- waiting for all updates from courier-mta.org, and all triggers !
-#	- force update of userdb ? or trigger with info to do it manualy
-#	- tests
-#
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.0.2
-Release:	0.5
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -200,6 +194,12 @@ if [ "$1" = "0" ]; then
 	/sbin/chkconfig --del courier-imap
 fi
 
+%triggerin -- %{name}-userdb < 4.0.2
+echo
+echo courier-imap-userdb is obsolete
+echo install courier-authlib-userdb package
+echo
+
 %triggerin -- %{name} < 3.0.5
 if [ -f /var/lib/openssl/certs/imapd.pem ]; then
 	echo
@@ -305,11 +305,11 @@ fi
 %files
 %defattr(644,root,root,755)
 %doc maildir/README.sharedfolders.html
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/imap
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.imap
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd-ssl
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/imapd.cnf
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/imap
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/security/blacklist.imap
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd-ssl
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd.cnf
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
 %attr(755,daemon,daemon) %dir %{_sysconfdir}/shared
 %attr(755,daemon,daemon) %dir %{_sysconfdir}/shared.tmp
@@ -353,11 +353,11 @@ fi
 
 %files pop3
 %defattr(644,root,root,755)
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/pop3
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/security/blacklist.pop3
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/pop3d
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/pop3d-ssl
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/pop3d.cnf
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/pop3
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/security/blacklist.pop3
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d-ssl
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d.cnf
 %attr(754,root,root) /etc/rc.d/init.d/courier-pop3
 %attr(755,root,root) %{_bindir}/pop3d
 %attr(755,root,root) %{_sbindir}/mkpop3dcert
