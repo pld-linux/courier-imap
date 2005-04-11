@@ -2,7 +2,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.0.2
-Release:	1
+Release:	2
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -51,6 +51,7 @@ Summary:	Common files for imap and pop3 daemons
 Summary(pl):	Pliki wspólne dla serwerów imap i pop3
 Group:		Networking/Daemons
 PreReq:		rc-scripts
+Requires(pre):	courier-authlib
 Requires(post,preun):	/sbin/chkconfig
 Requires:	procps
 
@@ -194,12 +195,6 @@ if [ "$1" = "0" ]; then
 	/sbin/chkconfig --del courier-imap
 fi
 
-%triggerin -- %{name}-userdb < 4.0.2
-echo
-echo courier-imap-userdb is obsolete
-echo install courier-authlib-userdb package
-echo
-
 %triggerin -- %{name} < 3.0.5
 if [ -f /var/lib/openssl/certs/imapd.pem ]; then
 	echo
@@ -233,6 +228,12 @@ fi
 if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
 	sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/imapd-ssl
 fi
+
+%triggerin -n %{name}-common -- %{name}-userdb
+echo
+echo courier-imap-userdb is obsolete
+echo install courier-authlib-userdb package
+echo
 
 %triggerin -n %{name}-common -- %{name}-common < 3.0.5
 /sbin/chkconfig --del authdaemon
