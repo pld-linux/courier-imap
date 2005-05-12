@@ -2,7 +2,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.0.2
-Release:	2
+Release:	3
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -28,7 +28,7 @@ BuildRequires:	sysconftool
 PreReq:		%{name}-common = %{version}-%{release}
 PreReq:		rc-scripts
 Requires(post,preun):	/sbin/chkconfig
-Requires:	pam >= 0.77.3
+Requires:	pam >= 0.79.0
 Provides:	imapdaemon
 Obsoletes:	imapdaemon
 Conflicts:	cyrus-imapd
