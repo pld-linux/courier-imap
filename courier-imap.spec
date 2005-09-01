@@ -2,15 +2,17 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.0.4
-Release:	1
+Release:	0.1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
 # Source0-md5:	cb5a1d394e622fe2c5ea7bcab68c6286
 Source1:	%{name}.init
-Source2:	%{name}-pop3.init
-Source3:	%{name}.pamd
-Source4:	%{name}-pop3.pamd
+Source2:	%{name}-ssl.init
+Source3:	%{name}-pop3.init
+Source4:	%{name}-pop3-ssl.init
+Source5:	%{name}.pamd
+Source6:	%{name}-pop3.pamd
 Patch0:		%{name}-dirs.patch
 Patch1:		%{name}-certsdir.patch
 Patch2:		%{name}-maildir.patch
@@ -113,7 +115,9 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 %patch2 -p1
 
 install %{SOURCE1} courier-imap.in
-install %{SOURCE2} courier-pop3.in
+install %{SOURCE2} courier-imap-ssl.in
+install %{SOURCE3} courier-pop3.in
+install %{SOURCE4} courier-pop3-ssl.in
 
 %build
 
@@ -151,9 +155,11 @@ install -d $RPM_BUILD_ROOT{/etc/{pam.d,rc.d/init.d,security},%{_certsdir}}
 	DESTDIR=$RPM_BUILD_ROOT
 
 install courier-imap $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
+install courier-imap-ssl $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap-ssl
 install courier-pop3 $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
-install %{SOURCE3} $RPM_BUILD_ROOT/etc/pam.d/imap
-install %{SOURCE4} $RPM_BUILD_ROOT/etc/pam.d/pop3
+install courier-pop3-ssl $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3-ssl
+install %{SOURCE5} $RPM_BUILD_ROOT/etc/pam.d/imap
+install %{SOURCE6} $RPM_BUILD_ROOT/etc/pam.d/pop3
 
 rm -rf $RPM_BUILD_ROOT%{_sbindir}/mk*cert
 
@@ -184,11 +190,18 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add courier-imap
+/sbin/chkconfig --add courier-imap-ssl
 
 if [ -f /var/lock/subsys/courier-imap ]; then
 	/etc/rc.d/init.d/courier-imap restart >&2
 else
 	echo "Run \"/etc/rc.d/init.d/courier-imap start\" to start courier-imap daemon."
+fi
+
+if [ -f /var/lock/subsys/courier-imap-ssl ]; then
+	/etc/rc.d/init.d/courier-imap-ssl restart >&2
+else
+	echo "Run \"/etc/rc.d/init.d/courier-imap-ssl start\" to start courier-imap-ssl daemon."
 fi
 
 %preun
@@ -198,6 +211,14 @@ if [ "$1" = "0" ]; then
 	fi
 	/sbin/chkconfig --del courier-imap
 fi
+
+if [ "$1" = "0" ]; then
+	if [ -f /var/lock/subsys/courier-imap-ssl ]; then
+		/etc/rc.d/init.d/courier-imap-ssl stop >&2
+	fi
+	/sbin/chkconfig --del courier-imap-ssl
+fi
+
 
 %triggerin -- %{name} < 3.0.5
 if [ -f /var/lib/openssl/certs/imapd.pem ]; then
@@ -257,6 +278,7 @@ echo
 
 %post pop3
 /sbin/chkconfig --add courier-pop3
+/sbin/chkconfig --add courier-pop3-ssl
 /sbin/chkconfig --del courier-imap-pop3 >/dev/null 2>&1 || :
 if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
 	/etc/rc.d/init.d/courier-imap-pop3 stop >&2
@@ -267,12 +289,22 @@ else
 	echo "Run \"/etc/rc.d/init.d/courier-pop3 start\" to start courier-pop3 daemon."
 fi
 
+if [ -f /var/lock/subsys/courier-pop3-ssl ]; then
+	/etc/rc.d/init.d/courier-pop3-ssl restart >&2
+else
+	echo "Run \"/etc/rc.d/init.d/courier-pop3-ssl start\" to start courier-pop3-ssl daemon."
+fi
+
 %preun pop3
 if [ "$1" = "0" ]; then
 	if [ -f /var/lock/subsys/courier-pop3 ]; then
 		/etc/rc.d/init.d/courier-pop3 stop >&2
 	fi
 	/sbin/chkconfig --del courier-pop3
+        if [ -f /var/lock/subsys/courier-pop3-ssl ]; then
+                /etc/rc.d/init.d/courier-pop3-ssl stop >&2
+        fi
+        /sbin/chkconfig --del courier-pop3-ssl
 fi
 
 %triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
@@ -316,6 +348,7 @@ fi
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd-ssl
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd.cnf
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
+%attr(754,root,root) /etc/rc.d/init.d/courier-imap-ssl
 %attr(755,daemon,daemon) %dir %{_sysconfdir}/shared
 %attr(755,daemon,daemon) %dir %{_sysconfdir}/shared.tmp
 %attr(755,root,root) %{_bindir}/imapd
@@ -364,6 +397,7 @@ fi
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d-ssl
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d.cnf
 %attr(754,root,root) /etc/rc.d/init.d/courier-pop3
+%attr(754,root,root) /etc/rc.d/init.d/courier-pop3-ssl
 %attr(755,root,root) %{_bindir}/pop3d
 %attr(755,root,root) %{_sbindir}/mkpop3dcert
 %attr(755,root,root) %{_sbindir}/pop3login
