@@ -124,49 +124,6 @@ diff -Nur old/imap/mkimapdcert.html.in new/imap/mkimapdcert.html.in
  ><DD
  ><P
  >X.509 certificate.</P
-diff -Nur old/imap/mkimapdcert.in new/imap/mkimapdcert.in
---- old/imap/mkimapdcert.in	2001-08-26 15:49:50.000000000 +0000
-+++ new/imap/mkimapdcert.in	2004-07-10 12:23:46.000000000 +0000
-@@ -13,26 +13,26 @@
- 
- prefix="@prefix@"
- 
--if test -f @datadir@/imapd.pem
-+if test -f @certsdir@/imapd.pem
- then
--	echo "@datadir@/imapd.pem already exists."
-+	echo "@certsdir@/imapd.pem already exists."
- 	exit 1
- fi
- 
--cp /dev/null @datadir@/imapd.pem
--chmod 600 @datadir@/imapd.pem
--chown @mailuser@ @datadir@/imapd.pem
-+cp /dev/null @certsdir@/imapd.pem
-+chmod 600 @certsdir@/imapd.pem
-+chown @mailuser@ @certsdir@/imapd.pem
- 
- cleanup() {
--	rm -f @datadir@/imapd.pem
--	rm -f @datadir@/imapd.rand
-+	rm -f @certsdir@/imapd.pem
-+	rm -f @certsdir@/imapd.rand
- 	exit 1
- }
- 
--cd @datadir@
--dd if=@RANDOMV@ of=@datadir@/imapd.rand count=1 2>/dev/null
-+cd @certsdir@
-+dd if=@RANDOMV@ of=@certsdir@/imapd.rand count=1 2>/dev/null
- @OPENSSL@ req -new -x509 -days 365 -nodes \
--	-config @sysconfdir@/imapd.cnf -out @datadir@/imapd.pem -keyout @datadir@/imapd.pem || cleanup
--@OPENSSL@ gendh -rand @datadir@/imapd.rand 512 >>@datadir@/imapd.pem || cleanup
--@OPENSSL@ x509 -subject -dates -fingerprint -noout -in @datadir@/imapd.pem || cleanup
--rm -f @datadir@/imapd.rand
-+	-config @sysconfdir@/imapd.cnf -out @certsdir@/imapd.pem -keyout @certsdir@/imapd.pem || cleanup
-+@OPENSSL@ gendh -rand @certsdir@/imapd.rand 512 >>@certsdir@/imapd.pem || cleanup
-+@OPENSSL@ x509 -subject -dates -fingerprint -noout -in @certsdir@/imapd.pem || cleanup
-+rm -f @certsdir@/imapd.rand
 diff -Nur old/imap/mkpop3dcert.8.in new/imap/mkpop3dcert.8.in
 --- old/imap/mkpop3dcert.8.in	2004-02-08 04:12:10.000000000 +0000
 +++ new/imap/mkpop3dcert.8.in	2004-07-08 17:00:01.000000000 +0000
@@ -241,10 +198,76 @@ diff -Nur old/imap/mkpop3dcert.html.in new/imap/mkpop3dcert.html.in
  ><DD
  ><P
  >X.509 certificate.</P
+diff -Nur old/imap/pop3d.cnf.in new/imap/pop3d.cnf.in
+--- old/imap/pop3d.cnf.in	2001-03-24 04:59:55.000000000 +0000
++++ new/imap/pop3d.cnf.in	2004-07-08 16:54:38.000000000 +0000
+@@ -1,5 +1,5 @@
+ 
+-RANDFILE = @datadir@/pop3d.rand
++RANDFILE = @certsdir@/pop3d.rand
+ 
+ [ req ]
+ default_bits = 1024
+diff -Nur old/imap/pop3d-ssl.dist.in new/imap/pop3d-ssl.dist.in
+--- old/imap/pop3d-ssl.dist.in	2004-01-24 20:09:31.000000000 +0000
++++ new/imap/pop3d-ssl.dist.in	2004-07-08 16:54:31.000000000 +0000
+@@ -135,7 +135,7 @@
+ # servers, and is optional for SSL/TLS clients.  TLS_CERTFILE is usually
+ # treated as confidential, and must not be world-readable.
+ #
+-TLS_CERTFILE=@datadir@/pop3d.pem
++TLS_CERTFILE=@certsdir@/pop3d.pem
+ 
+ ##NAME: TLS_TRUSTCERTS:0
+ #
+diff -Nur old/imap/mkimapdcert.in new/imap/mkimapdcert.in
+--- old/imap/mkimapdcert.in	2005-06-29 18:01:17.000000000 +0000
++++ new/imap/mkimapdcert.in	2005-08-31 21:49:26.142362544 +0000
+@@ -13,27 +13,27 @@
+ 
+ prefix="@prefix@"
+ 
+-if test -f @datadir@/imapd.pem
++if test -f @certsdir@/imapd.pem
+ then
+-	echo "@datadir@/imapd.pem already exists."
++	echo "@certsdir@/imapd.pem already exists."
+ 	exit 1
+ fi
+ 
+ umask 077
+-cp /dev/null @datadir@/imapd.pem
+-chmod 600 @datadir@/imapd.pem
+-chown @mailuser@ @datadir@/imapd.pem
++cp /dev/null @certsdir@/imapd.pem
++chmod 600 @certsdir@/imapd.pem
++chown @mailuser@ @certsdir@/imapd.pem
+ 
+ cleanup() {
+-	rm -f @datadir@/imapd.pem
+-	rm -f @datadir@/imapd.rand
++	rm -f @certsdir@/imapd.pem
++	rm -f @certsdir@/imapd.rand
+ 	exit 1
+ }
+ 
+-cd @datadir@
+-dd if=@RANDOMV@ of=@datadir@/imapd.rand count=1 2>/dev/null
++cd @certsdir@
++dd if=@RANDOMV@ of=@certsdir@/imapd.rand count=1 2>/dev/null
+ @OPENSSL@ req -new -x509 -days 365 -nodes \
+-	-config @sysconfdir@/imapd.cnf -out @datadir@/imapd.pem -keyout @datadir@/imapd.pem || cleanup
+-@OPENSSL@ gendh -rand @datadir@/imapd.rand 512 >>@datadir@/imapd.pem || cleanup
+-@OPENSSL@ x509 -subject -dates -fingerprint -noout -in @datadir@/imapd.pem || cleanup
+-rm -f @datadir@/imapd.rand
++	-config @sysconfdir@/imapd.cnf -out @certsdir@/imapd.pem -keyout @certsdir@/imapd.pem || cleanup
++@OPENSSL@ gendh -rand @certsdir@/imapd.rand 512 >>@certsdir@/imapd.pem || cleanup
++@OPENSSL@ x509 -subject -dates -fingerprint -noout -in @certsdir@/imapd.pem || cleanup
++rm -f @certsdir@/imapd.rand
 diff -Nur old/imap/mkpop3dcert.in new/imap/mkpop3dcert.in
---- old/imap/mkpop3dcert.in	2000-10-06 17:50:37.000000000 +0000
-+++ new/imap/mkpop3dcert.in	2004-07-08 16:56:21.000000000 +0000
-@@ -13,25 +13,25 @@
+--- old/imap/mkpop3dcert.in	2005-06-29 18:01:17.000000000 +0000
++++ new/imap/mkpop3dcert.in	2005-08-31 21:49:26.143362392 +0000
+@@ -13,26 +13,26 @@
  
  prefix="@prefix@"
  
@@ -256,6 +279,7 @@ diff -Nur old/imap/mkpop3dcert.in new/imap/mkpop3dcert.in
  	exit 1
  fi
  
+ umask 077
 -cp /dev/null @datadir@/pop3d.pem
 -chmod 600 @datadir@/pop3d.pem
 -chown @mailuser@ @datadir@/pop3d.pem
@@ -282,25 +306,3 @@ diff -Nur old/imap/mkpop3dcert.in new/imap/mkpop3dcert.in
 +@OPENSSL@ gendh -rand @certsdir@/pop3d.rand 512 >>@certsdir@/pop3d.pem || cleanup
 +@OPENSSL@ x509 -subject -dates -fingerprint -noout -in @certsdir@/pop3d.pem || cleanup
 +rm -f @certsdir@/pop3d.rand
-diff -Nur old/imap/pop3d.cnf.in new/imap/pop3d.cnf.in
---- old/imap/pop3d.cnf.in	2001-03-24 04:59:55.000000000 +0000
-+++ new/imap/pop3d.cnf.in	2004-07-08 16:54:38.000000000 +0000
-@@ -1,5 +1,5 @@
- 
--RANDFILE = @datadir@/pop3d.rand
-+RANDFILE = @certsdir@/pop3d.rand
- 
- [ req ]
- default_bits = 1024
-diff -Nur old/imap/pop3d-ssl.dist.in new/imap/pop3d-ssl.dist.in
---- old/imap/pop3d-ssl.dist.in	2004-01-24 20:09:31.000000000 +0000
-+++ new/imap/pop3d-ssl.dist.in	2004-07-08 16:54:31.000000000 +0000
-@@ -135,7 +135,7 @@
- # servers, and is optional for SSL/TLS clients.  TLS_CERTFILE is usually
- # treated as confidential, and must not be world-readable.
- #
--TLS_CERTFILE=@datadir@/pop3d.pem
-+TLS_CERTFILE=@certsdir@/pop3d.pem
- 
- ##NAME: TLS_TRUSTCERTS:0
- #
