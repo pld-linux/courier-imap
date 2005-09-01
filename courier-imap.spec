@@ -19,7 +19,7 @@ Patch2:		%{name}-maildir.patch
 URL:		http://www.courier-mta.org/imap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
-BuildRequires:	courier-authlib-devel
+BuildRequires:	courier-authlib-devel >= 0.57
 BuildRequires:	db-devel
 BuildRequires:	fam-devel
 BuildRequires:	libstdc++-devel
