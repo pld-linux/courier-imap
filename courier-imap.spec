@@ -1,12 +1,12 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	4.0.3
+Version:	4.0.4
 Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	1bbe6544dc39ba14e6c71589c7f74337
+# Source0-md5:	cb5a1d394e622fe2c5ea7bcab68c6286
 Source1:	%{name}.init
 Source2:	%{name}-pop3.init
 Source3:	%{name}.pamd
@@ -116,20 +116,24 @@ install %{SOURCE1} courier-imap.in
 install %{SOURCE2} courier-pop3.in
 
 %build
-cp -f /usr/share/automake/config.sub .
-cp -f /usr/share/automake/config.sub maildir
 
-%{__libtoolize}
-%{__aclocal}
-%{__autoconf}
-%{__automake}
+# Change Makefile.am files and force recreate Makefile.in's.
+OLDDIR=`pwd`
+find -type f -a \( -name configure.in -o -name configure.ac \) | while read FILE; do
+        cd "`dirname "$FILE"`"
 
-cd imap
-%{__aclocal}
-%{__autoconf}
-ln -s ../ltmain.sh .
-%{__automake}
-cd ..
+        if [ -f Makefile.am ]; then
+                sed -i -e '/_LDFLAGS=-static/d' Makefile.am
+        fi
+
+        %{__libtoolize}
+        %{__aclocal}
+        %{__autoconf}
+        %{__autoheader}
+        %{__automake}
+
+        cd "$OLDDIR"
+done
 
 %configure \
 	--with-db=db \
