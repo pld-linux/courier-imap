@@ -30,86 +30,24 @@ case "$1" in
   start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-imap ]; then
-
-        IMAPDSTART=""
-        IMAPDSSLSTART=""
-
-        if test -f $sysconfdir/imapd
-        then
-            . $sysconfdir/imapd
-        fi
-
-        case x$IMAPDSTART in
-        x[yY]*)
-        # Start daemons.
-	msg_starting imapd
-        $libexecdir/imapd.rc start
-	RETVAL=$?
-        if [ $RETVAL -eq 0 ]; then ok; else fail; fi
-        ;;
-        esac
-
-        if test -f $sysconfdir/imapd-ssl
-        then
-        . $sysconfdir/imapd-ssl
-        fi
-
-        case x$IMAPDSSLSTART in
-	x[yY]*)
-        if test -x $COURIERTLS
-	then
-	# First time we start this, generate a dummy SSL certificate.
-	if test ! -f $TLS_CERTFILE
-	then
-	echo -n " generating-SSL-certificate..."
-	$sbindir/mkimapdcert >/dev/null 2>&1
-	fi
-	msg_starting imapd-ssl
-        $libexecdir/imapd-ssl.rc start
-	RETVAL=$?
-    	if [ $RETVAL -eq 0 ]; then ok; else fail; fi
-
-	fi
-	;;
-	esac
-
-	touch /var/lock/subsys/courier-imap
+        	. $sysconfdir/imapd
+		msg_starting imapd
+        	daemon $libexecdir/imapd.rc start
+		RETVAL=$?
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-imap
 	else
-		msg_already_running "Courier IMAP"
+	    	msg_already_running imapd
 	fi
-	;;
+        ;;
   stop)
 	if [ -f /var/lock/subsys/courier-imap ]; then
-
-        . $sysconfdir/imapd
-        if [ -f $PIDFILE ]; then
-	    msg_stopping imapd
-    	    $libexecdir/imapd.rc stop
-	    RETVAL=$?
-    	    if [ $RETVAL -eq 0 ]; then
-		ok
-		rm -f $PIDFILE
-	    else
-		fail
-	    fi
-	fi
-
-        . $sysconfdir/imapd-ssl
-        if [ -f $SSLPIDFILE ]; then
-	    msg_stopping imapd-ssl
-    	    $libexecdir/imapd-ssl.rc stop
-	    RETVAL=$?
-    	    if [ $RETVAL -eq 0 ]; then
-		ok
-		rm -f $SSLPIDFILE
-	    else 
-		fail
-	    fi
-	fi
-
-	rm -f /var/lock/subsys/courier-imap
+        	. $sysconfdir/imapd
+	    	msg_stopping imapd
+    	    	daemon $libexecdir/imapd.rc stop
+	    	RETVAL=$?
+		rm -f /var/lock/subsys/courier-imap >/dev/null 2>&1
 	else
-		msg_not_running "Courier IMAP"
+	    	msg_not_running imapd
 	fi
 	;;
   restart|force-reload)
