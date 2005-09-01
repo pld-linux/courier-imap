@@ -30,86 +30,24 @@ case "$1" in
   start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-pop3 ]; then
-
-        POP3DSTART=""
-        POP3DSSLSTART=""
-
-        if test -f $sysconfdir/pop3d
-        then
-            . $sysconfdir/pop3d
-        fi
-
-        case x$POP3DSTART in
-        x[yY]*)
-        # Start daemons.
-	msg_starting pop3d
-        $libexecdir/pop3d.rc start
-	RETVAL=$?
-        if [ $RETVAL -eq 0 ]; then ok; else fail; fi
-        ;;
-        esac
-
-        if test -f $sysconfdir/pop3d-ssl
-        then
-        . $sysconfdir/pop3d-ssl
-        fi
-
-        case x$POP3DSSLSTART in
-	x[yY]*)
-        if test -x $COURIERTLS
-	then
-	# First time we start this, generate a dummy SSL certificate.
-	if test ! -f $TLS_CERTFILE
-	then
-	echo -n " generating-SSL-certificate..."
-	$sbindir/mkpop3dcert >/dev/null 2>&1
-	fi
-	msg_starting pop3d-ssl
-        $libexecdir/pop3d-ssl.rc start
-	RETVAL=$?
-    	if [ $RETVAL -eq 0 ]; then ok; else fail; fi
-
-	fi
-	;;
-	esac
-
-	touch /var/lock/subsys/courier-pop3
+        	. $sysconfdir/pop3d
+		msg_starting pop3d
+        	daemon $libexecdir/pop3d.rc start
+		RETVAL=$?
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-pop3
 	else
-		msg_already_running "Courier POP3"
+	    	msg_already_running pop3d
 	fi
-	;;
+        ;;
   stop)
 	if [ -f /var/lock/subsys/courier-pop3 ]; then
-
-        . $sysconfdir/pop3d
-        if [ -f $PIDFILE ]; then
-	    msg_stopping pop3d
-    	    $libexecdir/pop3d.rc stop
-	    RETVAL=$?
-    	    if [ $RETVAL -eq 0 ]; then
-		ok
-		rm -f $PIDFILE
-	    else
-		fail
-	    fi
-	fi
-
-        . $sysconfdir/pop3d-ssl
-        if [ -f $SSLPIDFILE ]; then
-	    msg_stopping pop3d-ssl
-    	    $libexecdir/pop3d-ssl.rc stop
-	    RETVAL=$?
-    	    if [ $RETVAL -eq 0 ]; then
-		ok
-		rm -f $SSLPIDFILE
-	    else 
-		fail
-	    fi
-	fi
-
-	rm -f /var/lock/subsys/courier-pop3
+        	. $sysconfdir/pop3d
+	    	msg_stopping pop3d
+    	    	daemon $libexecdir/pop3d.rc stop
+	    	RETVAL=$?
+		rm -f /var/lock/subsys/courier-pop3 >/dev/null 2>&1
 	else
-		msg_not_running "Courier POP3"
+	    	msg_not_running pop3d
 	fi
 	;;
   restart|force-reload)
