@@ -1,0 +1,5 @@
+- separated authdaemond.{ldap,mysql} into subpackages (they require more libs)
+- in %post/%preun authdaemon is restarted depeding on current METHOD setting
+- added %config(noreplace) %verify(not size mtime md5) to auth* config files
+- some manuals moved to appropriate subpackages
+- release 2
