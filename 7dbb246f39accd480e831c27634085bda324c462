@@ -1,0 +1,5 @@
+- release: 2
+- added --enable-unicode to %configure
+- added --with-authchangepwdir=/var/tmp (because by default configure puts
+  /var/tmp/dev/null)
+- added man for couriertls
