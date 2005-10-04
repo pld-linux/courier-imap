@@ -2,7 +2,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.0.5
-Release:	0.2
+Release:	0.3
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -29,6 +29,7 @@ BuildRequires:	sed >= 4.0
 BuildRequires:	sysconftool
 Requires:	%{name}-common = %{version}-%{release}
 Requires:	rc-scripts
+Requires:	/sbin/chkconfig
 Requires(post,preun):	/sbin/chkconfig
 Requires:	pam >= 0.79.0
 Provides:	imapdaemon
@@ -52,10 +53,11 @@ Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 Summary:	Common files for imap and pop3 daemons
 Summary(pl):	Pliki wspólne dla serwerów imap i pop3
 Group:		Networking/Daemons
-Requires:	rc-scripts
-Requires(pre):	courier-authlib
-Requires(post,preun):	/sbin/chkconfig
+Requires:	courier-authlib
 Requires:	procps
+Requires:	rc-scripts
+Requires:	/sbin/chkconfig
+Requires(post,preun):	/sbin/chkconfig
 
 %description common
 Common files for imap and pop3 daemons.
