@@ -1,0 +1,4 @@
+- libexecdir=/usr/%{_lib}...
+- add dirs.patch - rewrite dirs with configure
+- add certsdir.patch - change cert dir to %{_certsdir}
+- summary, description fixes; triggers for certs
