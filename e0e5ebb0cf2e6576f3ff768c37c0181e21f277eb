@@ -1,0 +1,3 @@
+- add maildir.patch - Maildir -> Mail/Maildir
+- set YES to start imapd, pop3d; trigger fixes
+- %files fixes; rel. 0.5
