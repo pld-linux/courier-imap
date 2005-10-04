@@ -1,0 +1,4 @@
+- updated to 4.0.0; TODO
+- removed userdb, authldap, authmysql, authpgsql packages
+- added -build.patch - configure problems
+- %files, %install fixes
