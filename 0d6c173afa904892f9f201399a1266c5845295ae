@@ -1,0 +1,7 @@
+- courier-imap-myownquery-fix.patch added
+  - added trigger clauses support
+  - added configurable separation/concatenation symbols for local_part/domain
+  - added '$(username)' substitution variable
+  - added documentation for system administrators :>
+  - allowed empty domain names in queries
+  - fixed an example configuration file (authmysqlrc)
