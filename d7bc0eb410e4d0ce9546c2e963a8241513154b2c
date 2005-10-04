@@ -1,0 +1,3 @@
+- Release: 3
+- don't check for res_query() - this function is never used in the sources (-imap-no_res_query.patch) - fixes building
+  with ldap enabled
