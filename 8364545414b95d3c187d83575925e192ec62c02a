@@ -1,0 +1,5 @@
+- base Conflicts: imap (not Obsoletes - different mbox formats!)
+- pop3 Conflicts: imap-pop3, tpop3d (the same)
+- missing pl summaries
+- new %doc
+- release 4
