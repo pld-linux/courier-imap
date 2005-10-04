@@ -2,7 +2,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.0.5
-Release:	0.1
+Release:	0.2
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -27,8 +27,8 @@ BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	procps
 BuildRequires:	sed >= 4.0
 BuildRequires:	sysconftool
-PreReq:		%{name}-common = %{version}-%{release}
-PreReq:		rc-scripts
+Requires:	%{name}-common = %{version}-%{release}
+Requires:	rc-scripts
 Requires(post,preun):	/sbin/chkconfig
 Requires:	pam >= 0.79.0
 Provides:	imapdaemon
@@ -52,7 +52,7 @@ Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 Summary:	Common files for imap and pop3 daemons
 Summary(pl):	Pliki wspólne dla serwerów imap i pop3
 Group:		Networking/Daemons
-PreReq:		rc-scripts
+Requires:	rc-scripts
 Requires(pre):	courier-authlib
 Requires(post,preun):	/sbin/chkconfig
 Requires:	procps
@@ -93,7 +93,7 @@ formacie Maildir.
 Summary:	Courier-IMAP POP3 Server
 Summary(pl):	Serwer Courier-IMAP POP3
 Group:		Networking/Daemons
-PreReq:		%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{version}-%{release}
 Requires:	pam >= 0.77.3
 Provides:	pop3daemon
 Obsoletes:	pop3daemon
@@ -127,7 +127,7 @@ find -type f -a \( -name configure.in -o -name configure.ac \) | while read FILE
         cd "`dirname "$FILE"`"
 
         if [ -f Makefile.am ]; then
-                sed -i -e '/_LDFLAGS=-static/d' Makefile.am
+				sed -i -e '/_[L]DFLAGS=-static/d' Makefile.am
         fi
 
         %{__libtoolize}
@@ -163,15 +163,14 @@ install %{SOURCE6} $RPM_BUILD_ROOT/etc/pam.d/pop3
 
 rm -rf $RPM_BUILD_ROOT%{_sbindir}/mk*cert
 
-mv -f imap/README README.imap
-mv -f imap/ChangeLog ChangeLog
-mv -f maildir/README.maildirquota.txt README.maildirquota
+install imap/README README.imap
+install imap/ChangeLog ChangeLog
+install maildir/README.maildirquota.txt README.maildirquota
 
-mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert \
-	$RPM_BUILD_ROOT%{_sbindir}
+mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert $RPM_BUILD_ROOT%{_sbindir}
 
-mv -f tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
-mv -f imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
+install tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
+install imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
 
 touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
 
