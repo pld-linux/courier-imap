@@ -16,56 +16,56 @@ sbindir=@sbindir@
 
 # Check that networking is up.
 if is_yes "${NETWORKING}"; then
-    if [ ! -f /var/lock/subsys/network -a "$1" != stop -a "$1" != status ]; then
-	msg_network_down imapd-ssl
-	exit 1
-    fi
+	if [ ! -f /var/lock/subsys/network -a "$1" != stop -a "$1" != status ]; then
+		msg_network_down imapd-ssl
+		exit 1
+	fi
 else
-    exit 0
+	exit 0
 fi
 
 RETVAL=0
 # See how we were called.
 case "$1" in
-    start)
-    # Check if the service is already running?
-    if [ ! -f /var/lock/subsys/courier-imap-ssl ]; then
-	if [ -x "$COURIERTLS" -a ! -f "$TLS_CERTFILE" ]; then
-	    msg_starting "imapd-ssl cert generation"
-	    daemon $sbindir/mkimapdcert
+start)
+	# Check if the service is already running?
+	if [ ! -f /var/lock/subsys/courier-imap-ssl ]; then
+		if [ -x "$COURIERTLS" -a ! -f "$TLS_CERTFILE" ]; then
+			msg_starting "imapd-ssl cert generation"
+			daemon $sbindir/mkimapdcert
+		fi
+		. $sysconfdir/imapd-ssl
+		msg_starting imapd-ssl
+		daemon $libexecdir/imapd-ssl.rc start
+		RETVAL=$?
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-imap-ssl
+	else
+		msg_already_running imapd-ssl
 	fi
-	. $sysconfdir/imapd-ssl
-	msg_starting imapd-ssl
-	daemon $libexecdir/imapd-ssl.rc start
-	RETVAL=$?
-	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-imap-ssl
-    else
-	msg_already_running imapd-ssl
-    fi
-    ;;
-    stop)
-    if [ -f /var/lock/subsys/courier-imap-ssl ]; then
-	. $sysconfdir/imapd-ssl
-	msg_stopping imapd-ssl
-	daemon $libexecdir/imapd-ssl.rc stop
-	RETVAL=$?
-	rm -f /var/lock/subsys/courier-imap-ssl >/dev/null 2>&1
-    else
-	msg_not_running imapd-ssl
-    fi
-    ;;
-    restart|force-reload)
-    $0 stop
-    $0 start
-    exit $?
-    ;;
-    status)
-    status couriertcpd
-    exit $?
-    ;;
-    *)
-    msg_usage "$0 {start|stop|restart|force-reload|status}"
-    exit 3
+;;
+stop)
+	if [ -f /var/lock/subsys/courier-imap-ssl ]; then
+		. $sysconfdir/imapd-ssl
+		msg_stopping imapd-ssl
+		daemon $libexecdir/imapd-ssl.rc stop
+		RETVAL=$?
+		rm -f /var/lock/subsys/courier-imap-ssl >/dev/null 2>&1
+	else
+		msg_not_running imapd-ssl
+	fi
+;;
+restart|force-reload)
+	$0 stop
+	$0 start
+	exit $?
+;;
+status)
+	status couriertcpd
+	exit $?
+;;
+*)
+	msg_usage "$0 {start|stop|restart|force-reload|status}"
+	exit 3
 esac
 
 exit $RETVAL

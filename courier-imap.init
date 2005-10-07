@@ -27,39 +27,39 @@ fi
 RETVAL=0
 # See how we were called.
 case "$1" in
-  start)
+start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-imap ]; then
-        	. $sysconfdir/imapd
+		. $sysconfdir/imapd
 		msg_starting imapd
-        	daemon $libexecdir/imapd.rc start
+		daemon $libexecdir/imapd.rc start
 		RETVAL=$?
 		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-imap
 	else
-	    	msg_already_running imapd
+		msg_already_running imapd
 	fi
-        ;;
-  stop)
+;;
+stop)
 	if [ -f /var/lock/subsys/courier-imap ]; then
-        	. $sysconfdir/imapd
-	    	msg_stopping imapd
-    	    	daemon $libexecdir/imapd.rc stop
-	    	RETVAL=$?
+		. $sysconfdir/imapd
+		msg_stopping imapd
+		daemon $libexecdir/imapd.rc stop
+		RETVAL=$?
 		rm -f /var/lock/subsys/courier-imap >/dev/null 2>&1
 	else
-	    	msg_not_running imapd
+		msg_not_running imapd
 	fi
 	;;
-  restart|force-reload)
+restart|force-reload)
 	$0 stop
 	$0 start
 	exit $?
 	;;
-  status)
+status)
 	status couriertcpd
 	exit $?
 	;;
-  *)
+*)
 	msg_usage "$0 {start|stop|restart|force-reload|status}"
 	exit 3
 esac
