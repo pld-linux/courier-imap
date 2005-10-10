@@ -2,7 +2,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.0.5
-Release:	0.3
+Release:	0.5
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -153,7 +153,7 @@ done
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{/etc/{pam.d,rc.d/init.d,security},%{_certsdir}}
 
-%{__make} install \
+%{__make} -j1 install \
 	DESTDIR=$RPM_BUILD_ROOT
 
 install courier-imap $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
@@ -342,7 +342,7 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc maildir/README.sharedfolders.html
+%doc maildir/README.sharedfolders.html imap/README.proxy tcpd/README.couriertls
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/imap
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/security/blacklist.imap
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd
