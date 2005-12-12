@@ -27,11 +27,11 @@ BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	procps
 BuildRequires:	sed >= 4.0
 BuildRequires:	sysconftool
-Requires:	%{name}-common = %{version}-%{release}
-Requires:	rc-scripts
-Requires:	/sbin/chkconfig
 Requires(post,preun):	/sbin/chkconfig
+Requires:	%{name}-common = %{version}-%{release}
+Requires:	/sbin/chkconfig
 Requires:	pam >= 0.79.0
+Requires:	rc-scripts
 Provides:	imapdaemon
 Obsoletes:	imapdaemon
 Conflicts:	cyrus-imapd
@@ -53,11 +53,11 @@ Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 Summary:	Common files for imap and pop3 daemons
 Summary(pl):	Pliki wspólne dla serwerów imap i pop3
 Group:		Networking/Daemons
+Requires(post,preun):	/sbin/chkconfig
+Requires:	/sbin/chkconfig
 Requires:	courier-authlib
 Requires:	procps
 Requires:	rc-scripts
-Requires:	/sbin/chkconfig
-Requires(post,preun):	/sbin/chkconfig
 
 %description common
 Common files for imap and pop3 daemons.
