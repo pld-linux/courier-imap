@@ -1,3 +1,7 @@
+#
+%bcond_with	toplevel	# Allow toplevel folders
+				# More info: http://www.ricky-chan.co.uk/courier/
+#
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
@@ -16,6 +20,7 @@ Source6:	%{name}-pop3.pamd
 Patch0:		%{name}-dirs.patch
 Patch1:		%{name}-certsdir.patch
 Patch2:		%{name}-maildir.patch
+Patch3:		%{name}-toplevel.patch
 URL:		http://www.courier-mta.org/imap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
@@ -115,6 +120,9 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%if %{with toplevel}
+%patch3 -p1
+%endif
 
 install %{SOURCE1} courier-imap.in
 install %{SOURCE2} courier-imap-ssl.in
