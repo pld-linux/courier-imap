@@ -1,0 +1,399 @@
+diff -urN courier-imap-4.0.5.orig/imap/imapd.c courier-imap-4.0.5/imap/imapd.c
+--- courier-imap-4.0.5.orig/imap/imapd.c	2005-08-20 15:04:22.000000000 +0200
++++ courier-imap-4.0.5/imap/imapd.c	2006-02-07 12:55:01.000000000 +0100
+@@ -135,6 +135,55 @@
+ dev_t homedir_dev;
+ ino_t homedir_ino;
+ 
++/* function to add INBOX. to names */
++char *tfix(struct  imaptoken *curtoken)
++{
++        char* envp = getenv("IMAP_TOPLEVEL");
++        const int isTop = envp && atoi(envp);
++	unsigned long l = curtoken->tokenbuf_size+6;
++	char *p;
++
++	if(!isTop || strncmp(curtoken->tokenbuf, SHARED ".", sizeof(SHARED ".")-1) == 0 ||
++	    strcasecmp(curtoken->tokenbuf,INBOX) == 0)
++		return NULL;
++
++	/* if inbox. given for uppercase to avoid any issues with namespace */
++	if(strncasecmp(curtoken->tokenbuf,"INBOX.",6)==0)
++	{
++		int i=0;
++		for(;i<strlen(INBOX);i++)
++			(curtoken->tokenbuf)[i] = toupper((curtoken->tokenbuf)[i]);
++	}
++
++	if(l >= curtoken->tokenbuf_size)
++	{
++		p=realloc(curtoken->tokenbuf, l + 256);
++		if(!p)
++			write_error_exit("malloc");
++		curtoken->tokenbuf_size = l+256;
++		curtoken->tokenbuf=p;
++	}
++	p = strdup(curtoken->tokenbuf);
++	if(!p)
++		write_error_exit("malloc");
++	sprintf(curtoken->tokenbuf,"INBOX.%s",p);
++	free(p);
++
++	return curtoken->tokenbuf;
++}
++
++/* Fix response */
++char* rfix(char* text)
++{
++	char* envp = getenv("IMAP_TOPLEVEL");
++	const int isTop = envp && atoi(envp);
++
++	if(isTop && (strncasecmp(text,"INBOX.",6)==0))
++		return (text+6);
++  
++	return text;
++}
++
+ void rfc2045_error(const char *p)
+ {
+ 	write(2, p, strlen(p));
+@@ -570,6 +619,8 @@
+ 	}
+ 	else
+ 	{
++		tfix(curtoken);
++
+ 		if (ok_hierarchy && (mailbox=strrchr(curtoken->tokenbuf,
+ 			HIERCH)) && mailbox[1] == 0)
+ 				*mailbox=0;
+@@ -1698,6 +1749,11 @@
+ 	char *newf;
+ 	FILE *newfp=newsubscribefile(&newf);
+ 	FILE *oldfp;
++        char* envp = getenv("IMAP_TOPLEVEL");
++        const int isTop = envp && atoi(envp);
++
++	if(isTop && !strncmp(f,"INBOX.",6))
++		f+=6;
+ 
+ 	if ((oldfp=fopen(SUBSCRIBEFILE, "r")) != 0)
+ 	{
+@@ -1733,6 +1789,11 @@
+ 	char *newf;
+ 	FILE *newfp=newsubscribefile(&newf);
+ 	FILE *oldfp;
++        char* envp = getenv("IMAP_TOPLEVEL");
++        const int isTop = envp && atoi(envp);
++
++        if(isTop && !strncmp(f,"INBOX.",6))
++                f+=6;
+ 
+ 	if ((oldfp=fopen(SUBSCRIBEFILE, "r")) != 0)
+ 	{
+@@ -2325,7 +2386,7 @@
+ 	writes(") ");
+ 	writes(hiersep);
+ 	writes(" \"");
+-	writeqs(mailbox);
++	writeqs(rfix((char*)mailbox));
+ 	writes("\"");
+ 
+ 	if (flags & (LIST_ACL|LIST_MYRIGHTS|LIST_POSTADDRESS))
+@@ -4075,6 +4136,8 @@
+ 				curtoken->tokentype != IT_ATOM &&
+ 				curtoken->tokentype != IT_NUMBER)
+ 				return (-1);
++			if( (curtoken->tokenbuf)[0] != '*')
++				tfix(curtoken);
+ 			name=my_strdup(curtoken->tokenbuf);
+ 		}
+ 		if (nexttoken()->tokentype != IT_EOL)	return (-1);
+@@ -4117,6 +4180,8 @@
+ 			tok->tokentype != IT_QUOTED_STRING)
+ 			return (-1);
+ 
++		tfix(tok);
++
+ 		if (maildir_info_imap_find(&mi, tok->tokenbuf,
+ 					   getenv("AUTHENTICATED")) < 0)
+ 		{
+@@ -4182,6 +4247,8 @@
+ 			curtoken->tokentype != IT_QUOTED_STRING)
+ 			return (-1);
+ 
++		tfix(curtoken);
++
+ 		if (maildir_info_imap_find(&minfo, curtoken->tokenbuf,
+ 					   getenv("AUTHENTICATED")))
+ 		{
+@@ -4205,7 +4272,7 @@
+ 
+ 		writes("*");
+ 		writes(" QUOTAROOT \"");
+-		writeqs(curtoken->tokenbuf);
++		writeqs(rfix(curtoken->tokenbuf));
+ 		writes("\" \"");
+ 		writes(qroot);
+ 		writes("\"\r\n");
+@@ -4227,6 +4294,8 @@
+ 	{
+ 		curtoken=nexttoken_nouc();
+ 
++		tfix(curtoken);
++
+ 		if (curtoken->tokentype != IT_NUMBER &&
+ 			curtoken->tokentype != IT_ATOM &&
+ 			curtoken->tokentype != IT_QUOTED_STRING)
+@@ -4337,7 +4406,7 @@
+ 
+ 		writes("*");
+ 		writes(" STATUS \"");
+-		writeqs(orig_mailbox);
++		writeqs(rfix(orig_mailbox));
+ 		writes("\" (");
+ 		p="";
+ 		if (get_messages)
+@@ -4411,6 +4480,8 @@
+ 
+ 		curtoken=nexttoken_nouc();
+ 
++		tfix(curtoken);
++
+ 		if (curtoken->tokentype != IT_NUMBER &&
+ 			curtoken->tokentype != IT_ATOM &&
+ 			curtoken->tokentype != IT_QUOTED_STRING)
+@@ -4526,7 +4597,7 @@
+ 		}
+ 		writes(tag);
+ 		writes(" OK \"");
+-		writeqs(orig_mailbox);
++		writeqs(rfix(orig_mailbox));
+ 		writes("\" created.\r\n");
+ 
+ 		/*
+@@ -4568,8 +4639,9 @@
+ 			return (0);
+ 		}
+ 
+-		mailbox_name=my_strdup(curtoken->tokenbuf);
+ 		mailbox=parse_mailbox_error(tag, curtoken, 1, 0);
++                mailbox_name=my_strdup(curtoken->tokenbuf);
++
+ 		if ( mailbox == 0)
+ 		{
+ 			free(mailbox_name);
+@@ -4650,6 +4722,8 @@
+ 
+ 		curtoken=nexttoken_nouc();
+ 
++		tfix(curtoken);
++
+ 		if (curtoken->tokentype != IT_NUMBER &&
+ 		    curtoken->tokentype != IT_ATOM &&
+ 		    curtoken->tokentype != IT_QUOTED_STRING)
+@@ -4694,6 +4768,8 @@
+ 
+ 
+ 		curtoken=nexttoken_nouc();
++		tfix(curtoken);
++
+ 		if (curtoken->tokentype != IT_NUMBER &&
+ 			curtoken->tokentype != IT_ATOM &&
+ 			curtoken->tokentype != IT_QUOTED_STRING)
+@@ -4857,6 +4933,7 @@
+ 	struct maildir_info mi;
+ 
+ 		curtoken=nexttoken_nouc();
++		tfix(curtoken);
+ 		if (curtoken->tokentype != IT_NUMBER &&
+ 			curtoken->tokentype != IT_ATOM &&
+ 			curtoken->tokentype != IT_QUOTED_STRING)
+@@ -4934,6 +5011,8 @@
+ 	struct maildir_info mi;
+ 
+ 		curtoken=nexttoken_nouc();
++		tfix(curtoken);
++
+ 		if (curtoken->tokentype != IT_NUMBER &&
+ 			curtoken->tokentype != IT_ATOM &&
+ 			curtoken->tokentype != IT_QUOTED_STRING)
+@@ -5010,11 +5089,19 @@
+ 
+ 	if (strcmp(curtoken->tokenbuf, "NAMESPACE") == 0)
+ 	{
++		char* envp = getenv("IMAP_TOPLEVEL");
++		const int isTop = envp && atoi(envp);
++
+ 		if (nexttoken()->tokentype != IT_EOL)
+ 			return (-1);
+-		writes("* NAMESPACE ((\"INBOX.\" \".\")) NIL "
++		if(isTop)
++			writes("* NAMESPACE ((\"\" \".\")) NIL "
+ 		       "((\"#shared.\" \".\")(\""
+ 			SHARED ".\" \".\"))\r\n");
++		else
++                        writes("* NAMESPACE ((\"INBOX.\" \".\")) NIL "
++                       "((\"#shared.\" \".\")(\""
++                        SHARED ".\" \".\"))\r\n");
+ 		writes(tag);
+ 		writes(" OK NAMESPACE completed.\r\n");
+ 		return (0);
+@@ -5197,7 +5284,7 @@
+ 		free(mailbox_owner);
+ 
+ 		writes("* ACL \"");
+-		writeqs(curtoken->tokenbuf);
++		writeqs(rfix(curtoken->tokenbuf));
+ 		writes("\"");
+ 		maildir_aclt_list_enum(&l, getacl_cb, NULL);
+ 		writes("\r\n");
+@@ -5263,9 +5350,9 @@
+ 		}
+ 
+ 		writes("* LISTRIGHTS \"");
+-		writeqs(mb);
++		writeqs(rfix(mb));
+ 		writes("\" \"");
+-		writeqs(curtoken->tokenbuf);
++		writeqs(rfix(curtoken->tokenbuf));
+ 		writes("\"");
+ 		free(mb);
+ 
+@@ -5359,7 +5446,7 @@
+ 		}
+ 
+ 		writes("* MYRIGHTS \"");
+-		writeqs(curtoken->tokenbuf);
++		writeqs(rfix(curtoken->tokenbuf));
+ 		writes("\" \"");
+ 
+ 		writeacl1(mb);
+@@ -5924,6 +6011,8 @@
+ 			return (-1);
+ 		}
+ 
++		tfix(curtoken);
++
+ 		mailbox=decode_valid_mailbox(curtoken->tokenbuf, 1);
+ 
+ 		if (!mailbox)
+diff -urN courier-imap-4.0.5.orig/imap/mailboxlist.c courier-imap-4.0.5/imap/mailboxlist.c
+--- courier-imap-4.0.5.orig/imap/mailboxlist.c	2004-10-21 02:45:48.000000000 +0200
++++ courier-imap-4.0.5/imap/mailboxlist.c	2006-02-07 12:55:01.000000000 +0100
+@@ -67,7 +67,7 @@
+ #include	"unicode/unicode.h"
+ #include	"courierauth.h"
+ 
+-static const char rcsid[]="$Id$";
++static const char rcsid[]="$Id$";
+ 
+ static const char hierchs[]={HIERCH, 0};
+ 
+@@ -294,11 +294,11 @@
+ 	if (!have_rights[0])
+ 		return;
+ 
+-	if (match_mailbox(folder, hier, list_options) == 0)
++	if (match_mailbox(folder, hier, list_options) == 0 ||
++	    (!strcasecmp(folder,INBOX) && !strcasecmp(hier,"INBOX.INBOX*")) )
+ 	{
+ 		(void) add_hier(folders, folder);
+ 	}
+-
+ 	hier_entry(folder, hierarchies);
+ }
+ 
+@@ -350,6 +350,8 @@
+ {
+ char	buf[BUFSIZ];
+ FILE	*fp;
++char* envp = getenv("IMAP_TOPLEVEL");
++const int isTop = envp && atoi(envp);
+ 
+ 	fp=fopen(SUBSCRIBEFILE, "r");
+ 	if (fp)
+@@ -371,6 +373,16 @@
+ 					continue;
+ 			}
+ 
++			/* hack to make subscriptions work internally as we store code top level when enabled*/
++			if(isTop && strcmp(buf,"INBOX"))
++			{
++				q = strdup(buf);
++				if(q)
++				{
++					snprintf(buf,sizeof(buf)-1,"INBOX.%s",q);
++					free(q);
++				}
++			}
+ 			folder_entry(buf, hier, flags,
+ 				     folders, hierarchies);
+ 		}
+@@ -400,6 +412,13 @@
+ 					/* A bit too much, that's OK */
+ 			write_error_exit(0);
+ 
++                strcat(strcpy(p, de->d_name), "/cur");
++                if (access(p, 0))
++                {
++                        free(p);
++                        continue;
++                }
++
+ 		strcpy(p, inbox_name);
+ 
+ 		if (strcmp(de->d_name, "."))
+@@ -759,6 +778,10 @@
+ int check_all_folders=0;
+ char hiersepbuf[8];
+ int callback_rc=0;
++/* Top level functions */
++char* envp = getenv("IMAP_TOPLEVEL");
++const int isTop = envp && atoi(envp);
++int found_sub=0;
+ 
+ 	obsolete=getenv("IMAP_CHECK_ALL_FOLDERS");
+ 	if (obsolete && atoi(obsolete))
+@@ -835,6 +858,9 @@
+ 		if (strcmp(hp->hier, INBOX) == 0 || check_all_folders)
+ 			is_interesting=hasnewmsgs(hp->hier);
+ 
++		if (!strncmp(hp->hier,"INBOX.INBOX.",12))
++			found_sub = 1; /* only useful when top level enabled */
++
+ 		strcat(strcat(strcpy(hiersepbuf, "\""), hierchs), "\"");
+ 
+ 		mb_flags=0;
+@@ -853,6 +879,11 @@
+ 			mb_flags |=
+ 				obsolete ? MAILBOX_NOINFERIORS:MAILBOX_NOCHILDREN;
+ 		}
++		else if(isTop && !found_sub)
++		{
++			mb_flags |=
++				obsolete ? MAILBOX_NOINFERIORS:MAILBOX_NOCHILDREN;
++		}
+ 		else
+ 		{
+ 			d->flag=1;
+@@ -878,7 +909,12 @@
+ 		    && hp->flag == 0)
+ 		{
+ 			int mb_flags=MAILBOX_NOSELECT;
++			char* envp = getenv("IMAP_TOPLEVEL");
++			const int isTop = envp && atoi(envp);
+ 
++
++			if(isTop && strncmp(hp->hier,INBOX,sizeof(INBOX)-1))
++			{
+ 			if (!obsolete)
+ 				mb_flags |= MAILBOX_CHILDREN;
+ 
+@@ -896,6 +932,7 @@
+ 						 mb_flags | list_options,
+ 						 void_arg);
+ 			}
++			}
+ 		}
+ 		free(hp);
+ 	}
