@@ -30,6 +30,7 @@ BuildRequires:	fam-devel
 BuildRequires:	libstdc++-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	procps
+BuildRequires:	rpmbuild(macros) >= 1.268
 BuildRequires:	sed >= 4.0
 BuildRequires:	sysconftool
 Requires(post,preun):	/sbin/chkconfig
@@ -200,31 +201,17 @@ rm -rf $RPM_BUILD_ROOT
 %post
 /sbin/chkconfig --add courier-imap
 /sbin/chkconfig --add courier-imap-ssl
-
-if [ -f /var/lock/subsys/courier-imap ]; then
-	/etc/rc.d/init.d/courier-imap restart >&2
-else
-	echo "Run \"/etc/rc.d/init.d/courier-imap start\" to start courier-imap daemon."
-fi
-
-if [ -f /var/lock/subsys/courier-imap-ssl ]; then
-	/etc/rc.d/init.d/courier-imap-ssl restart >&2
-else
-	echo "Run \"/etc/rc.d/init.d/courier-imap-ssl start\" to start courier-imap-ssl daemon."
-fi
+%service courier-imap restart "courier-imap daemon"
+%service courier-imap-ssl restart "courier-imap-ssl daemon"
 
 %preun
 if [ "$1" = "0" ]; then
-	if [ -f /var/lock/subsys/courier-imap ]; then
-		/etc/rc.d/init.d/courier-imap stop >&2
-	fi
+	%service courier-imap stop
 	/sbin/chkconfig --del courier-imap
 fi
 
 if [ "$1" = "0" ]; then
-	if [ -f /var/lock/subsys/courier-imap-ssl ]; then
-		/etc/rc.d/init.d/courier-imap-ssl stop >&2
-	fi
+	%service courier-imap-ssl stop
 	/sbin/chkconfig --del courier-imap-ssl
 fi
 
@@ -253,9 +240,7 @@ if [ -f /etc/sysconfig/courier-imap ]; then
 	echo please look at them
 	echo
 fi
-if [ -f /var/lock/subsys/courier-imap ]; then
-	/etc/rc.d/init.d/courier-imap restart >&2
-fi
+%service -q courier-imap restart
 
 %triggerin -- %{name} < 3.0.6
 . %{_sysconfdir}/imapd-ssl
@@ -290,30 +275,19 @@ echo
 /sbin/chkconfig --add courier-pop3-ssl
 /sbin/chkconfig --del courier-imap-pop3 >/dev/null 2>&1 || :
 if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
-	/etc/rc.d/init.d/courier-imap-pop3 stop >&2
-	/etc/rc.d/init.d/courier-pop3 start >&2
-elif [ -f /var/lock/subsys/courier-pop3 ]; then
-	/etc/rc.d/init.d/courier-pop3 restart >&2
+	/sbin/service courier-imap-pop3 stop >&2
+	/sbin/service courier-pop3 start >&2
 else
-	echo "Run \"/etc/rc.d/init.d/courier-pop3 start\" to start courier-pop3 daemon."
+	%service courier-pop3 restart "courier-pop3 daemon"
 fi
-
-if [ -f /var/lock/subsys/courier-pop3-ssl ]; then
-	/etc/rc.d/init.d/courier-pop3-ssl restart >&2
-else
-	echo "Run \"/etc/rc.d/init.d/courier-pop3-ssl start\" to start courier-pop3-ssl daemon."
-fi
+%service courier-pop3-ssl restart "courier-pop3-ssl daemon"
 
 %preun pop3
 if [ "$1" = "0" ]; then
-	if [ -f /var/lock/subsys/courier-pop3 ]; then
-		/etc/rc.d/init.d/courier-pop3 stop >&2
-	fi
+	%service courier-pop3 stop
 	/sbin/chkconfig --del courier-pop3
-        if [ -f /var/lock/subsys/courier-pop3-ssl ]; then
-                /etc/rc.d/init.d/courier-pop3-ssl stop >&2
-        fi
-        /sbin/chkconfig --del courier-pop3-ssl
+	%service courier-pop3-ssl stop
+	/sbin/chkconfig --del courier-pop3-ssl
 fi
 
 %triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
@@ -338,9 +312,7 @@ if [ -f /etc/sysconfig/courier-pop3 ]; then
 	echo please look at them
 	echo
 fi
-if [ -f /var/lock/subsys/courier-pop3 ]; then
-	/etc/rc.d/init.d/courier-pop3 restart >&2
-fi
+%service courier-pop3 restart
 
 %triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.6
 . %{_sysconfdir}/pop3d-ssl
