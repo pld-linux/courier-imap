@@ -1,12 +1,11 @@
 #
-%bcond_with	toplevel	# Allow toplevel folders
-				# More info: http://www.ricky-chan.co.uk/courier/
+%bcond_with	toplevel	# Allow toplevel folders. More info: http://www.ricky-chan.co.uk/courier/
 #
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.0.5
-Release:	0.5
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
