@@ -1,8 +1,8 @@
 #!/bin/sh
-# IMAP SSL Daemon
+# Courier IMAP SSL Daemon
 #
 # chkconfig:	345 80 20
-# description:	IMAP SSL Daemon
+# description:	Courier IMAP SSL Daemon
 
 sysconfdir=@sysconfdir@
 libexecdir=@libexecdir@
@@ -17,7 +17,7 @@ sbindir=@sbindir@
 # Check that networking is up.
 if is_yes "${NETWORKING}"; then
 	if [ ! -f /var/lock/subsys/network -a "$1" != stop -a "$1" != status ]; then
-		msg_network_down imapd-ssl
+		msg_network_down "Courier IMAP SSL"
 		exit 1
 	fi
 else
@@ -31,11 +31,11 @@ start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-imap-ssl ]; then
 		if [ -x "$COURIERTLS" -a ! -f "$TLS_CERTFILE" ]; then
-			msg_starting "imapd-ssl cert generation"
+			msg_starting "Courier IMAP SSL cert generation"
 			daemon $sbindir/mkimapdcert
 		fi
 		. $sysconfdir/imapd-ssl
-		msg_starting imapd-ssl
+		msg_starting "Courier IMAP SSL"
 		daemon $libexecdir/imapd-ssl.rc start
 		RETVAL=$?
 		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-imap-ssl
@@ -46,12 +46,12 @@ start)
 stop)
 	if [ -f /var/lock/subsys/courier-imap-ssl ]; then
 		. $sysconfdir/imapd-ssl
-		msg_stopping imapd-ssl
+		msg_stopping "Courier IMAP SSL"
 		daemon $libexecdir/imapd-ssl.rc stop
 		RETVAL=$?
 		rm -f /var/lock/subsys/courier-imap-ssl >/dev/null 2>&1
 	else
-		msg_not_running imapd-ssl
+		msg_not_running "Courier IMAP SSL"
 	fi
 ;;
 restart|force-reload)
@@ -60,6 +60,7 @@ restart|force-reload)
 	exit $?
 ;;
 status)
+	# FIXME: matches other services, like courier-imap
 	status couriertcpd
 	exit $?
 ;;

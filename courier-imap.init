@@ -1,8 +1,8 @@
 #!/bin/sh
-# IMAP Daemon
+# Courier IMAP Daemon
 #
 # chkconfig:	345 80 20
-# description:	IMAP Daemon
+# description:	Courier IMAP Daemon
 
 sysconfdir=@sysconfdir@
 libexecdir=@libexecdir@
@@ -31,23 +31,23 @@ start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-imap ]; then
 		. $sysconfdir/imapd
-		msg_starting imapd
+		msg_starting "Courier IMAP"
 		daemon $libexecdir/imapd.rc start
 		RETVAL=$?
 		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-imap
 	else
-		msg_already_running imapd
+		msg_already_running "Courier IMAP"
 	fi
 ;;
 stop)
 	if [ -f /var/lock/subsys/courier-imap ]; then
 		. $sysconfdir/imapd
-		msg_stopping imapd
+		msg_stopping "Courier IMAP"
 		daemon $libexecdir/imapd.rc stop
 		RETVAL=$?
 		rm -f /var/lock/subsys/courier-imap >/dev/null 2>&1
 	else
-		msg_not_running imapd
+		msg_not_running "Courier IMAP"
 	fi
 	;;
 restart|force-reload)
@@ -56,6 +56,7 @@ restart|force-reload)
 	exit $?
 	;;
 status)
+	# FIXME: matches other services, like courier-imap-ssl
 	status couriertcpd
 	exit $?
 	;;
