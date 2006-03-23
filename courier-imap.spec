@@ -321,7 +321,7 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc maildir/README.sharedfolders.html imap/README.proxy tcpd/README.couriertls
+%doc maildir/README.sharedfolders.txt imap/README.proxy tcpd/README.couriertls
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/imap
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/security/blacklist.imap
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd
