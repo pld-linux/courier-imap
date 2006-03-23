@@ -5,7 +5,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.0.5
-Release:	1
+Release:	1.1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -34,13 +34,13 @@ BuildRequires:	sed >= 4.0
 BuildRequires:	sysconftool
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name}-common = %{version}-%{release}
-Requires:	/sbin/chkconfig
 Requires:	pam >= 0.79.0
+Requires:	procps
 Requires:	rc-scripts
-Provides:	imapdaemon
-Obsoletes:	imapdaemon
-Conflicts:	cyrus-imapd
-Conflicts:	imap
+#Provides:	imapdaemon
+#Obsoletes:	imapdaemon
+#Conflicts:	cyrus-imapd
+#Conflicts:	imap
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libexecdir	/usr/%{_lib}/courier-imap
@@ -54,15 +54,72 @@ Courier-IMAP is an IMAP server for Maildir mailboxes.
 %description -l pl
 Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 
+%package ssl
+Summary:	Courier-IMAP SSL server
+Summary(pl):	Serwer Courier-IMAP SSL
+Group:		Networking/Daemons
+Requires(post,preun):	/sbin/chkconfig
+Requires:	%{name}-common = %{version}-%{release}
+Requires:	pam >= 0.79.0
+Requires:	procps
+Requires:	rc-scripts
+
+%description ssl
+Courier-IMAP is an IMAP server for Maildir mailboxes.
+
+%description ssl -l pl
+Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
+
+%package pop3
+Summary:	Courier-IMAP POP3 Server
+Summary(pl):	Serwer Courier-IMAP POP3
+Group:		Networking/Daemons
+Requires(post,preun):	/sbin/chkconfig
+Requires:	%{name}-common = %{version}-%{release}
+Requires:	pam >= 0.77.3
+Requires:	procps
+Requires:	rc-scripts
+#Provides:	pop3daemon
+#Obsoletes:	pop3daemon
+#Conflicts:	cyrus-imapd
+#Conflicts:	imap-pop3
+#Conflicts:	solid-pop3d
+#Conflicts:	tpop3d
+
+%description pop3
+Courier-IMAP POP3 is an POP3 server for Maildir mailboxes.
+
+%description pop3 -l pl
+Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
+
+%package pop3-ssl
+Summary:	Courier-IMAP POP3 SSL Server
+Summary(pl):	Serwer Courier-IMAP POP3 SSL
+Group:		Networking/Daemons
+Requires(post,preun):	/sbin/chkconfig
+Requires:	%{name}-common = %{version}-%{release}
+Requires:	pam >= 0.77.3
+Requires:	procps
+Requires:	rc-scripts
+#Provides:	pop3daemon
+#Obsoletes:	pop3daemon
+#Conflicts:	cyrus-imapd
+#Conflicts:	imap-pop3
+#Conflicts:	solid-pop3d
+#Conflicts:	tpop3d
+
+%description pop3-ssl
+Courier-IMAP POP3 SSL is an POP3 server for Maildir mailboxes.
+
+%description pop3-ssl -l pl
+Courier-IMAP POP3 SSL jest serwerem POP3 dla skrzynek pocztowych
+Maildir.
+
 %package common
 Summary:	Common files for imap and pop3 daemons
 Summary(pl):	Pliki wspólne dla serwerów imap i pop3
 Group:		Networking/Daemons
-Requires(post,preun):	/sbin/chkconfig
-Requires:	/sbin/chkconfig
 Requires:	courier-authlib
-Requires:	procps
-Requires:	rc-scripts
 
 %description common
 Common files for imap and pop3 daemons.
@@ -96,25 +153,6 @@ Maildirmake is a tool for making mail folders in Maildir format.
 Maildirmake jest narzêdziem do tworzenia folderów pocztowych w
 formacie Maildir.
 
-%package pop3
-Summary:	Courier-IMAP POP3 Server
-Summary(pl):	Serwer Courier-IMAP POP3
-Group:		Networking/Daemons
-Requires:	%{name}-common = %{version}-%{release}
-Requires:	pam >= 0.77.3
-Provides:	pop3daemon
-Obsoletes:	pop3daemon
-Conflicts:	cyrus-imapd
-Conflicts:	imap-pop3
-Conflicts:	solid-pop3d
-Conflicts:	tpop3d
-
-%description pop3
-Courier-IMAP POP3 is an POP3 server for Maildir mailboxes.
-
-%description pop3 -l pl
-Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
-
 %prep
 %setup -q
 %patch0 -p1
@@ -130,23 +168,22 @@ install %{SOURCE3} courier-pop3.in
 install %{SOURCE4} courier-pop3-ssl.in
 
 %build
-
 # Change Makefile.am files and force recreate Makefile.in's.
 OLDDIR=`pwd`
 find -type f -a \( -name configure.in -o -name configure.ac \) | while read FILE; do
-        cd "`dirname "$FILE"`"
+	cd "`dirname "$FILE"`"
 
-        if [ -f Makefile.am ]; then
-				sed -i -e '/_[L]DFLAGS=-static/d' Makefile.am
-        fi
+	if [ -f Makefile.am ]; then
+		sed -i -e '/_[L]DFLAGS=-static/d' Makefile.am
+	fi
 
-        %{__libtoolize}
-        %{__aclocal}
-        %{__autoconf}
-        %{__autoheader}
-        %{__automake}
+	%{__libtoolize}
+	%{__aclocal}
+	%{__autoconf}
+	%{__autoheader}
+	%{__automake}
 
-        cd "$OLDDIR"
+	cd "$OLDDIR"
 done
 
 %configure \
@@ -199,9 +236,25 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add courier-imap
-/sbin/chkconfig --add courier-imap-ssl
 %service courier-imap restart "courier-imap daemon"
+
+%post ssl
+/sbin/chkconfig --add courier-imap-ssl
 %service courier-imap-ssl restart "courier-imap-ssl daemon"
+
+%post pop3
+/sbin/chkconfig --add courier-pop3
+/sbin/chkconfig --del courier-imap-pop3 >/dev/null 2>&1 || :
+if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
+	/sbin/service courier-imap-pop3 stop >&2
+	/sbin/service courier-pop3 start >&2
+else
+	%service courier-pop3 restart "courier-pop3 daemon"
+fi
+
+%post pop3-ssl
+/sbin/chkconfig --add courier-pop3-ssl
+%service courier-pop3-ssl restart "courier-pop3-ssl daemon"
 
 %preun
 if [ "$1" = "0" ]; then
@@ -209,51 +262,76 @@ if [ "$1" = "0" ]; then
 	/sbin/chkconfig --del courier-imap
 fi
 
+%preun ssl
 if [ "$1" = "0" ]; then
 	%service courier-imap-ssl stop
 	/sbin/chkconfig --del courier-imap-ssl
 fi
 
-
-%triggerin -- %{name} < 3.0.5
-if [ -f /var/lib/openssl/certs/imapd.pem ]; then
-	echo
-	echo imapd.pem has been moved automatically to %{_certsdir}
-	echo
-	mv -f /var/lib/openssl/certs/imapd.pem %{_certsdir}
+%preun pop3
+if [ "$1" = "0" ]; then
+	%service courier-pop3 stop
+	/sbin/chkconfig --del courier-pop3
 fi
-if [ -f /etc/sysconfig/courier-imap ]; then
-	. /etc/sysconfig/courier-imap
-	for opt in `grep ^[^#] /etc/sysconfig/courier-imap |grep -v TLS_CERTFILE |grep -v MAILDIR |grep -v COURIERTLS |cut -d= -f1`;
-	do
+
+%preun pop3-ssl
+if [ "$1" = "0" ]; then
+	%service courier-pop3-ssl stop
+	/sbin/chkconfig --del courier-pop3-ssl
+fi
+
+# FIXME: i'm afraid the triggers do not work. i don't have packages available to test (too lazy to build old revisions)
+%triggerpostun ssl -- %{name} < 3.0.5
+if [ -f /var/lib/openssl/certs/imapd.pem ]; then
+	mv -f /var/lib/openssl/certs/imapd.pem %{_certsdir}
+	echo
+	echo "imapd.pem has been moved automatically to %{_certsdir}"
+	echo
+fi
+if [ -f /etc/sysconfig/courier-imap.rpmsave ]; then
+	. /etc/sysconfig/courier-imap.rpmsave
+	for opt in `grep ^[^#] /etc/sysconfig/courier-imap.rpmsave | egrep -v '(TLS_CERTFILE|MAILDIR|COURIERTLS)' | cut -d= -f1`; do
 		eval opt2=\$$opt
-		sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/imapd
 		sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/imapd-ssl
 	done
 	sed -i s/^SSLADDRESS=.*/"SSLADDRESS=$ADDRESS_SSL"/ %{_sysconfdir}/imapd-ssl
 	sed -i s/^SSLPORT=.*/"SSLPORT=$PORTS_SSL"/ %{_sysconfdir}/imapd-ssl
 	sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/imapd-ssl
+	echo
+	echo IMAPD config file has been rewriten to %{_sysconfdir}/imapd-ssl
+	echo please look at them
+	echo
+fi
+%service -q courier-imap-ssl restart
+
+%triggerpostun -- %{name} < 3.0.5
+if [ -f /etc/sysconfig/courier-imap.rpmsave ]; then
+	. /etc/sysconfig/courier-imap.rpmsave
+	for opt in `grep ^[^#] /etc/sysconfig/courier-imap.rpmsave | egrep -v '(TLS_CERTFILE|MAILDIR|COURIERTLS)' | cut -d= -f1`; do
+		eval opt2=\$$opt
+		sed -i s/^$opt=.*/"$opt=\"$opt2\""/ %{_sysconfdir}/imapd
+	done
 	sed -i s!^MAILDIRPATH=.*!"MAILDIRPATH=\"$MAILDIR\""! %{_sysconfdir}/imapd
 	echo
-	echo IMAPD config file has been rewriten to %{_sysconfdir}/imapd,imapd-ssl
+	echo IMAPD config file has been rewriten to %{_sysconfdir}/imapd
 	echo please look at them
 	echo
 fi
 %service -q courier-imap restart
 
-%triggerin -- %{name} < 3.0.6
+%triggerpostun ssl -- %{name} < 3.0.6
 . %{_sysconfdir}/imapd-ssl
 if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
 	sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/imapd-ssl
 fi
 
-%triggerin -n %{name}-common -- %{name}-userdb
+%triggerin common -- %{name}-userdb
 echo
 echo courier-imap-userdb is obsolete
 echo install courier-authlib-userdb package
 echo
 
-%triggerin -n %{name}-common -- %{name}-common < 3.0.5
+%triggerin common -- %{name}-common < 3.0.5
 /sbin/chkconfig --del authdaemon
 if [ -f /var/lock/subsys/authdaemon ]; then
 	kill `cat /var/lib/authdaemon/pid`
@@ -269,27 +347,7 @@ echo - config files has been splited and moved to %{_sysconfdir}
 echo - certificates directory has changed to %{_certsdir}
 echo
 
-%post pop3
-/sbin/chkconfig --add courier-pop3
-/sbin/chkconfig --add courier-pop3-ssl
-/sbin/chkconfig --del courier-imap-pop3 >/dev/null 2>&1 || :
-if [ -f /var/lock/subsys/courier-imap-pop3 ]; then
-	/sbin/service courier-imap-pop3 stop >&2
-	/sbin/service courier-pop3 start >&2
-else
-	%service courier-pop3 restart "courier-pop3 daemon"
-fi
-%service courier-pop3-ssl restart "courier-pop3-ssl daemon"
-
-%preun pop3
-if [ "$1" = "0" ]; then
-	%service courier-pop3 stop
-	/sbin/chkconfig --del courier-pop3
-	%service courier-pop3-ssl stop
-	/sbin/chkconfig --del courier-pop3-ssl
-fi
-
-%triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
+%triggerin pop3 -- %{name}-pop3 < 3.0.5
 if [ -f /var/lib/openssl/certs/pop3d.pem ]; then
 	echo
 	echo pop3d.pem has been moved automatically to %{_certsdir}
@@ -313,7 +371,7 @@ if [ -f /etc/sysconfig/courier-pop3 ]; then
 fi
 %service courier-pop3 restart
 
-%triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.6
+%triggerin pop3 -- %{name}-pop3 < 3.0.6
 . %{_sysconfdir}/pop3d-ssl
 if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
 	sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/pop3d-ssl
@@ -321,14 +379,12 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc maildir/README.sharedfolders.html imap/README.proxy tcpd/README.couriertls
+%doc maildir/README.sharedfolders.html imap/README.proxy
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/imap
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/security/blacklist.imap
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd-ssl
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd.cnf
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap
-%attr(754,root,root) /etc/rc.d/init.d/courier-imap-ssl
 %attr(755,daemon,daemon) %dir %{_sysconfdir}/shared
 %attr(755,daemon,daemon) %dir %{_sysconfdir}/shared.tmp
 %attr(755,root,root) %{_bindir}/imapd
@@ -339,10 +395,35 @@ fi
 %attr(755,root,root) %{_sbindir}/sharedindexinstall
 %attr(755,root,root) %{_sbindir}/sharedindexsplit
 %attr(755,root,root) %{_libexecdir}/imapd.rc
-%attr(755,root,root) %{_libexecdir}/imapd-ssl.rc
 %{_mandir}/man8/imapd*
 %{_mandir}/man1/maildiracl.1*
 %{_mandir}/man1/maildirkw.1*
+
+%files ssl
+%defattr(644,root,root,755)
+%doc tcpd/README.couriertls
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd-ssl
+%attr(754,root,root) /etc/rc.d/init.d/courier-imap-ssl
+%attr(755,root,root) %{_libexecdir}/imapd-ssl.rc
+
+%files pop3
+%defattr(644,root,root,755)
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/pop3
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/security/blacklist.pop3
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d.cnf
+%attr(754,root,root) /etc/rc.d/init.d/courier-pop3
+%attr(755,root,root) %{_bindir}/pop3d
+%attr(755,root,root) %{_sbindir}/mkpop3dcert
+%attr(755,root,root) %{_sbindir}/pop3login
+%attr(755,root,root) %{_libexecdir}/pop3d.rc
+%{_mandir}/man8/courierpop*
+
+%files pop3-ssl
+%defattr(644,root,root,755)
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d-ssl
+%attr(754,root,root) /etc/rc.d/init.d/courier-pop3-ssl
+%attr(755,root,root) %{_libexecdir}/pop3d-ssl.rc
 
 %files common
 %defattr(644,root,root,755)
@@ -368,19 +449,3 @@ fi
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/maildirmake
 %{_mandir}/man1/maildirmake*
-
-%files pop3
-%defattr(644,root,root,755)
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/pop3
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/security/blacklist.pop3
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d-ssl
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pop3d.cnf
-%attr(754,root,root) /etc/rc.d/init.d/courier-pop3
-%attr(754,root,root) /etc/rc.d/init.d/courier-pop3-ssl
-%attr(755,root,root) %{_bindir}/pop3d
-%attr(755,root,root) %{_sbindir}/mkpop3dcert
-%attr(755,root,root) %{_sbindir}/pop3login
-%attr(755,root,root) %{_libexecdir}/pop3d.rc
-%attr(755,root,root) %{_libexecdir}/pop3d-ssl.rc
-%{_mandir}/man8/courierpop*
