@@ -14,6 +14,9 @@ sbindir=@sbindir@
 # Get network config
 . /etc/sysconfig/network
 
+# Get service config
+[ -f /etc/sysconfig/courier-imap ] && . /etc/sysconfig/courier-imap
+
 # Check that networking is up.
 if is_yes "${NETWORKING}"; then
 	if [ ! -f /var/lock/subsys/network -a "$1" != stop -a "$1" != status ]; then
