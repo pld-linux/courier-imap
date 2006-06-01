@@ -4,12 +4,12 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	4.0.5
-Release:	3
+Version:	4.1.1
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	961372cea83bcbd07471670df1f9121b
+# Source0-md5:	f423a609d9cce0dcf193cac64eb4cbdd
 Source1:	%{name}.init
 Source2:	%{name}-ssl.init
 Source3:	%{name}-pop3.init
@@ -133,20 +133,20 @@ install %{SOURCE4} courier-pop3-ssl.in
 
 # Change Makefile.am files and force recreate Makefile.in's.
 OLDDIR=`pwd`
-find -type f -a \( -name configure.in -o -name configure.ac \) | while read FILE; do
-        cd "`dirname "$FILE"`"
+find -type f -a '(' -name configure.in -o -name configure.ac ')' | while read FILE; do
+	cd "`dirname "$FILE"`"
 
-        if [ -f Makefile.am ]; then
-				sed -i -e '/_[L]DFLAGS=-static/d' Makefile.am
-        fi
+	if [ -f Makefile.am ]; then
+		%{__sed} -i -e '/_[L]DFLAGS=-static/d' Makefile.am
+	fi
 
-        %{__libtoolize}
-        %{__aclocal}
-        %{__autoconf}
-        %{__autoheader}
-        %{__automake}
+	%{__libtoolize}
+	%{__aclocal}
+	%{__autoconf}
+	%{__autoheader}
+	%{__automake}
 
-        cd "$OLDDIR"
+	cd "$OLDDIR"
 done
 
 %configure \
