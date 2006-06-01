@@ -347,7 +347,7 @@ fi
 %files common
 %defattr(644,root,root,755)
 %doc AUTHORS ChangeLog imap/BUGS INSTALL README*
-%attr(750,root,root) %dir %{_sysconfdir}
+%attr(751,root,root) %dir %{_sysconfdir}
 %attr(750,root,root) %dir %{_certsdir}
 %attr(770,daemon,daemon) %dir %{_localstatedir}
 %dir %{_libexecdir}
