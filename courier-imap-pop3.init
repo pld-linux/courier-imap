@@ -30,7 +30,6 @@ case "$1" in
 start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-pop3 ]; then
-		. $sysconfdir/pop3d
 		msg_starting pop3d
 		daemon $libexecdir/pop3d.rc start
 		RETVAL=$?
@@ -41,7 +40,6 @@ start)
 ;;
 stop)
 	if [ -f /var/lock/subsys/courier-pop3 ]; then
-		. $sysconfdir/pop3d
 		msg_stopping pop3d
 		daemon $libexecdir/pop3d.rc stop
 		RETVAL=$?

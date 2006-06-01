@@ -34,7 +34,6 @@ start)
 			msg_starting "pop3d-ssl cert generation"
 			daemon $sbindir/mkpop3dcert
 		fi
-		. $sysconfdir/pop3d-ssl
 		msg_starting pop3d-ssl
 		daemon $libexecdir/pop3d-ssl.rc start
 		RETVAL=$?
@@ -45,7 +44,6 @@ start)
 ;;
 stop)
 	if [ -f /var/lock/subsys/courier-pop3-ssl ]; then
-		. $sysconfdir/pop3d-ssl
 		msg_stopping pop3d-ssl
 		daemon $libexecdir/pop3d-ssl.rc stop
 		RETVAL=$?

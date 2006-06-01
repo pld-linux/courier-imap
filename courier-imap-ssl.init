@@ -34,7 +34,6 @@ start)
 			msg_starting "Courier IMAP SSL cert generation"
 			daemon $sbindir/mkimapdcert
 		fi
-		. $sysconfdir/imapd-ssl
 		msg_starting "Courier IMAP SSL"
 		daemon $libexecdir/imapd-ssl.rc start
 		RETVAL=$?
@@ -45,7 +44,6 @@ start)
 ;;
 stop)
 	if [ -f /var/lock/subsys/courier-imap-ssl ]; then
-		. $sysconfdir/imapd-ssl
 		msg_stopping "Courier IMAP SSL"
 		daemon $libexecdir/imapd-ssl.rc stop
 		RETVAL=$?

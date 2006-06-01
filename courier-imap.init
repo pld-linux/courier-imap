@@ -33,7 +33,6 @@ case "$1" in
 start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/courier-imap ]; then
-		. $sysconfdir/imapd
 		msg_starting "Courier IMAP"
 		daemon $libexecdir/imapd.rc start
 		RETVAL=$?
@@ -44,7 +43,6 @@ start)
 ;;
 stop)
 	if [ -f /var/lock/subsys/courier-imap ]; then
-		. $sysconfdir/imapd
 		msg_stopping "Courier IMAP"
 		daemon $libexecdir/imapd.rc stop
 		RETVAL=$?
