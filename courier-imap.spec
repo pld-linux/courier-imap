@@ -5,7 +5,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.1.1
-Release:	1
+Release:	2
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -20,6 +20,7 @@ Patch0:		%{name}-dirs.patch
 Patch1:		%{name}-certsdir.patch
 Patch2:		%{name}-maildir.patch
 Patch3:		%{name}-toplevel.patch
+Patch4:		%{name}-drop-makedat.patch
 URL:		http://www.courier-mta.org/imap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
@@ -123,18 +124,19 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 %if %{with toplevel}
 %patch3 -p1
 %endif
+%patch4 -p1
 
 install %{SOURCE1} courier-imap.in
 install %{SOURCE2} courier-imap-ssl.in
 install %{SOURCE3} courier-pop3.in
 install %{SOURCE4} courier-pop3-ssl.in
+rm -f makedat/configure.in
 
 %build
 
 # Change Makefile.am files and force recreate Makefile.in's.
-OLDDIR=`pwd`
 find -type f -a '(' -name configure.in -o -name configure.ac ')' | while read FILE; do
-	cd "`dirname "$FILE"`"
+	cd "$(dirname "$FILE")"
 
 	if [ -f Makefile.am ]; then
 		%{__sed} -i -e '/_[L]DFLAGS=-static/d' Makefile.am
@@ -146,7 +148,7 @@ find -type f -a '(' -name configure.in -o -name configure.ac ')' | while read FI
 	%{__autoheader}
 	%{__automake}
 
-	cd "$OLDDIR"
+	cd -
 done
 
 %configure \
@@ -354,7 +356,6 @@ fi
 %{_sysconfdir}/quotawarnmsg.example
 %attr(755,root,root) %{_bindir}/couriertls
 %attr(755,root,root) %{_libexecdir}/couriertcpd
-%attr(755,root,root) %{_libexecdir}/makedatprog
 %{_mandir}/man1/couriert*
 %{_mandir}/man8/couriert*
 %{_mandir}/man8/mk*
