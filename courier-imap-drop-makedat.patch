@@ -1,0 +1,20 @@
+--- courier-imap-4.1.1/Makefile.am~	2006-03-18 18:14:47.000000000 +0200
++++ courier-imap-4.1.1/Makefile.am	2006-06-02 02:15:08.495334914 +0300
+@@ -10,7 +10,7 @@
+ 	packaging/suse/pop3.pam
+ 
+ SUBDIRS=numlib md5 sha1 @DBSUBDIR@ soxwrap unicode rfc822 random128 \
+-	rfc1035 rfc2045 liblock maildir makedat libhmac \
++	rfc1035 rfc2045 liblock maildir libhmac \
+ 	waitlib tcpd imap
+ 
+ DIST_SUBDIRS=numlib md5 sha1 bdbobj gdbmobj soxwrap unicode rfc822 random128 \
+@@ -24,7 +24,7 @@
+ 
+ binPROGRAMS=imapd pop3d maildirmake maildiracl deliverquota maildirkw
+ sbinPROGRAMS=imaplogin pop3login
+-libexecPROGRAMS=makedatprog couriertcpd
++libexecPROGRAMS=couriertcpd
+ 
+ bin_PROGRAMS= @binPROGRAMS_exec@
+ sbin_PROGRAMS=@sbinPROGRAMS_exec@
