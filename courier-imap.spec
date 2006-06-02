@@ -185,6 +185,7 @@ install tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
 install imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
 
 touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
+touch $RPM_BUILD_ROOT%{_sysconfdir}/shared/index
 
 # make config files
 ./sysconftool $RPM_BUILD_ROOT%{_sysconfdir}/*.dist
@@ -333,6 +334,7 @@ fi
 %attr(754,root,root) /etc/rc.d/init.d/courier-imap-ssl
 %attr(755,daemon,daemon) %dir %{_sysconfdir}/shared
 %attr(755,daemon,daemon) %dir %{_sysconfdir}/shared.tmp
+%attr(644,daemon,daemon) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/shared/index
 %attr(755,root,root) %{_bindir}/imapd
 %attr(755,root,root) %{_bindir}/maildiracl
 %attr(755,root,root) %{_bindir}/maildirkw
