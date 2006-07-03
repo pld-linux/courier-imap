@@ -1,3 +1,6 @@
+# TODO:
+# - put imap-ssl and pop3-ssl to separate packages - some want to have
+#   ssl-only system.
 #
 %bcond_with	toplevel	# Allow toplevel folders. More info: http://www.ricky-chan.co.uk/courier/
 #
