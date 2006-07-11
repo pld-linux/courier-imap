@@ -1,6 +1,7 @@
 # TODO:
 # - put imap-ssl and pop3-ssl to separate packages - some want to have
-#   ssl-only system.
+#   ssl-only system (or non-ssl only system)
+#   see also http://thread.gmane.org/gmane.linux.pld.devel.english/2509/focus=2509
 #
 %bcond_with	toplevel	# Allow toplevel folders. More info: http://www.ricky-chan.co.uk/courier/
 #
