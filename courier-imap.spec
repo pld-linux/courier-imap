@@ -9,7 +9,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.1.1
-Release:	2
+Release:	3
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -159,7 +159,8 @@ done
 	--with-db=db \
 	--enable-unicode \
 	--with-authchangepwdir=/var/tmp \
-	--with-certsdir=%{_certsdir}
+	--with-certsdir=%{_certsdir} \
+	--with-mailer=/usr/lib/sendmail
 
 %{__make}
 
