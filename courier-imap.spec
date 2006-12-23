@@ -9,7 +9,7 @@ Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.1.1
-Release:	3
+Release:	4
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -25,6 +25,7 @@ Patch1:		%{name}-certsdir.patch
 Patch2:		%{name}-maildir.patch
 Patch3:		%{name}-toplevel.patch
 Patch4:		%{name}-drop-makedat.patch
+Patch5:		%{name}-link.patch
 URL:		http://www.courier-mta.org/imap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
@@ -129,6 +130,7 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 %patch3 -p1
 %endif
 %patch4 -p1
+%patch5 -p1
 
 install %{SOURCE1} courier-imap.in
 install %{SOURCE2} courier-imap-ssl.in
