@@ -8,12 +8,12 @@
 Summary:	Courier-IMAP server
 Summary(pl):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	4.1.1
-Release:	4
+Version:	4.1.2
+Release:	0.1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	f423a609d9cce0dcf193cac64eb4cbdd
+# Source0-md5:	e4a1c75992cc85ba10f719e98f6df0ff
 Source1:	%{name}.init
 Source2:	%{name}-ssl.init
 Source3:	%{name}-pop3.init
@@ -29,7 +29,7 @@ Patch5:		%{name}-link.patch
 URL:		http://www.courier-mta.org/imap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
-BuildRequires:	courier-authlib-devel >= 0.57
+BuildRequires:	courier-authlib-devel >= 0.59
 BuildRequires:	db-devel
 BuildRequires:	fam-devel
 BuildRequires:	libstdc++-devel
@@ -107,7 +107,7 @@ Summary:	Courier-IMAP POP3 Server
 Summary(pl):	Serwer Courier-IMAP POP3
 Group:		Networking/Daemons
 Requires:	%{name}-common = %{version}-%{release}
-Requires:	pam >= 0.77.3
+Requires:	pam >= 0.79.0
 Provides:	pop3daemon
 Obsoletes:	pop3daemon
 Conflicts:	cyrus-imapd
