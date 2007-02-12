@@ -6,7 +6,7 @@
 %bcond_with	toplevel	# Allow toplevel folders. More info: http://www.ricky-chan.co.uk/courier/
 #
 Summary:	Courier-IMAP server
-Summary(pl.UTF-8):   Serwer Courier-IMAP
+Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.1.2
 Release:	0.1
@@ -62,7 +62,7 @@ Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 
 %package common
 Summary:	Common files for imap and pop3 daemons
-Summary(pl.UTF-8):   Pliki wspólne dla serwerów imap i pop3
+Summary(pl.UTF-8):	Pliki wspólne dla serwerów imap i pop3
 Group:		Networking/Daemons
 Requires(post,preun):	/sbin/chkconfig
 Requires:	/sbin/chkconfig
@@ -78,7 +78,7 @@ Pliki wspólne dla serwerów imap i pop3.
 
 %package deliverquota
 Summary:	Deliver to a Maildir with a quota
-Summary(pl.UTF-8):   Obsługa quoty przy dostarczaniu poczty do skrzynek Maildir
+Summary(pl.UTF-8):	Obsługa quoty przy dostarczaniu poczty do skrzynek Maildir
 Group:		Networking/Daemons
 
 %description deliverquota
@@ -91,7 +91,7 @@ dostarczanie e-maili do skrzynek Maildir z programowo narzuconą quotą.
 
 %package maildirmake
 Summary:	Tool for making mail folders in Maildir format
-Summary(pl.UTF-8):   Narzędzie do tworzenia folderów w formacie Maildir
+Summary(pl.UTF-8):	Narzędzie do tworzenia folderów w formacie Maildir
 Group:		Networking/Daemons
 Conflicts:	qmail-maildirmake
 
@@ -104,7 +104,7 @@ formacie Maildir.
 
 %package pop3
 Summary:	Courier-IMAP POP3 Server
-Summary(pl.UTF-8):   Serwer Courier-IMAP POP3
+Summary(pl.UTF-8):	Serwer Courier-IMAP POP3
 Group:		Networking/Daemons
 Requires:	%{name}-common = %{version}-%{release}
 Requires:	pam >= 0.79.0
