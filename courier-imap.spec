@@ -6,7 +6,7 @@
 %bcond_with	toplevel	# Allow toplevel folders. More info: http://www.ricky-chan.co.uk/courier/
 #
 Summary:	Courier-IMAP server
-Summary(pl):	Serwer Courier-IMAP
+Summary(pl.UTF-8):   Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.1.2
 Release:	0.1
@@ -57,12 +57,12 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %description
 Courier-IMAP is an IMAP server for Maildir mailboxes.
 
-%description -l pl
+%description -l pl.UTF-8
 Courier-IMAP jest serwerem IMAP dla skrzynek pocztowych Maildir.
 
 %package common
 Summary:	Common files for imap and pop3 daemons
-Summary(pl):	Pliki wspólne dla serwerów imap i pop3
+Summary(pl.UTF-8):   Pliki wspÃ³lne dla serwerÃ³w imap i pop3
 Group:		Networking/Daemons
 Requires(post,preun):	/sbin/chkconfig
 Requires:	/sbin/chkconfig
@@ -73,38 +73,38 @@ Requires:	rc-scripts
 %description common
 Common files for imap and pop3 daemons.
 
-%description common -l pl
-Pliki wspólne dla serwerów imap i pop3.
+%description common -l pl.UTF-8
+Pliki wspÃ³lne dla serwerÃ³w imap i pop3.
 
 %package deliverquota
 Summary:	Deliver to a Maildir with a quota
-Summary(pl):	Obs³uga quoty przy dostarczaniu poczty do skrzynek Maildir
+Summary(pl.UTF-8):   ObsÅ‚uga quoty przy dostarczaniu poczty do skrzynek Maildir
 Group:		Networking/Daemons
 
 %description deliverquota
 deliverquota is a temporary hack to implement E-mail delivery to a
 Maildir with a software-imposed quota.
 
-%description deliverquota -l pl
-deliverquota jest tymczasowym rozwi±zaniem implementuj±cym
-dostarczanie e-maili do skrzynek Maildir z programowo narzucon± quot±.
+%description deliverquota -l pl.UTF-8
+deliverquota jest tymczasowym rozwiÄ…zaniem implementujÄ…cym
+dostarczanie e-maili do skrzynek Maildir z programowo narzuconÄ… quotÄ….
 
 %package maildirmake
 Summary:	Tool for making mail folders in Maildir format
-Summary(pl):	Narzêdzie do tworzenia folderów w formacie Maildir
+Summary(pl.UTF-8):   NarzÄ™dzie do tworzenia folderÃ³w w formacie Maildir
 Group:		Networking/Daemons
 Conflicts:	qmail-maildirmake
 
 %description maildirmake
 Maildirmake is a tool for making mail folders in Maildir format.
 
-%description maildirmake -l pl
-Maildirmake jest narzêdziem do tworzenia folderów pocztowych w
+%description maildirmake -l pl.UTF-8
+Maildirmake jest narzÄ™dziem do tworzenia folderÃ³w pocztowych w
 formacie Maildir.
 
 %package pop3
 Summary:	Courier-IMAP POP3 Server
-Summary(pl):	Serwer Courier-IMAP POP3
+Summary(pl.UTF-8):   Serwer Courier-IMAP POP3
 Group:		Networking/Daemons
 Requires:	%{name}-common = %{version}-%{release}
 Requires:	pam >= 0.79.0
@@ -118,7 +118,7 @@ Conflicts:	tpop3d
 %description pop3
 Courier-IMAP POP3 is an POP3 server for Maildir mailboxes.
 
-%description pop3 -l pl
+%description pop3 -l pl.UTF-8
 Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 
 %prep
