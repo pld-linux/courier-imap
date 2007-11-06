@@ -107,7 +107,7 @@ Summary:	Courier-IMAP POP3 Server
 Summary(pl.UTF-8):	Serwer Courier-IMAP POP3
 Group:		Networking/Daemons
 Requires:	%{name}-common = %{version}-%{release}
-Requires:	pam >= 0.79.0
+Requires:	pam >= 0.77.3
 Provides:	pop3daemon
 Obsoletes:	pop3daemon
 Conflicts:	cyrus-imapd
