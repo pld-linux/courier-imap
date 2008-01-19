@@ -8,12 +8,12 @@
 Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	4.1.2
-Release:	2
+Version:	4.3.0
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	e4a1c75992cc85ba10f719e98f6df0ff
+# Source0-md5:	4076c6cd082efc989ba45c5ad3c25354
 Source1:	%{name}.init
 Source2:	%{name}-ssl.init
 Source3:	%{name}-pop3.init
