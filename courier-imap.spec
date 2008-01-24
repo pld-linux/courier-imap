@@ -33,6 +33,7 @@ BuildRequires:	courier-authlib-devel >= 0.59
 BuildRequires:	db-devel
 BuildRequires:	fam-devel
 BuildRequires:	libstdc++-devel
+BuildRequires:	libtool
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	procps
 BuildRequires:	rpmbuild(macros) >= 1.268
