@@ -105,7 +105,7 @@ formacie Maildir.
 %package pop3
 Summary:	Courier-IMAP POP3 Server
 Summary(pl.UTF-8):	Serwer Courier-IMAP POP3
-Group:		Networking/Daemons
+Group:		Networking/Daemons/POP3
 Requires:	%{name}-common = %{version}-%{release}
 Requires:	pam >= 0.79.0
 Provides:	pop3daemon
