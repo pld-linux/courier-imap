@@ -9,7 +9,7 @@ Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.4.1
-Release:	0.9
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -138,7 +138,6 @@ install %{SOURCE4} courier-pop3-ssl.in
 rm -f makedat/configure.in
 
 %build
-
 # Change Makefile.am files and force recreate Makefile.in's.
 find -type f -a '(' -name configure.in -o -name configure.ac ')' | while read FILE; do
 	cd "$(dirname "$FILE")"
@@ -150,7 +149,9 @@ find -type f -a '(' -name configure.in -o -name configure.ac ')' | while read FI
 	%{__libtoolize}
 	%{__aclocal}
 	%{__autoconf}
-	%{__autoheader}
+	if grep -q AC_CONFIG_HEADER configure.in; then
+		%{__autoheader}
+	fi
 	%{__automake}
 
 	cd -
@@ -163,7 +164,7 @@ done
 	--with-certsdir=%{_certsdir} \
 	--with-mailer=/usr/lib/sendmail
 
-%{__make}
+%{__make} -j1
 
 %install
 rm -rf $RPM_BUILD_ROOT
