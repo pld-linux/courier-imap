@@ -9,7 +9,7 @@ Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	4.4.1
-Release:	2
+Release:	3
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -28,7 +28,7 @@ Patch4:		%{name}-drop-makedat.patch
 URL:		http://www.courier-mta.org/imap/
 BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
-BuildRequires:	courier-authlib-devel >= 0.59
+BuildRequires:	courier-authlib-devel >= 0.61
 BuildRequires:	db-devel
 BuildRequires:	fam-devel
 BuildRequires:	libstdc++-devel
