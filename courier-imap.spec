@@ -8,12 +8,12 @@
 Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	4.4.1
-Release:	3
+Version:	4.5.0
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	71482dff367e5161a3c0f9c61bbfd2b1
+# Source0-md5:	da35725325bacaea20f7bc16a871722b
 Source1:	%{name}.init
 Source2:	%{name}-ssl.init
 Source3:	%{name}-pop3.init
@@ -30,7 +30,6 @@ BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
 BuildRequires:	courier-authlib-devel >= 0.61
 BuildRequires:	db-devel
-BuildRequires:	fam-devel
 BuildRequires:	libstdc++-devel
 BuildRequires:	libtool
 BuildRequires:	openssl-devel >= 0.9.7d
