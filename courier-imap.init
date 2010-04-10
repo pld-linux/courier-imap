@@ -40,7 +40,7 @@ start)
 	else
 		msg_already_running "Courier IMAP"
 	fi
-;;
+	;;
 stop)
 	if [ -f /var/lock/subsys/courier-imap ]; then
 		msg_stopping "Courier IMAP"
