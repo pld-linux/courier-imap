@@ -27,40 +27,63 @@ else
 	exit 0
 fi
 
+start() {
+	# Check if the service is already running?
+	if [ -f /var/lock/subsys/courier-pop3-ssl ]; then
+		msg_already_running "Courier POP3D SSL"
+		return
+	fi
+
+	if [ -x "$COURIERTLS" -a ! -f "$TLS_CERTFILE" ]; then
+		msg_starting "Courier POP3D SSL Cert generation"
+		daemon $sbindir/mkpop3dcert
+	fi
+	msg_starting "Courier POP3D SSL"
+	daemon $libexecdir/pop3d-ssl.rc start
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-pop3-ssl
+}
+
+stop() {
+	if [ ! -f /var/lock/subsys/courier-pop3-ssl ]; then
+		msg_not_running "Courier POP3D SSL"
+		return
+	fi
+
+	msg_stopping "Courier POP3D SSL"
+	daemon $libexecdir/pop3d-ssl.rc stop
+	RETVAL=$?
+	rm -f /var/lock/subsys/courier-pop3-ssl >/dev/null 2>&1
+}
+
+condrestart() {
+	if [ ! -f /var/lock/subsys/courier-pop3-ssl ]; then
+		msg_not_running "Courier POP3D SSL"
+		RETVAL=$1
+		return
+	fi
+
+	stop
+	start
+}
+
 RETVAL=0
 # See how we were called.
 case "$1" in
-start)
-	# Check if the service is already running?
-	if [ ! -f /var/lock/subsys/courier-pop3-ssl ]; then
-		if [ -x "$COURIERTLS" -a ! -f "$TLS_CERTFILE" ]; then
-			msg_starting "Courier POP3D SSL Cert generation"
-			daemon $sbindir/mkpop3dcert
-		fi
-		msg_starting "Courier POP3D SSL"
-		daemon $libexecdir/pop3d-ssl.rc start
-		RETVAL=$?
-		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-pop3-ssl
-	else
-		msg_already_running "Courier POP3D SSL"
-	fi
+  start)
+	start
 	;;
-stop)
-	if [ -f /var/lock/subsys/courier-pop3-ssl ]; then
-		msg_stopping "Courier POP3D SSL"
-		daemon $libexecdir/pop3d-ssl.rc stop
-		RETVAL=$?
-		rm -f /var/lock/subsys/courier-pop3-ssl >/dev/null 2>&1
-	else
-		msg_not_running "Courier POP3D SSL"
-	fi
+  stop)
+	stop
 	;;
-restart|force-reload)
-	$0 stop
-	$0 start
-	exit $?
+  restart)
+	stop
+	start
 	;;
-status)
+  force-reload)
+	condrestart 7
+	;;
+  status)
 	status couriertcpd
 	exit $?
 	;;

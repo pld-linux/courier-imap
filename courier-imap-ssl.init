@@ -27,40 +27,63 @@ else
 	exit 0
 fi
 
+start() {
+	# Check if the service is already running?
+	if [ -f /var/lock/subsys/courier-imap-ssl ]; then
+		msg_already_running "Courier IMAP SSL"
+		return
+	fi
+
+	if [ -x "$COURIERTLS" -a ! -f "$TLS_CERTFILE" ]; then
+		msg_starting "Courier IMAP SSL cert generation"
+		daemon $sbindir/mkimapdcert
+	fi
+	msg_starting "Courier IMAP SSL"
+	daemon $libexecdir/imapd-ssl.rc start
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-imap-ssl
+}
+
+stop() {
+	if [ ! -f /var/lock/subsys/courier-imap-ssl ]; then
+		msg_not_running "Courier IMAP SSL"
+		return
+	fi
+
+	msg_stopping "Courier IMAP SSL"
+	daemon $libexecdir/imapd-ssl.rc stop
+	RETVAL=$?
+	rm -f /var/lock/subsys/courier-imap-ssl >/dev/null 2>&1
+}
+
+condrestart() {
+	if [ ! -f /var/lock/subsys/courier-imap-ssl ]; then
+		msg_not_running "Courier IMAP SSL"
+		RETVAL=$1
+		return
+	fi
+
+	stop
+	start
+}
+
 RETVAL=0
 # See how we were called.
 case "$1" in
-start)
-	# Check if the service is already running?
-	if [ ! -f /var/lock/subsys/courier-imap-ssl ]; then
-		if [ -x "$COURIERTLS" -a ! -f "$TLS_CERTFILE" ]; then
-			msg_starting "Courier IMAP SSL cert generation"
-			daemon $sbindir/mkimapdcert
-		fi
-		msg_starting "Courier IMAP SSL"
-		daemon $libexecdir/imapd-ssl.rc start
-		RETVAL=$?
-		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-imap-ssl
-	else
-		msg_already_running imapd-ssl
-	fi
+  start)
+	start
 	;;
-stop)
-	if [ -f /var/lock/subsys/courier-imap-ssl ]; then
-		msg_stopping "Courier IMAP SSL"
-		daemon $libexecdir/imapd-ssl.rc stop
-		RETVAL=$?
-		rm -f /var/lock/subsys/courier-imap-ssl >/dev/null 2>&1
-	else
-		msg_not_running "Courier IMAP SSL"
-	fi
+  stop)
+	stop
 	;;
-restart|force-reload)
-	$0 stop
-	$0 start
-	exit $?
+  restart)
+	stop
+	start
 	;;
-status)
+  force-reload)
+	condrestart 7
+	;;
+  status)
 	# FIXME: matches other services, like courier-imap
 	status couriertcpd
 	exit $?
