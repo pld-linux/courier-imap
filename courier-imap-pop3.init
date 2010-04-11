@@ -27,36 +27,59 @@ else
 	exit 0
 fi
 
+start() {
+	# Check if the service is already running?
+	if [ -f /var/lock/subsys/courier-pop3 ]; then
+		msg_already_running pop3d
+		return
+	fi
+
+	msg_starting pop3d
+	daemon $libexecdir/pop3d.rc start
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-pop3
+}
+
+stop() {
+	if [ ! -f /var/lock/subsys/courier-pop3 ]; then
+		msg_not_running pop3d
+		return
+	fi
+
+	msg_stopping pop3d
+	daemon $libexecdir/pop3d.rc stop
+	RETVAL=$?
+	rm -f /var/lock/subsys/courier-pop3 >/dev/null 2>&1
+}
+
+condrestart() {
+	if [ ! -f /var/lock/subsys/courier-pop3 ]; then
+		msg_not_running pop3d
+		RETVAL=$1
+		return
+	fi
+
+	stop
+	start
+}
+
 RETVAL=0
 # See how we were called.
 case "$1" in
-start)
-	# Check if the service is already running?
-	if [ ! -f /var/lock/subsys/courier-pop3 ]; then
-		msg_starting pop3d
-		daemon $libexecdir/pop3d.rc start
-		RETVAL=$?
-		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-pop3
-	else
-		msg_already_running pop3d
-	fi
+  start)
+	start
 	;;
-stop)
-	if [ -f /var/lock/subsys/courier-pop3 ]; then
-		msg_stopping pop3d
-		daemon $libexecdir/pop3d.rc stop
-		RETVAL=$?
-		rm -f /var/lock/subsys/courier-pop3 >/dev/null 2>&1
-	else
-		msg_not_running pop3d
-	fi
+  stop)
+	stop
 	;;
-restart|force-reload)
-	$0 stop
-	$0 start
-	exit $?
+  restart)
+	stop
+	start
 	;;
-status)
+  force-reload)
+	condrestart 7
+	;;
+  status)
 	status couriertcpd
 	exit $?
 	;;
