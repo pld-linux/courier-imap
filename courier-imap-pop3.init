@@ -20,7 +20,7 @@ sbindir=@sbindir@
 # Check that networking is up.
 if is_yes "${NETWORKING}"; then
 	if [ ! -f /var/lock/subsys/network -a "$1" != stop -a "$1" != status ]; then
-		msg_network_down "Courier POP3"
+		msg_network_down "Courier POP3D"
 		exit 1
 	fi
 else
@@ -30,11 +30,11 @@ fi
 start() {
 	# Check if the service is already running?
 	if [ -f /var/lock/subsys/courier-pop3 ]; then
-		msg_already_running pop3d
+		msg_already_running "Courier POP3D"
 		return
 	fi
 
-	msg_starting pop3d
+	msg_starting "Courier POP3D"
 	daemon $libexecdir/pop3d.rc start
 	RETVAL=$?
 	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/courier-pop3
@@ -42,11 +42,11 @@ start() {
 
 stop() {
 	if [ ! -f /var/lock/subsys/courier-pop3 ]; then
-		msg_not_running pop3d
+		msg_not_running "Courier POP3D"
 		return
 	fi
 
-	msg_stopping pop3d
+	msg_stopping "Courier POP3D"
 	daemon $libexecdir/pop3d.rc stop
 	RETVAL=$?
 	rm -f /var/lock/subsys/courier-pop3 >/dev/null 2>&1
@@ -54,7 +54,7 @@ stop() {
 
 condrestart() {
 	if [ ! -f /var/lock/subsys/courier-pop3 ]; then
-		msg_not_running pop3d
+		msg_not_running "Courier POP3D"
 		RETVAL=$1
 		return
 	fi
