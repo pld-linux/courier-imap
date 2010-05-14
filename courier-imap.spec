@@ -30,9 +30,13 @@ BuildRequires:	autoconf >= 2.54
 BuildRequires:	automake
 BuildRequires:	courier-authlib-devel >= 0.61
 BuildRequires:	db-devel
+BuildRequires:	gdbm-devel
+BuildRequires:	gnet-devel
+BuildRequires:	libidn-devel
 BuildRequires:	libstdc++-devel
 BuildRequires:	libtool
 BuildRequires:	openssl-devel >= 0.9.7d
+BuildRequires:	pkgconfig
 BuildRequires:	procps
 BuildRequires:	rpmbuild(macros) >= 1.268
 BuildRequires:	sed >= 4.0
