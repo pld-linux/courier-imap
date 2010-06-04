@@ -1,4 +1,3 @@
-diff -urN courier-imap-4.3.0.orig/configure.in courier-imap-4.3.0/configure.in
 --- courier-imap-4.3.0.orig/configure.in	2007-11-24 04:20:18.000000000 +0100
 +++ courier-imap-4.3.0/configure.in	2008-01-19 19:53:07.090124292 +0100
 @@ -222,6 +222,11 @@
@@ -13,7 +12,6 @@ diff -urN courier-imap-4.3.0.orig/configure.in courier-imap-4.3.0/configure.in
  AC_ARG_WITH(authchangepwdir, [], ,
  	ac_configure_args="$ac_configure_args --with-authchangepwdir=/var/tmp/dev/null")
  
-diff -urN courier-imap-4.3.0.orig/imap/configure.in courier-imap-4.3.0/imap/configure.in
 --- courier-imap-4.3.0.orig/imap/configure.in	2007-11-24 04:20:18.000000000 +0100
 +++ courier-imap-4.3.0/imap/configure.in	2008-01-19 19:53:07.090124292 +0100
 @@ -52,6 +52,11 @@
@@ -28,7 +26,6 @@ diff -urN courier-imap-4.3.0.orig/imap/configure.in courier-imap-4.3.0/imap/conf
  AC_ARG_WITH(mailer,
  [  --with-mailer=prog  Your mail submission program],
     SENDMAIL="$withval",
-diff -urN courier-imap-4.3.0.orig/imap/imapd.cnf.openssl.in courier-imap-4.3.0/imap/imapd.cnf.openssl.in
 --- courier-imap-4.3.0.orig/imap/imapd.cnf.openssl.in	2007-11-04 21:49:58.000000000 +0100
 +++ courier-imap-4.3.0/imap/imapd.cnf.openssl.in	2008-01-19 19:53:07.090124292 +0100
 @@ -1,5 +1,5 @@
@@ -38,7 +35,6 @@ diff -urN courier-imap-4.3.0.orig/imap/imapd.cnf.openssl.in courier-imap-4.3.0/i
  
  [ req ]
  default_bits = 1024
-diff -urN courier-imap-4.3.0.orig/imap/imapd-ssl.dist.in courier-imap-4.3.0/imap/imapd-ssl.dist.in
 --- courier-imap-4.3.0.orig/imap/imapd-ssl.dist.in	2007-11-22 15:23:05.000000000 +0100
 +++ courier-imap-4.3.0/imap/imapd-ssl.dist.in	2008-01-19 19:53:22.977590279 +0100
 @@ -254,7 +254,7 @@
@@ -50,71 +46,6 @@ diff -urN courier-imap-4.3.0.orig/imap/imapd-ssl.dist.in courier-imap-4.3.0/imap
  
  ##NAME: TLS_TRUSTCERTS:0
  #
-diff -urN courier-imap-4.3.0.orig/imap/mkimapdcert.8.in courier-imap-4.3.0/imap/mkimapdcert.8.in
---- courier-imap-4.3.0.orig/imap/mkimapdcert.8.in	2007-04-22 17:33:32.000000000 +0200
-+++ courier-imap-4.3.0/imap/mkimapdcert.8.in	2008-01-19 19:53:58.669385973 +0100
-@@ -21,18 +21,18 @@
- .SH "DESCRIPTION"
- .PP
- IMAP over SSL requires a valid, signed, X\.509 certificate\. The default location for the certificate file is
--\fI@datadir@/imapd\.pem\fR\.
-+\fI@certsdir@/imapd\.pem\fR\.
- \fBmkimapdcert\fR
- generates a self\-signed X\.509 certificate, mainly for testing\. For production use the X\.509 certificate must be signed by a recognized certificate authority, in order for mail clients to accept the certificate\.
- .PP
-
--\fI@datadir@/imapd\.pem\fR
-+\fI@certsdir@/imapd\.pem\fR
- must be owned by the @mailuser@ user and have no group or world permissions\. The
- \fBmkimapdcert\fR
- command will enforce this\. To prevent an unfortunate accident,
- \fBmkimapdcert\fR
- will not work if
--\fB@datadir@/imapd\.pem\fR
-+\fB@certsdir@/imapd\.pem\fR
- already exists\.
- .PP
-
-@@ -42,7 +42,7 @@
- to be installed\.
- .SH "FILES"
- .PP
--@datadir@/imapd\.pem
-+@certsdir@/imapd\.pem
- .RS 4
- X\.509 certificate\.
- .RE
-diff -urN courier-imap-4.3.0.orig/imap/mkimapdcert.html.in courier-imap-4.3.0/imap/mkimapdcert.html.in
---- courier-imap-4.3.0.orig/imap/mkimapdcert.html.in	2007-04-22 17:33:32.000000000 +0200
-+++ courier-imap-4.3.0/imap/mkimapdcert.html.in	2008-01-19 19:54:30.834337552 +0100
-@@ -7,22 +7,22 @@
- --></head><body><div class="refentry" lang="en" xml:lang="en"><a id="mkimapdcert" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>mkimapdcert â~@~T create a test SSL certificate for IMAP over SSL</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">@sbindir@/mkimapdcert</code> </p></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id412096" shape="rect"> </a><h2>DESCRIPTION</h2><p>
- IMAP over SSL requires a valid, signed, X.509 certificate.  The default
- location for the certificate file is
--<code class="filename">@datadir@/imapd.pem</code>.
-+<code class="filename">@certsdir@/imapd.pem</code>.
- <span class="command"><strong>mkimapdcert</strong></span> generates a self-signed X.509 certificate,
- mainly for
- testing.
- For production use the X.509 certificate must be signed by a
- recognized certificate authority, in order for mail clients to accept the
- certificate.</p><p>
--<code class="filename">@datadir@/imapd.pem</code> must be owned by the
-+<code class="filename">@certsdir@/imapd.pem</code> must be owned by the
- @mailuser@ user and
- have no group or world permissions.
- The <span class="command"><strong>mkimapdcert</strong></span> command will
- enforce this.  To prevent an unfortunate accident,
- <span class="command"><strong>mkimapdcert</strong></span>
--will not work if <span class="command"><strong>@datadir@/imapd.pem</strong></span> already exists.</p><p>
-+will not work if <span class="command"><strong>@certsdir@/imapd.pem</strong></span> already exists.</p><p>
- <span class="command"><strong>mkimapdcert</strong></span> requires
--<span class="application">OpenSSL</span> to be installed.</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id414701" shape="rect"> </a><h2>FILES</h2><div class="variablelist"><dl><dt><span class="term">@datadir@/imapd.pem</span></dt><dd>
-+<span class="application">OpenSSL</span> to be installed.</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id414701" shape="rect"> </a><h2>FILES</h2><div class="variablelist"><dl><dt><span class="term">@certsdir@/imapd.pem</span></dt><dd>
- X.509 certificate.
- </dd><dt><span class="term">@sysconfdir@/imapd.cnf</span></dt><dd>
- Parameters used by OpenSSL to
-diff -urN courier-imap-4.3.0.orig/imap/mkimapdcert.in courier-imap-4.3.0/imap/mkimapdcert.in
 --- courier-imap-4.3.0.orig/imap/mkimapdcert.in	2007-11-04 21:50:15.000000000 +0100
 +++ courier-imap-4.3.0/imap/mkimapdcert.in	2008-01-19 19:58:50.290723918 +0100
 @@ -18,41 +18,41 @@
@@ -178,71 +109,6 @@ diff -urN courier-imap-4.3.0.orig/imap/mkimapdcert.in courier-imap-4.3.0/imap/mk
  
  	@CERTTOOL@ --generate-privkey --outfile imapd.key
  	@CERTTOOL@ --generate-self-signed --load-privkey imapd.key --outfile imapd.cert --template @sysconfdir@/imapd.cnf
-diff -urN courier-imap-4.3.0.orig/imap/mkpop3dcert.8.in courier-imap-4.3.0/imap/mkpop3dcert.8.in
---- courier-imap-4.3.0.orig/imap/mkpop3dcert.8.in	2007-04-22 17:33:36.000000000 +0200
-+++ courier-imap-4.3.0/imap/mkpop3dcert.8.in	2008-01-19 19:55:01.929235273 +0100
-@@ -21,18 +21,18 @@
- .SH "DESCRIPTION"
- .PP
- POP3 over SSL requires a valid, signed, X\.509 certificate\. The default location for the certificate file is
--\fI@datadir@/pop3d\.pem\fR\.
-+\fI@certsdir@/pop3d\.pem\fR\.
- \fBmkpop3dcert\fR
- generates a self\-signed X\.509 certificate, mainly for testing\. For production use the X\.509 certificate must be signed by a recognized certificate authority, in order for mail clients to accept the certificate\.
- .PP
-
--\fI@datadir@/pop3d\.pem\fR
-+\fI@certsdir@/pop3d\.pem\fR
- must be owned by the @mailuser@ user and have no group or world permissions\. The
- \fBmkpop3dcert\fR
- command will enforce this\. To prevent an unfortunate accident,
- \fBmkpop3dcert\fR
- will not work if
--\fB@datadir@/pop3d\.pem\fR
-+\fB@certsdir@/pop3d\.pem\fR
- already exists\.
- .PP
-
-@@ -42,7 +42,7 @@
- to be installed\.
- .SH "FILES"
- .PP
--@datadir@/pop3d\.pem
-+@certsdir@/pop3d\.pem
- .RS 4
- X\.509 certificate\.
- .RE
-diff -urN courier-imap-4.3.0.orig/imap/mkpop3dcert.html.in courier-imap-4.3.0/imap/mkpop3dcert.html.in
---- courier-imap-4.3.0.orig/imap/mkpop3dcert.html.in	2007-04-22 17:33:35.000000000 +0200
-+++ courier-imap-4.3.0/imap/mkpop3dcert.html.in	2008-01-19 19:55:15.619924063 +0100
-@@ -7,22 +7,22 @@
- --></head><body><div class="refentry" lang="en" xml:lang="en"><a id="mkpop3dcert" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>mkpop3dcert â~@~T create a test SSL certificate for POP3 over SSL</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">@sbindir@/mkpop3dcert</code> </p></div></div><div class="refsect1" lang="en" xml:lang="en"><a id="id388066" shape="rect"> </a><h2>DESCRIPTION</h2><p>
- POP3 over SSL requires a valid, signed, X.509 certificate.  The default
- location for the certificate file is
--<code class="filename">@datadir@/pop3d.pem</code>.
-+<code class="filename">@certsdir@/pop3d.pem</code>.
- <span class="command"><strong>mkpop3dcert</strong></span> generates a self-signed X.509 certificate,
- mainly for
- testing.
- For production use the X.509 certificate must be signed by a
- recognized certificate authority, in order for mail clients to accept the
- certificate.</p><p>
--<code class="filename">@datadir@/pop3d.pem</code> must be owned by the
-+<code class="filename">@certsdir@/pop3d.pem</code> must be owned by the
- @mailuser@ user and
- have no group or world permissions.
- The <span class="command"><strong>mkpop3dcert</strong></span> command will
- enforce this.  To prevent an unfortunate accident,
- <span class="command"><strong>mkpop3dcert</strong></span>
--will not work if <span class="command"><strong>@datadir@/pop3d.pem</strong></span> already exists.</p><p>
-+will not work if <span class="command"><strong>@certsdir@/pop3d.pem</strong></span> already exists.</p><p>
- <span class="command"><strong>mkpop3dcert</strong></span> requires
--<span class="application">OpenSSL</span> to be installed.</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id390671" shape="rect"> </a><h2>FILES</h2><div class="variablelist"><dl><dt><span class="term">@datadir@/pop3d.pem</span></dt><dd>
-+<span class="application">OpenSSL</span> to be installed.</p></div><div class="refsect1" lang="en" xml:lang="en"><a id="id390671" shape="rect"> </a><h2>FILES</h2><div class="variablelist"><dl><dt><span class="term">@certsdir@/pop3d.pem</span></dt><dd>
- X.509 certificate.
- </dd><dt><span class="term">@sysconfdir@/pop3d.cnf</span></dt><dd>
- Parameters used by OpenSSL to
-diff -urN courier-imap-4.3.0.orig/imap/mkpop3dcert.in courier-imap-4.3.0/imap/mkpop3dcert.in
 --- courier-imap-4.3.0.orig/imap/mkpop3dcert.in	2007-11-04 21:50:15.000000000 +0100
 +++ courier-imap-4.3.0/imap/mkpop3dcert.in	2008-01-19 19:59:17.935447993 +0100
 @@ -18,41 +18,41 @@
@@ -306,7 +172,6 @@ diff -urN courier-imap-4.3.0.orig/imap/mkpop3dcert.in courier-imap-4.3.0/imap/mk
  
  	@CERTTOOL@ --generate-privkey --outfile pop3d.key
  	@CERTTOOL@ --generate-self-signed --load-privkey pop3d.key --outfile pop3d.cert --template @sysconfdir@/pop3d.cnf
-diff -urN courier-imap-4.3.0.orig/imap/pop3d.cnf.openssl.in courier-imap-4.3.0/imap/pop3d.cnf.openssl.in
 --- courier-imap-4.3.0.orig/imap/pop3d.cnf.openssl.in	2007-11-04 21:49:58.000000000 +0100
 +++ courier-imap-4.3.0/imap/pop3d.cnf.openssl.in	2008-01-19 19:53:07.103458296 +0100
 @@ -1,5 +1,5 @@
@@ -316,7 +181,6 @@ diff -urN courier-imap-4.3.0.orig/imap/pop3d.cnf.openssl.in courier-imap-4.3.0/i
  
  [ req ]
  default_bits = 1024
-diff -urN courier-imap-4.3.0.orig/imap/pop3d-ssl.dist.in courier-imap-4.3.0/imap/pop3d-ssl.dist.in
 --- courier-imap-4.3.0.orig/imap/pop3d-ssl.dist.in	2007-11-22 15:23:06.000000000 +0100
 +++ courier-imap-4.3.0/imap/pop3d-ssl.dist.in	2008-01-19 19:55:43.177977173 +0100
 @@ -241,7 +241,7 @@
@@ -328,3 +192,127 @@ diff -urN courier-imap-4.3.0.orig/imap/pop3d-ssl.dist.in courier-imap-4.3.0/imap
  
  ##NAME: TLS_TRUSTCERTS:0
  #
+--- courier-imap-4.8.0/imap/mkimapdcert.8.in~	2010-02-20 06:12:44.000000000 +0200
++++ courier-imap-4.8.0/imap/mkimapdcert.8.in	2010-06-04 15:18:37.508585518 +0300
+@@ -29,18 +29,18 @@
+ .SH "DESCRIPTION"
+ .PP
+ IMAP over SSL requires a valid, signed, X\&.509 certificate\&. The default location for the certificate file is
+-@datadir@/imapd\&.pem\&.
++@certsdir@/imapd\&.pem\&.
+ \fBmkimapdcert\fR
+ generates a self\-signed X\&.509 certificate, mainly for testing\&. For production use the X\&.509 certificate must be signed by a recognized certificate authority, in order for mail clients to accept the certificate\&.
+ .PP
+ 
+-@datadir@/imapd\&.pem
++@certsdir@/imapd\&.pem
+ must be owned by the @mailuser@ user and have no group or world permissions\&. The
+ \fBmkimapdcert\fR
+ command will enforce this\&. To prevent an unfortunate accident,
+ \fBmkimapdcert\fR
+ will not work if
+-\fB@datadir@/imapd\&.pem\fR
++\fB@certsdir@/imapd\&.pem\fR
+ already exists\&.
+ .PP
+ 
+@@ -50,7 +50,7 @@
+ to be installed\&.
+ .SH "FILES"
+ .PP
+-@datadir@/imapd\&.pem
++@certsdir@/imapd\&.pem
+ .RS 4
+ X\&.509 certificate\&.
+ .RE
+--- courier-imap-4.8.0/imap/mkimapdcert.html.in~	2010-02-20 06:12:44.000000000 +0200
++++ courier-imap-4.8.0/imap/mkimapdcert.html.in	2010-06-04 15:19:24.774623744 +0300
+@@ -7,22 +7,22 @@
+ --></head><body><div class="refentry" title="mkimapdcert"><a id="mkimapdcert" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>mkimapdcert â€” create a test SSL certificate for IMAP over SSL</p></div><div class="refsynopsisdiv" title="Synopsis"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">@sbindir@/mkimapdcert</code> </p></div></div><div class="refsect1" title="DESCRIPTION"><a id="id381669" shape="rect"> </a><h2>DESCRIPTION</h2><p>
+ IMAP over SSL requires a valid, signed, X.509 certificate.  The default
+ location for the certificate file is
+-<code class="filename">@datadir@/imapd.pem</code>.
++<code class="filename">@certsdir@/imapd.pem</code>.
+ <span class="command"><strong>mkimapdcert</strong></span> generates a self-signed X.509 certificate,
+ mainly for
+ testing.
+ For production use the X.509 certificate must be signed by a
+ recognized certificate authority, in order for mail clients to accept the
+ certificate.</p><p>
+-<code class="filename">@datadir@/imapd.pem</code> must be owned by the
++<code class="filename">@certsdir@/imapd.pem</code> must be owned by the
+ @mailuser@ user and
+ have no group or world permissions.
+ The <span class="command"><strong>mkimapdcert</strong></span> command will
+ enforce this.  To prevent an unfortunate accident,
+ <span class="command"><strong>mkimapdcert</strong></span>
+-will not work if <span class="command"><strong>@datadir@/imapd.pem</strong></span> already exists.</p><p>
++will not work if <span class="command"><strong>@certsdir@/imapd.pem</strong></span> already exists.</p><p>
+ <span class="command"><strong>mkimapdcert</strong></span> requires
+-<span class="application">OpenSSL</span> to be installed.</p></div><div class="refsect1" title="FILES"><a id="id397983" shape="rect"> </a><h2>FILES</h2><div class="variablelist"><dl><dt><span class="term">@datadir@/imapd.pem</span></dt><dd>
++<span class="application">OpenSSL</span> to be installed.</p></div><div class="refsect1" title="FILES"><a id="id397983" shape="rect"> </a><h2>FILES</h2><div class="variablelist"><dl><dt><span class="term">@certsdir@/imapd.pem</span></dt><dd>
+ X.509 certificate.
+ </dd><dt><span class="term">@sysconfdir@/imapd.cnf</span></dt><dd>
+ Parameters used by OpenSSL to
+--- courier-imap-4.8.0/imap/mkpop3dcert.8.in~	2010-02-20 06:12:44.000000000 +0200
++++ courier-imap-4.8.0/imap/mkpop3dcert.8.in	2010-06-04 15:19:49.481836220 +0300
+@@ -29,18 +29,18 @@
+ .SH "DESCRIPTION"
+ .PP
+ POP3 over SSL requires a valid, signed, X\&.509 certificate\&. The default location for the certificate file is
+-@datadir@/pop3d\&.pem\&.
++@certsdir@/pop3d\&.pem\&.
+ \fBmkpop3dcert\fR
+ generates a self\-signed X\&.509 certificate, mainly for testing\&. For production use the X\&.509 certificate must be signed by a recognized certificate authority, in order for mail clients to accept the certificate\&.
+ .PP
+ 
+-@datadir@/pop3d\&.pem
++@certsdir@/pop3d\&.pem
+ must be owned by the @mailuser@ user and have no group or world permissions\&. The
+ \fBmkpop3dcert\fR
+ command will enforce this\&. To prevent an unfortunate accident,
+ \fBmkpop3dcert\fR
+ will not work if
+-\fB@datadir@/pop3d\&.pem\fR
++\fB@certsdir@/pop3d\&.pem\fR
+ already exists\&.
+ .PP
+ 
+@@ -50,7 +50,7 @@
+ to be installed\&.
+ .SH "FILES"
+ .PP
+-@datadir@/pop3d\&.pem
++@certsdir@/pop3d\&.pem
+ .RS 4
+ X\&.509 certificate\&.
+ .RE
+--- courier-imap-4.8.0/imap/mkpop3dcert.html.in~	2010-02-20 06:12:44.000000000 +0200
++++ courier-imap-4.8.0/imap/mkpop3dcert.html.in	2010-06-04 15:20:12.428930951 +0300
+@@ -7,22 +7,22 @@
+ --></head><body><div class="refentry" title="mkpop3dcert"><a id="mkpop3dcert" shape="rect"> </a><div class="titlepage"/><div class="refnamediv"><h2>Name</h2><p>mkpop3dcert â€” create a test SSL certificate for POP3 over SSL</p></div><div class="refsynopsisdiv" title="Synopsis"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">@sbindir@/mkpop3dcert</code> </p></div></div><div class="refsect1" title="DESCRIPTION"><a id="id489121" shape="rect"> </a><h2>DESCRIPTION</h2><p>
+ POP3 over SSL requires a valid, signed, X.509 certificate.  The default
+ location for the certificate file is
+-<code class="filename">@datadir@/pop3d.pem</code>.
++<code class="filename">@certsdir@/pop3d.pem</code>.
+ <span class="command"><strong>mkpop3dcert</strong></span> generates a self-signed X.509 certificate,
+ mainly for
+ testing.
+ For production use the X.509 certificate must be signed by a
+ recognized certificate authority, in order for mail clients to accept the
+ certificate.</p><p>
+-<code class="filename">@datadir@/pop3d.pem</code> must be owned by the
++<code class="filename">@certsdir@/pop3d.pem</code> must be owned by the
+ @mailuser@ user and
+ have no group or world permissions.
+ The <span class="command"><strong>mkpop3dcert</strong></span> command will
+ enforce this.  To prevent an unfortunate accident,
+ <span class="command"><strong>mkpop3dcert</strong></span>
+-will not work if <span class="command"><strong>@datadir@/pop3d.pem</strong></span> already exists.</p><p>
++will not work if <span class="command"><strong>@certsdir@/pop3d.pem</strong></span> already exists.</p><p>
+ <span class="command"><strong>mkpop3dcert</strong></span> requires
+-<span class="application">OpenSSL</span> to be installed.</p></div><div class="refsect1" title="FILES"><a id="id505435" shape="rect"> </a><h2>FILES</h2><div class="variablelist"><dl><dt><span class="term">@datadir@/pop3d.pem</span></dt><dd>
++<span class="application">OpenSSL</span> to be installed.</p></div><div class="refsect1" title="FILES"><a id="id505435" shape="rect"> </a><h2>FILES</h2><div class="variablelist"><dl><dt><span class="term">@certsdir@/pop3d.pem</span></dt><dd>
+ X.509 certificate.
+ </dd><dt><span class="term">@sysconfdir@/pop3d.cnf</span></dt><dd>
+ Parameters used by OpenSSL to

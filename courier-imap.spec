@@ -8,12 +8,12 @@
 Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	4.7.0
-Release:	2
+Version:	4.8.0
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://dl.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	e6984890e1aecf3cc6b099a1619324e6
+# Source0-md5:	87c501e65eae79d667b5123df6ae89f2
 Source1:	%{name}.init
 Source2:	%{name}-ssl.init
 Source3:	%{name}-pop3.init
@@ -176,23 +176,23 @@ install -d $RPM_BUILD_ROOT{/etc/{pam.d,rc.d/init.d,security},%{_certsdir}}
 %{__make} -j1 install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-install courier-imap $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
-install courier-imap-ssl $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap-ssl
-install courier-pop3 $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
-install courier-pop3-ssl $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3-ssl
-install %{SOURCE5} $RPM_BUILD_ROOT/etc/pam.d/imap
-install %{SOURCE6} $RPM_BUILD_ROOT/etc/pam.d/pop3
+install -p courier-imap $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
+install -p courier-imap-ssl $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap-ssl
+install -p courier-pop3 $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
+install -p courier-pop3-ssl $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3-ssl
+cp -a %{SOURCE5} $RPM_BUILD_ROOT/etc/pam.d/imap
+cp -a %{SOURCE6} $RPM_BUILD_ROOT/etc/pam.d/pop3
 
 rm -rf $RPM_BUILD_ROOT%{_sbindir}/mk*cert
 
-install imap/README README.imap
-install imap/ChangeLog ChangeLog
-install maildir/README.maildirquota.txt README.maildirquota
+cp -af imap/README README.imap
+cp -af imap/ChangeLog ChangeLog
+cp -af maildir/README.maildirquota.txt README.maildirquota
 
 mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert $RPM_BUILD_ROOT%{_sbindir}
 
-install tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
-install imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
+cp -a tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
+cp -a imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
 
 touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
 touch $RPM_BUILD_ROOT%{_sysconfdir}/shared/index
