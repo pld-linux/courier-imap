@@ -2,9 +2,12 @@
 # - put imap-ssl and pop3-ssl to separate packages - some want to have
 #   ssl-only system (or non-ssl only system)
 #   see also http://thread.gmane.org/gmane.linux.pld.devel.english/2509/focus=2509
+# - fix manpages:
+#    [set $man.base.url.for.relative.links]/maildirquota.html
 #
+# Conditional build:
 %bcond_with	toplevel	# Allow toplevel folders. More info: http://www.ricky-chan.co.uk/courier/
-#
+
 Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
