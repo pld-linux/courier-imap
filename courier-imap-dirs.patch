@@ -6,5 +6,5 @@ diff -Nur old/configure.in new/configure.in
  		courier-imap.sysvinit courier-imap.spec index.html
  		INSTALL.html
 +		courier-imap courier-imap-ssl courier-pop3 courier-pop3-ssl
- 		packaging/suse/courier-imap.init)
- AC_OUTPUT
+ 		packaging/suse/courier-imap.init
+ 		packaging/systemd/courier-imap.sysvinit
