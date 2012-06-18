@@ -7,6 +7,7 @@
 #
 # Conditional build:
 %bcond_with	toplevel	# Allow toplevel folders. More info: http://www.ricky-chan.co.uk/courier/
+%bcond_without	fam		# FAM for enhanced IMAP IDLE and locking
 
 Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
@@ -36,6 +37,7 @@ BuildRequires:	db-devel
 BuildRequires:	gdbm-devel
 BuildRequires:	gnet-devel
 BuildRequires:	libidn-devel
+%{?with_fam:BuildRequires:	gamin-devel}
 BuildRequires:	libstdc++-devel
 BuildRequires:	libtool
 BuildRequires:	openssl-devel >= 0.9.7d
@@ -137,10 +139,10 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 %endif
 %patch4 -p1
 
-install %{SOURCE1} courier-imap.in
-install %{SOURCE2} courier-imap-ssl.in
-install %{SOURCE3} courier-pop3.in
-install %{SOURCE4} courier-pop3-ssl.in
+cp -p %{SOURCE1} courier-imap.in
+cp -p %{SOURCE2} courier-imap-ssl.in
+cp -p %{SOURCE3} courier-pop3.in
+cp -p %{SOURCE4} courier-pop3-ssl.in
 rm -f makedat/configure.in
 
 %build
@@ -163,6 +165,10 @@ find -type f -a '(' -name configure.in -o -name configure.ac ')' | while read FI
 	cd -
 done
 
+%if %{without fam}
+ac_cv_header_fam_h=no \
+ac_cv_lib_fam_FAMOpen=no \
+%endif
 %configure \
 	--with-db=db \
 	--enable-unicode \
@@ -183,19 +189,19 @@ install -p courier-imap $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap
 install -p courier-imap-ssl $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-imap-ssl
 install -p courier-pop3 $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3
 install -p courier-pop3-ssl $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3-ssl
-cp -a %{SOURCE5} $RPM_BUILD_ROOT/etc/pam.d/imap
-cp -a %{SOURCE6} $RPM_BUILD_ROOT/etc/pam.d/pop3
+cp -p %{SOURCE5} $RPM_BUILD_ROOT/etc/pam.d/imap
+cp -p %{SOURCE6} $RPM_BUILD_ROOT/etc/pam.d/pop3
 
 rm -rf $RPM_BUILD_ROOT%{_sbindir}/mk*cert
 
-cp -af imap/README README.imap
-cp -af imap/ChangeLog ChangeLog
-cp -af maildir/README.maildirquota.txt README.maildirquota
+cp -pf imap/README README.imap
+cp -pf imap/ChangeLog ChangeLog
+cp -pf maildir/README.maildirquota.txt README.maildirquota
 
 mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert $RPM_BUILD_ROOT%{_sbindir}
 
-cp -a tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
-cp -a imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
+cp -p tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
+cp -p imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
 
 touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
 touch $RPM_BUILD_ROOT%{_sysconfdir}/shared/index
