@@ -4,6 +4,7 @@
 #   see also http://thread.gmane.org/gmane.linux.pld.devel.english/2509/focus=2509
 # - fix manpages:
 #    [set $man.base.url.for.relative.links]/maildirquota.html
+# - Review -toplevel.patch
 #
 # Conditional build:
 %bcond_with	toplevel	# Allow toplevel folders. More info: http://www.ricky-chan.co.uk/courier/
@@ -12,12 +13,12 @@
 Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	4.10.0
-Release:	3
+Version:	4.13
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://downloads.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	2f95c99b9ad1380b9f3ac733ccd741a2
+# Source0-md5:	0bbaffd067199ee35de5b15ea02e6d53
 Source1:	%{name}.init
 Source2:	%{name}-ssl.init
 Source3:	%{name}-pop3.init
@@ -153,6 +154,7 @@ find -type f -a '(' -name configure.in -o -name configure.ac ')' | while read FI
 	if [ -f Makefile.am ]; then
 		%{__sed} -i -e '/_[L]DFLAGS=-static/d' Makefile.am
 	fi
+        %{__sed}  -i 's/AM_CONFIG_HEADER/AC_CONFIG_HEADERS/g' configure.in
 
 	%{__libtoolize}
 	%{__aclocal}
