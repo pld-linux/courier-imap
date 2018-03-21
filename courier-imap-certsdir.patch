@@ -1,34 +1,6 @@
---- courier-imap-4.3.0.orig/configure.in	2007-11-24 04:20:18.000000000 +0100
-+++ courier-imap-4.3.0/configure.in	2008-01-19 19:53:07.090124292 +0100
-@@ -222,6 +222,11 @@
- 
- # Neither does it use the change password feature
- 
-+AC_ARG_WITH(certsdir, [ --with-certsdir Directory where certs are created ],
-+certsdir="$withval", certsdir=$datadir)
-+
-+AC_SUBST(certsdir)
-+
- AC_ARG_WITH(authchangepwdir, [], ,
- 	ac_configure_args="$ac_configure_args --with-authchangepwdir=/var/tmp/dev/null")
- 
---- courier-imap-4.3.0.orig/imap/configure.in	2007-11-24 04:20:18.000000000 +0100
-+++ courier-imap-4.3.0/imap/configure.in	2008-01-19 19:53:07.090124292 +0100
-@@ -52,6 +52,11 @@
- eval "exec_prefix=$exec_prefix"
- eval "bindir=$bindir"
- 
-+AC_ARG_WITH(certsdir, [ --with-certsdir Directory where certs are created ],
-+certsdir="$withval", certsdir=$datadir)
-+
-+AC_SUBST(certsdir)
-+
- AC_ARG_WITH(mailer,
- [  --with-mailer=prog  Your mail submission program],
-    SENDMAIL="$withval",
---- courier-imap-4.8.0/imap/mkpop3dcert.8.in~	2010-02-20 06:12:44.000000000 +0200
-+++ courier-imap-4.8.0/imap/mkpop3dcert.8.in	2010-06-04 15:19:49.481836220 +0300
-@@ -29,18 +29,18 @@
+--- courier-imap-4.18.2/libs/imap/mkpop3dcert.8.in.orig	2017-07-25 01:42:48.000000000 +0200
++++ courier-imap-4.18.2/libs/imap/mkpop3dcert.8.in	2018-03-20 19:53:03.097255662 +0100
+@@ -37,17 +37,17 @@
  .SH "DESCRIPTION"
  .PP
  POP3 over SSL requires a valid, signed, X\&.509 certificate\&. The default location for the certificate file is
@@ -37,7 +9,6 @@
  \fBmkpop3dcert\fR
  generates a self\-signed X\&.509 certificate, mainly for testing\&. For production use the X\&.509 certificate must be signed by a recognized certificate authority, in order for mail clients to accept the certificate\&.
  .PP
- 
 -@datadir@/pop3d\&.pem
 +@certsdir@/pop3d\&.pem
  must be owned by the @mailuser@ user and have no group or world permissions\&. The
@@ -49,8 +20,8 @@
 +\fB@certsdir@/pop3d\&.pem\fR
  already exists\&.
  .PP
- 
-@@ -50,7 +50,7 @@
+ \fBmkpop3dcert\fR
+@@ -56,7 +56,7 @@
  to be installed\&.
  .SH "FILES"
  .PP

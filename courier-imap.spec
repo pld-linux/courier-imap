@@ -9,16 +9,18 @@
 # Conditional build:
 %bcond_with	toplevel	# Allow toplevel folders. More info: http://www.ricky-chan.co.uk/courier/
 %bcond_without	fam		# FAM for enhanced IMAP IDLE and locking
+%bcond_with	gnutls		# GnuTLS instead of OpenSSL
+%bcond_with	socks		# (Courier) Socks support
 
 Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	4.13
+Version:	4.18.2
 Release:	1
-License:	GPL
+License:	GPL v3 with OpenSSL exception
 Group:		Networking/Daemons
 Source0:	http://downloads.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	0bbaffd067199ee35de5b15ea02e6d53
+# Source0-md5:	6af3e78d3206518aab5510638cd620c2
 Source1:	%{name}.init
 Source2:	%{name}-ssl.init
 Source3:	%{name}-pop3.init
@@ -30,18 +32,23 @@ Patch1:		%{name}-certsdir.patch
 Patch2:		%{name}-maildir.patch
 Patch3:		%{name}-toplevel.patch
 Patch4:		%{name}-drop-makedat.patch
+Patch5:		%{name}-disable-courierlogger-check.patch
 URL:		http://www.courier-mta.org/imap/
-BuildRequires:	autoconf >= 2.54
+BuildRequires:	autoconf >= 2.59
 BuildRequires:	automake
-BuildRequires:	courier-authlib-devel >= 0.61
+BuildRequires:	courier-authlib-devel >= 0.61.0
+%{?with_socks:BuildRequires:	courier-sox-devel}
+BuildRequires:	courier-unicode-devel >= 2.0
 BuildRequires:	db-devel
-BuildRequires:	gdbm-devel
-BuildRequires:	gnet-devel
-BuildRequires:	libidn-devel
+BuildRequires:	libidn-devel >= 0.0.0
 %{?with_fam:BuildRequires:	gamin-devel}
+%{?with_gnutls:BuildRequires:	gnutls-devel >= 3.0}
+%{?with_gnutls:BuildRequires:	libgcrypt-devel}
+%{?with_gnutls:BuildRequires:	libgpg-error-devel}
 BuildRequires:	libstdc++-devel
-BuildRequires:	libtool
-BuildRequires:	openssl-devel >= 0.9.7d
+BuildRequires:	libtool >= 2:1.5
+%{!?with_gnutls:BuildRequires:	openssl-devel >= 0.9.7d}
+BuildRequires:	perl-base
 BuildRequires:	pkgconfig
 BuildRequires:	procps
 BuildRequires:	rpmbuild(macros) >= 1.268
@@ -50,6 +57,7 @@ BuildRequires:	sysconftool
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name}-common = %{version}-%{release}
 Requires:	/sbin/chkconfig
+Requires:	courier-unicode >= 2.0
 Requires:	pam >= 0.79.0
 Requires:	rc-scripts
 Provides:	imapdaemon
@@ -58,7 +66,6 @@ Conflicts:	cyrus-imapd
 Conflicts:	imap
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_libexecdir	/usr/%{_lib}/courier-imap
 %define		_sysconfdir	/etc/courier-imap
 %define		_certsdir	%{_sysconfdir}/certs
 %define		_localstatedir	/var/spool/courier-imap
@@ -75,7 +82,9 @@ Summary(pl.UTF-8):	Pliki wspólne dla serwerów imap i pop3
 Group:		Networking/Daemons
 Requires(post,preun):	/sbin/chkconfig
 Requires:	/sbin/chkconfig
-Requires:	courier-authlib
+# even if using OpenSSL libraries, Courier uses certtool from GnuTLS
+Requires:	/usr/bin/certtool
+Requires:	courier-authlib >= 0.61.0
 Requires:	procps
 Requires:	rc-scripts
 
@@ -139,27 +148,24 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 %patch3 -p1
 %endif
 %patch4 -p1
+%patch5 -p1
 
 cp -p %{SOURCE1} courier-imap.in
 cp -p %{SOURCE2} courier-imap-ssl.in
 cp -p %{SOURCE3} courier-pop3.in
 cp -p %{SOURCE4} courier-pop3-ssl.in
-rm -f makedat/configure.in
 
 %build
+%{__libtoolize}
 # Change Makefile.am files and force recreate Makefile.in's.
-find -type f -a '(' -name configure.in -o -name configure.ac ')' | while read FILE; do
+find -type f -a -name configure.ac | while read FILE; do
 	cd "$(dirname "$FILE")"
 
-	if [ -f Makefile.am ]; then
-		%{__sed} -i -e '/_[L]DFLAGS=-static/d' Makefile.am
-	fi
-        %{__sed}  -i 's/AM_CONFIG_HEADER/AC_CONFIG_HEADERS/g' configure.in
+	%{__sed} -i -e '/_[L]DFLAGS=-static/d' Makefile.am
 
-	%{__libtoolize}
 	%{__aclocal}
 	%{__autoconf}
-	if grep -q AC_CONFIG_HEADER configure.in; then
+	if grep -q AC_CONFIG_HEADER configure.ac; then
 		%{__autoheader}
 	fi
 	%{__automake}
@@ -167,16 +173,20 @@ find -type f -a '(' -name configure.in -o -name configure.ac ')' | while read FI
 	cd -
 done
 
-%if %{without fam}
-ac_cv_header_fam_h=no \
-ac_cv_lib_fam_FAMOpen=no \
-%endif
 %configure \
-	--with-db=db \
+	CERTOOL=/usr/bin/certtool \
+%if %{without fam}
+	ac_cv_header_fam_h=no \
+	ac_cv_lib_fam_FAMOpen=no \
+%endif
+	--libexecdir=%{_libexecdir}/courier-imap \
 	--enable-unicode \
 	--with-authchangepwdir=/var/tmp \
 	--with-certsdir=%{_certsdir} \
-	--with-mailer=/usr/lib/sendmail
+	--with-db=db \
+	%{?with_gnutls:--with-gnutls} \
+	--with-mailer=/usr/lib/sendmail \
+	%{!?with_socks:--without-socks}
 
 %{__make} -j1
 
@@ -194,16 +204,15 @@ install -p courier-pop3-ssl $RPM_BUILD_ROOT/etc/rc.d/init.d/courier-pop3-ssl
 cp -p %{SOURCE5} $RPM_BUILD_ROOT/etc/pam.d/imap
 cp -p %{SOURCE6} $RPM_BUILD_ROOT/etc/pam.d/pop3
 
-rm -rf $RPM_BUILD_ROOT%{_sbindir}/mk*cert
+# install directly instead of symlinking
+%{__rm} $RPM_BUILD_ROOT%{_sbindir}/mk{dhparams,imapdcert,pop3dcert}
+%{__mv} $RPM_BUILD_ROOT%{_datadir}/mk{dhparams,imapdcert,pop3dcert} $RPM_BUILD_ROOT%{_sbindir}
 
-cp -pf imap/README README.imap
-cp -pf imap/ChangeLog ChangeLog
-cp -pf maildir/README.maildirquota.txt README.maildirquota
+cp -pf libs/imap/README README.imap
 
-mv -f $RPM_BUILD_ROOT%{_datadir}/mk*cert $RPM_BUILD_ROOT%{_sbindir}
-
-cp -p tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man8/couriertls.8
-cp -p imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8/courierpop3d.8
+# missing from make install
+cp -p libs/imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8
+cp -p libs/tcpd/couriertls.1 $RPM_BUILD_ROOT%{_mandir}/man1
 
 touch $RPM_BUILD_ROOT/etc/security/blacklist.{pop3,imap}
 touch $RPM_BUILD_ROOT%{_sysconfdir}/shared/index
@@ -216,7 +225,7 @@ sed -i 's/^POP3DSTART.*/POP3DSTART=YES/' $RPM_BUILD_ROOT%{_sysconfdir}/pop3d
 sed -i 's/^IMAPDSTART.*/IMAPDSTART=YES/' $RPM_BUILD_ROOT%{_sysconfdir}/imapd
 
 # remove unpackaged files
-rm -f $RPM_BUILD_ROOT%{_sysconfdir}/*.dist
+%{__rm} $RPM_BUILD_ROOT%{_sysconfdir}/*.dist
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -289,7 +298,7 @@ if [ -f /etc/sysconfig/authdaemon ]; then
 fi
 echo
 echo Changes to version 3.0.5 :
-echo - config files has been splited and moved to %{_sysconfdir}
+echo - config files has been split and moved to %{_sysconfdir}
 echo - certificates directory has changed to %{_certsdir}
 echo
 
@@ -345,7 +354,7 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc maildir/README.sharedfolders.txt imap/README.proxy tcpd/README.couriertls
+%doc libs/maildir/README.sharedfolders.txt libs/imap/README.proxy libs/tcpd/README.couriertls
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/imap
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/security/blacklist.imap
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/imapd
@@ -359,39 +368,43 @@ fi
 %attr(755,root,root) %{_bindir}/imapd
 %attr(755,root,root) %{_bindir}/maildiracl
 %attr(755,root,root) %{_bindir}/maildirkw
+%attr(755,root,root) %{_bindir}/makeimapaccess
 %attr(755,root,root) %{_sbindir}/imaplogin
 %attr(755,root,root) %{_sbindir}/mkimapdcert
 %attr(755,root,root) %{_sbindir}/sharedindexinstall
 %attr(755,root,root) %{_sbindir}/sharedindexsplit
-%attr(755,root,root) %{_libexecdir}/imapd.rc
-%attr(755,root,root) %{_libexecdir}/imapd-ssl.rc
-%{_mandir}/man8/imapd*
+%attr(755,root,root) %{_libexecdir}/courier-imap/imapd.rc
+%attr(755,root,root) %{_libexecdir}/courier-imap/imapd-ssl.rc
 %{_mandir}/man1/maildiracl.1*
 %{_mandir}/man1/maildirkw.1*
+%{_mandir}/man8/imapd.8*
+%{_mandir}/man8/makeimapaccess.8*
+%{_mandir}/man8/mkimapdcert.8*
 
 %files common
 %defattr(644,root,root,755)
-%doc AUTHORS ChangeLog imap/BUGS INSTALL README*
+%doc AUTHORS COPYING INSTALL NEWS README README.imap libs/imap/{BUGS,ChangeLog} libs/maildir/README.maildirquota.txt
 %attr(751,root,root) %dir %{_sysconfdir}
 %attr(750,root,root) %dir %{_certsdir}
 %attr(770,daemon,daemon) %dir %{_localstatedir}
-%dir %{_libexecdir}
+%dir %{_libexecdir}/courier-imap
 %{_sysconfdir}/quotawarnmsg.example
 %attr(755,root,root) %{_bindir}/couriertls
-%attr(755,root,root) %{_libexecdir}/couriertcpd
-%{_mandir}/man1/couriert*
-%{_mandir}/man8/couriert*
-%{_mandir}/man8/mk*
+%attr(755,root,root) %{_sbindir}/mkdhparams
+%attr(755,root,root) %{_libexecdir}/courier-imap/couriertcpd
+%{_mandir}/man1/couriertcpd.1*
+%{_mandir}/man1/couriertls.1*
+%{_mandir}/man8/mkdhparams.8*
 
 %files deliverquota
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/deliverquota
-%{_mandir}/man8/deliverquota*
+%{_mandir}/man8/deliverquota.8*
 
 %files maildirmake
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/maildirmake
-%{_mandir}/man1/maildirmake*
+%{_mandir}/man1/maildirmake.1*
 
 %files pop3
 %defattr(644,root,root,755)
@@ -405,6 +418,7 @@ fi
 %attr(755,root,root) %{_bindir}/pop3d
 %attr(755,root,root) %{_sbindir}/mkpop3dcert
 %attr(755,root,root) %{_sbindir}/pop3login
-%attr(755,root,root) %{_libexecdir}/pop3d.rc
-%attr(755,root,root) %{_libexecdir}/pop3d-ssl.rc
-%{_mandir}/man8/courierpop*
+%attr(755,root,root) %{_libexecdir}/courier-imap/pop3d.rc
+%attr(755,root,root) %{_libexecdir}/courier-imap/pop3d-ssl.rc
+%{_mandir}/man8/courierpop3d.8*
+%{_mandir}/man8/mkpop3dcert.8*

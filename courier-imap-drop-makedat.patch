@@ -1,17 +1,20 @@
---- courier-imap-4.4.1.orig/Makefile.am	2008-07-15 00:26:58.000000000 +0200
-+++ courier-imap-4.4.1/Makefile.am	2008-10-08 08:23:14.968691362 +0200
-@@ -10,7 +10,7 @@
- 	packaging/suse/pop3.pam
- 
- SUBDIRS=numlib md5 sha1 bdbobj gdbmobj soxwrap unicode rfc822 random128 \
--	rfc1035 rfc2045 liblock maildir makedat libhmac \
-+	rfc1035 rfc2045 liblock maildir libhmac \
- 	waitlib tcpd rootcerts imap
+--- courier-imap-4.18.2/Makefile.am.orig	2017-01-18 02:48:31.000000000 +0100
++++ courier-imap-4.18.2/Makefile.am	2018-03-20 20:38:44.933891020 +0100
+@@ -11,7 +11,7 @@
+ SUBDIRS=libs/numlib libs/bdbobj libs/gdbmobj libs/soxwrap \
+ 	libs/rfc822 libs/rfc2045 \
+ 	libs/md5 libs/sha1 libs/random128 libs/rfc1035 libs/liblock \
+-	libs/maildir libs/makedat libs/libhmac \
++	libs/maildir libs/libhmac \
+ 	libs/waitlib libs/tcpd libs/rootcerts libs/imap
  
  sbin_SCRIPTS=sharedindexinstall sharedindexsplit
-@@ -20,7 +20,7 @@
+@@ -20,9 +20,9 @@
+ databin_SCRIPTS=mkimapdcert mkpop3dcert mkdhparams
  
- binPROGRAMS=imapd pop3d maildirmake maildiracl deliverquota maildirkw
+ binPROGRAMS=imapd pop3d maildirmake maildiracl deliverquota maildirkw \
+-	makeimapaccess makedat
++	makeimapaccess
  sbinPROGRAMS=imaplogin pop3login
 -libexecPROGRAMS=makedatprog couriertcpd
 +libexecPROGRAMS=couriertcpd

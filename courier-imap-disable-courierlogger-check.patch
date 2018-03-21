@@ -1,0 +1,13 @@
+--- courier-imap-4.18.2/configure.ac.orig	2018-03-20 21:09:55.290536331 +0100
++++ courier-imap-4.18.2/configure.ac	2018-03-20 21:14:20.837199967 +0100
+@@ -104,10 +104,6 @@
+ $COURIERAUTHCONFIG --configfiles >conftest || exit 1
+ sed 's/^/auth/' <conftest >conftest2
+ . ./conftest2
+-if test ! -x $authsbindir/courierlogger$EXEEXT
+-then
+-	AC_MSG_ERROR(authlib configuration error - $authsbindir/courierlogger$EXEEXT not found)
+-fi
+ courierlogger=$authsbindir/courierlogger$EXEEXT
+ AC_SUBST(courierlogger)
+ 
