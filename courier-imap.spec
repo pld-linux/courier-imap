@@ -15,12 +15,12 @@
 Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	4.18.2
-Release:	3
+Version:	5.0.3
+Release:	1
 License:	GPL v3 with OpenSSL exception
 Group:		Networking/Daemons
 Source0:	http://downloads.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	6af3e78d3206518aab5510638cd620c2
+# Source0-md5:	ca3d9f4d27f010bec112e867a7636a1e
 Source1:	%{name}.init
 Source2:	%{name}-ssl.init
 Source3:	%{name}-pop3.init
@@ -38,7 +38,7 @@ BuildRequires:	autoconf >= 2.59
 BuildRequires:	automake
 BuildRequires:	courier-authlib-devel >= 0.61.0
 %{?with_socks:BuildRequires:	courier-sox-devel}
-BuildRequires:	courier-unicode-devel >= 2.0
+BuildRequires:	courier-unicode-devel >= 2.1
 BuildRequires:	db-devel
 BuildRequires:	libidn-devel >= 0.0.0
 %{?with_fam:BuildRequires:	gamin-devel}
@@ -57,7 +57,7 @@ BuildRequires:	sysconftool
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name}-common = %{version}-%{release}
 Requires:	/sbin/chkconfig
-Requires:	courier-unicode >= 2.0
+Requires:	courier-unicode >= 2.1
 Requires:	pam >= 0.79.0
 Requires:	rc-scripts
 Provides:	imapdaemon
@@ -87,6 +87,7 @@ Requires:	/usr/bin/certtool
 Requires:	courier-authlib >= 0.61.0
 Requires:	procps
 Requires:	rc-scripts
+Conflicts:	maildrop < 3
 
 %description common
 Common files for imap and pop3 daemons.
@@ -186,6 +187,7 @@ done
 	--with-db=db \
 	%{?with_gnutls:--with-gnutls} \
 	--with-mailer=/usr/lib/sendmail \
+	--with-notice=unicode \
 	%{!?with_socks:--without-socks}
 
 %{__make} -j1
@@ -301,6 +303,12 @@ echo Changes to version 3.0.5 :
 echo - config files has been split and moved to %{_sysconfdir}
 echo - certificates directory has changed to %{_certsdir}
 echo
+
+%triggerpostun common -- %{name}-common < 5
+%banner -e courier-imap-unicode <<EOF
+WARNING: you have to convert any existing maildirs to Unicode naming scheme.
+See INSTALL file for details.
+EOF
 
 %post pop3
 /sbin/chkconfig --add courier-pop3
