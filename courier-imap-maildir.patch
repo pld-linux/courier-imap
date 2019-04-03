@@ -16,12 +16,15 @@
 +MAILDIRPATH=Mail/Maildir
 --- old/libs/imap/pop3d.dist.in	2004-04-18 15:54:39.000000000 +0000
 +++ new/libs/imap/pop3d.dist.in	2004-07-08 19:00:59.000000000 +0000
-@@ -151,4 +151,4 @@
+@@ -151,7 +151,7 @@
  #
  # MAILDIRPATH - directory name of the maildir directory.
  #
 -MAILDIRPATH=Maildir
 +MAILDIRPATH=Mail/Maildir
+ 
+ ##NAME: MIME_UNICODE_MESSAGE_TYPE:0
+ #
 --- old/libs/imap/pop3d-ssl.dist.in	2004-06-26 15:11:50.000000000 +0000
 +++ new/libs/imap/pop3d-ssl.dist.in	2004-07-20 12:06:17.000000000 +0000
 @@ -182,4 +182,4 @@
