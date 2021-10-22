@@ -16,7 +16,7 @@ Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
 Version:	5.0.7
-Release:	1
+Release:	2
 License:	GPL v3 with OpenSSL exception
 Group:		Networking/Daemons
 Source0:	http://downloads.sourceforge.net/courier/%{name}-%{version}.tar.bz2
@@ -330,7 +330,8 @@ if [ "$1" = "0" ]; then
 	/sbin/chkconfig --del courier-pop3-ssl
 fi
 
-%triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.5
+%triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.6
+# 3.0.5
 if [ -f /var/lib/openssl/certs/pop3d.pem ]; then
 	echo
 	echo pop3d.pem has been moved automatically to %{_certsdir}
@@ -354,7 +355,7 @@ if [ -f /etc/sysconfig/courier-pop3 ]; then
 fi
 %service courier-pop3 restart
 
-%triggerin -n %{name}-pop3 -- %{name}-pop3 < 3.0.6
+# 3.0.6
 . %{_sysconfdir}/pop3d-ssl
 if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
 	sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/pop3d-ssl

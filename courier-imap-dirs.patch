@@ -1,9 +1,11 @@
---- old/configure.ac	2004-06-12 01:38:04.000000000 +0000
-+++ new/configure.ac	2004-07-08 14:53:47.000000000 +0000
-@@ -234,5 +234,6 @@
- 		pop3d.rc pop3d-ssl.rc
- 		courier-imap.sysvinit courier-imap.spec index.html
+diff -urNp -x '*.orig' courier-imap-5.0.7.org/configure.ac courier-imap-5.0.7/configure.ac
+--- courier-imap-5.0.7.org/configure.ac	2019-03-27 22:34:04.000000000 +0100
++++ courier-imap-5.0.7/configure.ac	2021-10-23 00:10:21.114488946 +0200
+@@ -325,6 +325,7 @@ AC_CONFIG_FILES(Makefile dbobj.h dbobj.c
+ 		authconfig
+ 		courier-imap.spec
  		INSTALL.html
 +		courier-imap courier-imap-ssl courier-pop3 courier-pop3-ssl
  		packaging/suse/courier-imap.init
  		packaging/systemd/courier-imap.sysvinit
+ 		packaging/systemd/courier-imap.service)
