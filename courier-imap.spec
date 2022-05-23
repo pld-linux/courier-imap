@@ -15,12 +15,12 @@
 Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	5.0.7
-Release:	2
+Version:	5.1.7
+Release:	1
 License:	GPL v3 with OpenSSL exception
 Group:		Networking/Daemons
-Source0:	http://downloads.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	d93fd9b3807070086c930823e63b2d82
+Source0:	https://downloads.sourceforge.net/courier/%{name}-%{version}.tar.bz2
+# Source0-md5:	0e4b448167199822c437eb861d320469
 Source1:	%{name}.init
 Source2:	%{name}-ssl.init
 Source3:	%{name}-pop3.init
@@ -36,7 +36,7 @@ Patch5:		%{name}-disable-courierlogger-check.patch
 URL:		http://www.courier-mta.org/imap/
 BuildRequires:	autoconf >= 2.59
 BuildRequires:	automake
-BuildRequires:	courier-authlib-devel >= 0.61.0
+BuildRequires:	courier-authlib-devel >= 0.71.0
 %{?with_socks:BuildRequires:	courier-sox-devel}
 BuildRequires:	courier-unicode-devel >= 2.1
 BuildRequires:	db-devel
@@ -84,7 +84,7 @@ Requires(post,preun):	/sbin/chkconfig
 Requires:	/sbin/chkconfig
 # even if using OpenSSL libraries, Courier uses certtool from GnuTLS
 Requires:	/usr/bin/certtool
-Requires:	courier-authlib >= 0.61.0
+Requires:	courier-authlib >= 0.71.0
 Requires:	procps
 Requires:	rc-scripts
 Conflicts:	maildrop < 3
@@ -250,7 +250,8 @@ if [ "$1" = "0" ]; then
 fi
 
 
-%triggerin -- %{name} < 3.0.5
+%triggerin -- %{name} < 3.0.6
+# 3.0.5
 if [ -f /var/lib/openssl/certs/imapd.pem ]; then
 	echo
 	echo imapd.pem has been moved automatically to %{_certsdir}
@@ -276,7 +277,7 @@ if [ -f /etc/sysconfig/courier-imap ]; then
 fi
 %service -q courier-imap restart
 
-%triggerin -- %{name} < 3.0.6
+# 3.0.6
 . %{_sysconfdir}/imapd-ssl
 if [ $TLS_CACHEFILE = "/var/couriersslcache" ]; then
 	sed -i s/^TLS_CACHEFILE=.*/"TLS_CACHEFILE=\/var\/spool\/courier-imap\/couriersslcache"/ %{_sysconfdir}/imapd-ssl
