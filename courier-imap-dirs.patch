@@ -1,9 +1,8 @@
-diff -urNp -x '*.orig' courier-imap-5.0.7.org/configure.ac courier-imap-5.0.7/configure.ac
---- courier-imap-5.0.7.org/configure.ac	2019-03-27 22:34:04.000000000 +0100
-+++ courier-imap-5.0.7/configure.ac	2021-10-23 00:10:21.114488946 +0200
-@@ -325,6 +325,7 @@ AC_CONFIG_FILES(Makefile dbobj.h dbobj.c
- 		authconfig
+--- courier-imap-5.2.2.org/configure.ac	2019-03-27 22:34:04.000000000 +0100
++++ courier-imap-5.2.2/configure.ac	2021-10-23 00:10:21.114488946 +0200
+@@ -268,6 +268,7 @@ AC_CONFIG_FILES(Makefile dbobj.h dbobj.c
  		courier-imap.spec
+ 		courier-debuild
  		INSTALL.html
 +		courier-imap courier-imap-ssl courier-pop3 courier-pop3-ssl
  		packaging/suse/courier-imap.init

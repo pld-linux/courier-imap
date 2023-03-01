@@ -15,12 +15,12 @@
 Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	5.1.7
+Version:	5.2.2
 Release:	1
 License:	GPL v3 with OpenSSL exception
 Group:		Networking/Daemons
 Source0:	https://downloads.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	0e4b448167199822c437eb861d320469
+# Source0-md5:	7f210160a19ec973ea39d9ef32e25053
 Source1:	%{name}.init
 Source2:	%{name}-ssl.init
 Source3:	%{name}-pop3.init
@@ -40,13 +40,13 @@ BuildRequires:	courier-authlib-devel >= 0.71.0
 %{?with_socks:BuildRequires:	courier-sox-devel}
 BuildRequires:	courier-unicode-devel >= 2.1
 BuildRequires:	db-devel
-BuildRequires:	libidn-devel >= 0.0.0
+BuildRequires:	libidn2-devel >= 0.0.0
 %{?with_fam:BuildRequires:	gamin-devel}
 %{?with_gnutls:BuildRequires:	gnutls-devel >= 3.0}
 %{?with_gnutls:BuildRequires:	libgcrypt-devel}
 %{?with_gnutls:BuildRequires:	libgpg-error-devel}
 BuildRequires:	libstdc++-devel
-BuildRequires:	libtool >= 2:1.5
+BuildRequires:	libtool >= 2:2
 %{!?with_gnutls:BuildRequires:	openssl-devel >= 0.9.7d}
 BuildRequires:	perl-base
 BuildRequires:	pkgconfig
@@ -209,8 +209,6 @@ cp -p %{SOURCE6} $RPM_BUILD_ROOT/etc/pam.d/pop3
 # install directly instead of symlinking
 %{__rm} $RPM_BUILD_ROOT%{_sbindir}/mk{dhparams,imapdcert,pop3dcert}
 %{__mv} $RPM_BUILD_ROOT%{_datadir}/mk{dhparams,imapdcert,pop3dcert} $RPM_BUILD_ROOT%{_sbindir}
-
-cp -pf libs/imap/README README.imap
 
 # missing from make install
 cp -p libs/imap/courierpop3d.8 $RPM_BUILD_ROOT%{_mandir}/man8
@@ -393,7 +391,7 @@ fi
 
 %files common
 %defattr(644,root,root,755)
-%doc AUTHORS COPYING INSTALL NEWS README README.imap libs/imap/{BUGS,ChangeLog} libs/maildir/README.maildirquota.txt
+%doc AUTHORS COPYING INSTALL NEWS README libs/imap/{BUGS,ChangeLog} libs/maildir/README.maildirquota.txt
 %attr(751,root,root) %dir %{_sysconfdir}
 %attr(750,root,root) %dir %{_certsdir}
 %attr(770,daemon,daemon) %dir %{_localstatedir}
