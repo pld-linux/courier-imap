@@ -15,12 +15,12 @@
 Summary:	Courier-IMAP server
 Summary(pl.UTF-8):	Serwer Courier-IMAP
 Name:		courier-imap
-Version:	5.2.2
+Version:	5.2.11
 Release:	1
 License:	GPL v3 with OpenSSL exception
 Group:		Networking/Daemons
 Source0:	https://downloads.sourceforge.net/courier/%{name}-%{version}.tar.bz2
-# Source0-md5:	7f210160a19ec973ea39d9ef32e25053
+# Source0-md5:	c10ad86bce2d502ea28eab09c8992323
 Source1:	%{name}.init
 Source2:	%{name}-ssl.init
 Source3:	%{name}-pop3.init
@@ -142,14 +142,14 @@ Courier-IMAP POP3 jest serwerem POP3 dla skrzynek pocztowych Maildir.
 
 %prep
 %setup -q
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
+%patch -P0 -p1
+%patch -P1 -p1
+%patch -P2 -p1
 %if %{with toplevel}
-%patch3 -p1
+%patch -P3 -p1
 %endif
-%patch4 -p1
-%patch5 -p1
+%patch -P4 -p1
+%patch -P5 -p1
 
 cp -p %{SOURCE1} courier-imap.in
 cp -p %{SOURCE2} courier-imap-ssl.in
