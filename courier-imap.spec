@@ -40,7 +40,7 @@ BuildRequires:	courier-authlib-devel >= 0.71.0
 %{?with_socks:BuildRequires:	courier-sox-devel}
 BuildRequires:	courier-unicode-devel >= 2.1
 BuildRequires:	db-devel
-BuildRequires:	libidn2-devel >= 0.0.0
+BuildRequires:	libidn2-devel >= 2.0.5
 %{?with_fam:BuildRequires:	gamin-devel}
 %{?with_gnutls:BuildRequires:	gnutls-devel >= 3.0}
 %{?with_gnutls:BuildRequires:	libgcrypt-devel}
@@ -85,6 +85,7 @@ Requires:	/sbin/chkconfig
 # even if using OpenSSL libraries, Courier uses certtool from GnuTLS
 Requires:	/usr/bin/certtool
 Requires:	courier-authlib >= 0.71.0
+Requires:	libidn2 >= 2.0.5
 Requires:	procps
 Requires:	rc-scripts
 Conflicts:	maildrop < 3
